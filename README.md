@@ -1,2 +1,3 @@
-# extension-tao
-extension-tao-testqti-previewer
+# taoQtiTestPreviewer
+
+QTI Test and Item preview
