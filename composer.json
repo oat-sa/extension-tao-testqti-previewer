@@ -31,7 +31,8 @@
   },
   "autoload": {
     "psr-4": {
-      "oat\\taoQtiTestPreviewer\\": ""
+      "oat\\taoQtiTestPreviewer\\": "",
+      "oat\\taoQtiTestPreviewer\\models\\": "models/classes/"
     }
   }
 }
