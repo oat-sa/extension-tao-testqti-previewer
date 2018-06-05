@@ -24,6 +24,7 @@ use common_report_Report as Report;
 use oat\oatbox\extension\InstallAction;
 use oat\tao\model\modules\DynamicModule;
 use oat\taoItems\model\preview\ItemPreviewerService;
+use oat\taoOutcomeUi\model\ResultsViewerService;
 
 /**
  * Installation action that registers the test runner providers
@@ -61,6 +62,10 @@ class RegisterPreviewers extends InstallAction
                 }
             }
         }
+
+        $service = $this->getServiceManager()->get(ResultsViewerService::SERVICE_ID);
+        $service->setDefaultItemType('qtiItem');
+        $this->getServiceManager()->register(ResultsViewerService::SERVICE_ID , $service);
 
         return new Report(Report::TYPE_SUCCESS, $count .  ' providers registered.');
     }
