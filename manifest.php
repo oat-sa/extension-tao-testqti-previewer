@@ -30,6 +30,7 @@ return [
     'requires' => [
         'tao' => '>=19.5.0',
         'taoTests' => '>=7.8.1',
+        'taoItems'   => '>=5.13.0',
         'taoQtiTest' => '>=25.8.0',
         'taoOutcomeUi' => '>=5.10.0'
     ],
