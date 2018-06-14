@@ -25,7 +25,6 @@ use oat\taoItems\model\pack\Packer;
 use oat\taoQtiItem\model\qti\Service;
 use oat\taoQtiItem\model\QtiJsonItemCompiler;
 use oat\taoQtiTest\models\container\QtiTestDeliveryContainer;
-use oat\taoResultServer\models\classes\ResultServerService;
 use Zend\ServiceManager\ServiceLocatorAwareInterface;
 use Zend\ServiceManager\ServiceLocatorAwareTrait;
 
@@ -36,7 +35,7 @@ class ItemPreviewer implements ServiceLocatorAwareInterface
     /**
      * @var string
      */
-    private $resultId;
+    private $userLanguage;
 
     /**
      * @var string
@@ -69,11 +68,6 @@ class ItemPreviewer implements ServiceLocatorAwareInterface
     private $itemPrivateDir;
 
     /**
-     * @var string
-     */
-    private $userDataLang;
-
-    /**
      * @var array
      */
     private $itemHrefs = [];
@@ -84,12 +78,12 @@ class ItemPreviewer implements ServiceLocatorAwareInterface
     }
 
     /**
-     * @param string $resultId
+     * @param string $userLanguage
      * @return ItemPreviewer
      */
-    public function setResultId($resultId)
+    public function setUserLanguage($userLanguage)
     {
-        $this->resultId = $resultId;
+        $this->userLanguage = $userLanguage;
 
         return $this;
     }
@@ -131,12 +125,12 @@ class ItemPreviewer implements ServiceLocatorAwareInterface
      */
     public function loadCompiledItemData()
     {
-        if (empty($this->resultId) || empty($this->itemDefinition) || empty($this->delivery)) {
-            throw new \LogicException('ResultId, ItemDefiniton and Delivery are mandatory for loading of compiled item data');
+        if (empty($this->userLanguage) || empty($this->itemDefinition) || empty($this->delivery)) {
+            throw new \LogicException('UserLanguage, ItemDefiniton and Delivery are mandatory for loading of compiled item data');
         }
 
-        $jsonFile = $this->getItemPrivateDir()->getFile($this->getUserLanguage() . DIRECTORY_SEPARATOR . QtiJsonItemCompiler::ITEM_FILE_NAME);
-        $xmlFile = $this->getItemPrivateDir()->getFile($this->getUserLanguage() . DIRECTORY_SEPARATOR . Service::QTI_ITEM_FILE);
+        $jsonFile = $this->getItemPrivateDir()->getFile($this->userLanguage . DIRECTORY_SEPARATOR . QtiJsonItemCompiler::ITEM_FILE_NAME);
+        $xmlFile = $this->getItemPrivateDir()->getFile($this->userLanguage . DIRECTORY_SEPARATOR . Service::QTI_ITEM_FILE);
 
         if ($jsonFile->exists()) {
             // new test runner is used
@@ -144,7 +138,7 @@ class ItemPreviewer implements ServiceLocatorAwareInterface
         } elseif ($xmlFile->exists()) {
             // old test runner is used
             /** @var Packer $packer */
-            $packer = (new Packer(new \core_kernel_classes_Resource($this->getItemUri()), $this->getUserLanguage()))
+            $packer = (new Packer(new \core_kernel_classes_Resource($this->getItemUri()), $this->userLanguage))
                 ->setServiceLocator($this->getServiceLocator());
 
             /** @var ItemPack $itemPack */
@@ -166,28 +160,7 @@ class ItemPreviewer implements ServiceLocatorAwareInterface
      */
     public function getBaseUrl()
     {
-        return $this->getItemPublicDir()->getPublicAccessUrl() . $this->getUserLanguage() . '/';
-    }
-
-    /**
-     * @return string
-     * @throws \common_exception_Error
-     */
-    private function getUserLanguage()
-    {
-        if (is_null($this->userDataLang)) {
-            /** @var ResultServerService $resultServerService */
-            $resultServerService = $this->getServiceLocator()->get(ResultServerService::SERVICE_ID);
-            /** @var \taoResultServer_models_classes_ReadableResultStorage $implementation */
-            $implementation = $resultServerService->getResultStorage($this->delivery->getUri());
-
-            $testTaker = new \core_kernel_users_GenerisUser(new \core_kernel_classes_Resource($implementation->getTestTaker($this->resultId)));
-            $lang = $testTaker->getPropertyValues(\oat\generis\model\GenerisRdf::PROPERTY_USER_DEFLG);
-
-            $this->userDataLang = empty($lang) ? DEFAULT_LANG : (string) current($lang);
-        }
-
-        return $this->userDataLang;
+        return $this->getItemPublicDir()->getPublicAccessUrl() . $this->userLanguage . '/';
     }
 
     /**

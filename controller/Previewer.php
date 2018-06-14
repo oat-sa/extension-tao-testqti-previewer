@@ -20,8 +20,9 @@
 namespace oat\taoQtiTestPreviewer\controller;
 
 use oat\taoQtiTestPreviewer\models\ItemPreviewer;
-use taoQtiTest_helpers_TestRunnerUtils as TestRunnerUtils;
+use oat\taoResultServer\models\classes\ResultServerService;
 use tao_actions_ServiceModule as ServiceModule;
+use taoQtiTest_helpers_TestRunnerUtils as TestRunnerUtils;
 
 /**
  * Class taoQtiTest_actions_Runner
@@ -106,6 +107,25 @@ class Previewer extends ServiceModule
     }
 
     /**
+     * @param string $resultId
+     * @param string $deliveryUri
+     * @return string
+     * @throws \common_exception_Error
+     */
+    protected function getUserLanguage($resultId, $deliveryUri)
+    {
+        /** @var ResultServerService $resultServerService */
+        $resultServerService = $this->getServiceLocator()->get(ResultServerService::SERVICE_ID);
+        /** @var \taoResultServer_models_classes_ReadableResultStorage $implementation */
+        $implementation = $resultServerService->getResultStorage($deliveryUri);
+
+        $testTaker = new \core_kernel_users_GenerisUser(new \core_kernel_classes_Resource($implementation->getTestTaker($resultId)));
+        $lang = $testTaker->getPropertyValues(\oat\generis\model\GenerisRdf::PROPERTY_USER_DEFLG);
+
+        return empty($lang) ? DEFAULT_LANG : (string) current($lang);
+    }
+
+    /**
      * Initializes the delivery session
      */
     public function init()
@@ -162,8 +182,8 @@ class Previewer extends ServiceModule
                 $itemPreviewer = new ItemPreviewer();
                 $itemPreviewer->setServiceLocator($this->getServiceLocator());
 
-                $response['content'] = $itemPreviewer->setResultId($resultId)
-                    ->setItemDefinition($itemDefinition)
+                $response['content'] = $itemPreviewer->setItemDefinition($itemDefinition)
+                    ->setUserLanguage($this->getUserLanguage($resultId, $delivery->getUri()))
                     ->setDelivery($delivery)
                     ->loadCompiledItemData();
 
