@@ -70,7 +70,6 @@ define([
          * @param {Object} state - The state of the item
          * @param {Object} [config] - Some config entries
          * @param {String} [config.serviceCallId='previewer'] - The service call Id to send to the server
-         * @param {logger} [config.logger] - A logger for the errors reporting
          * @param {String} [config.fullPage] - Force the previewer to occupy the full window.
          * @param {String} [config.readOnly] - Do not allow to modify the previewed item.
          * @returns {Object}
@@ -78,8 +77,7 @@ define([
         init: function init(uri, state, config) {
             config = _.defaults(config || {}, {
                 provider: 'qtiItemPreviewer',
-                serviceCallId: 'previewer',
-                logger: logger
+                serviceCallId: 'previewer'
             });
 
             // ensure required providers and plugins will be loaded
@@ -88,7 +86,7 @@ define([
 
             return previewerFactory(config)
                 .on('error', function (err) {
-                    config.logger.error(err);
+                    logger.error(err);
                 })
                 .on('ready', function (runner) {
                     runner
