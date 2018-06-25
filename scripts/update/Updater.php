@@ -20,6 +20,12 @@
 
 namespace oat\taoQtiTestPreviewer\scripts\update;
 
+use oat\tao\model\accessControl\func\AccessRule;
+use oat\tao\model\accessControl\func\AclProxy;
+use oat\tao\model\modules\DynamicModule;
+use oat\taoItems\model\preview\ItemPreviewerService;
+use oat\taoOutcomeUi\model\ResultsViewerService;
+
 /**
  * Class Updater
  * @package oat\taoQtiTestPreviewer\scripts\update
@@ -30,9 +36,34 @@ class Updater extends \common_ext_ExtensionUpdater
      *
      * @param string $initialVersion
      * @return string $versionUpdatedTo
+     * @throws \common_exception_InconsistentData
      */
     public function update($initialVersion)
     {
+        if ($this->isVersion('0.0.0')) {
+            AclProxy::applyRule(new AccessRule('grant', 'http://www.tao.lu/Ontologies/TAOTest.rdf#TestsManagerRole', array('ext'=>'taoQtiTestPreviewer', 'mod' => 'Previewer')));
 
+            $registry = $this->getServiceManager()->get(ItemPreviewerService::SERVICE_ID);
+            $registry->registerAdapter(
+                DynamicModule::fromArray(
+                    [
+                        'id' => 'qtiItem',
+                        'name' => 'QTI Item Previewer',
+                        'module' => 'taoQtiTestPreviewer/previewer/adapter/item/qtiItem',
+                        'bundle' => 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+                        'description' => 'QTI implementation of the item previewer',
+                        'category' => 'previewer',
+                        'active' => true,
+                        'tags' => [ 'core', 'qti', 'previewer' ]
+                    ]
+                )
+            );
+
+            $service = $this->getServiceManager()->get(ResultsViewerService::SERVICE_ID);
+            $service->setDefaultItemType('qtiItem');
+            $this->getServiceManager()->register(ResultsViewerService::SERVICE_ID , $service);
+
+            $this->setVersion('0.1.0');
+        }
     }
 }

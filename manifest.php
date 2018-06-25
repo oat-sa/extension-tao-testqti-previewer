@@ -18,16 +18,21 @@
  *
  */
 use oat\taoQtiTestPreviewer\scripts\update\Updater;
+use oat\taoQtiTestPreviewer\scripts\install\RegisterPreviewers;
 
 return [
     'name' => 'taoQtiTestPreviewer',
     'label' => 'extension-tao-testqti-previewer',
     'description' => 'extension that provides QTI test previewer',
     'license'     => 'GPL-2.0',
-    'version' => '0.0.0',
+    'version' => '0.1.0',
     'author' => 'Open Assessment Technologies SA',
     'requires' => [
-        'taoQtiTest' => '>=25.7.3'
+        'tao' => '>=19.5.0',
+        'taoTests' => '>=7.8.1',
+        'taoItems'   => '>=5.13.0',
+        'taoQtiTest' => '>=25.8.0',
+        'taoOutcomeUi' => '>=5.10.0'
     ],
     'managementRole' => 'http://www.tao.lu/Ontologies/TAOTest.rdf#TaoQtiManagerRole',
     'acl' => [
@@ -35,6 +40,7 @@ return [
     ],
     'install' => [
         'php' => [
+            RegisterPreviewers::class
         ]
     ],
     'update' => Updater::class,
