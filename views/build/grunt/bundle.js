@@ -32,7 +32,7 @@ module.exports = function(grunt) {
             qtipreviewer : {
                 options: {
                     paths : paths,
-                    include: ['lib/require', 'loader/bootstrap'].concat(qtiPreviewer).concat(itemRuntime),
+                    include: [].concat(qtiPreviewer).concat(itemRuntime),
                     excludeShallow : ['mathJax', 'ckeditor'].concat(testPlugins).concat(libs),
                     exclude : ['json!i18ntr/messages.json'],
                     out: out + "/qtiPreviewer.min.js"
