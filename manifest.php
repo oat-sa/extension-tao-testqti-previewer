@@ -25,7 +25,7 @@ return [
     'label' => 'extension-tao-testqti-previewer',
     'description' => 'extension that provides QTI test previewer',
     'license'     => 'GPL-2.0',
-    'version' => '0.1.1',
+    'version' => '0.1.2',
     'author' => 'Open Assessment Technologies SA',
     'requires' => [
         'tao' => '>=19.5.0',
@@ -34,9 +34,9 @@ return [
         'taoQtiTest' => '>=25.8.0',
         'taoOutcomeUi' => '>=5.10.0'
     ],
-    'managementRole' => 'http://www.tao.lu/Ontologies/TAOTest.rdf#TaoQtiManagerRole',
+    'managementRole' => 'http://www.tao.lu/Ontologies/TAOTestPreviewer.rdf#TaoQtiManagerRole',
     'acl' => [
-        ['grant', 'http://www.tao.lu/Ontologies/TAOTest.rdf#TaoQtiManagerRole', ['ext' => 'taoQtiTestPreviewer']],
+        ['grant', 'http://www.tao.lu/Ontologies/TAOTestPreviewer.rdf#TaoQtiManagerRole', ['ext' => 'taoQtiTestPreviewer']],
     ],
     'install' => [
         'php' => [
