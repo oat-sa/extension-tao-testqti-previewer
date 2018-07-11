@@ -37,6 +37,7 @@ return [
     'managementRole' => 'http://www.tao.lu/Ontologies/TAOTestPreviewer.rdf#TaoQtiManagerRole',
     'acl' => [
         ['grant', 'http://www.tao.lu/Ontologies/TAOTestPreviewer.rdf#TaoQtiManagerRole', ['ext' => 'taoQtiTestPreviewer']],
+        ['grant', 'http://www.tao.lu/Ontologies/TAOTest.rdf#TaoQtiManagerRole', ['ext' => 'taoQtiTestPreviewer']],
     ],
     'install' => [
         'php' => [

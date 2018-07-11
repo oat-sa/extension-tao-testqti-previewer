@@ -71,6 +71,7 @@ class Updater extends \common_ext_ExtensionUpdater
         if ($this->isVersion('0.1.1')) {
             AclProxy::revokeRule(new AccessRule('grant', 'http://www.tao.lu/Ontologies/TAOTest.rdf#TestsManagerRole', array('ext'=>'taoQtiTestPreviewer', 'mod' => 'Previewer')));
             AclProxy::applyRule(new AccessRule('grant', 'http://www.tao.lu/Ontologies/TAOTestPreviewer.rdf#TestsManagerRole', array('ext'=>'taoQtiTestPreviewer', 'mod' => 'Previewer')));
+            AclProxy::applyRule(new AccessRule('grant', 'http://www.tao.lu/Ontologies/TAOTest.rdf#TaoQtiManagerRole', array('ext'=>'taoQtiTestPreviewer', 'mod' => 'Previewer')));
 
             $this->setVersion('0.1.2');
         }
