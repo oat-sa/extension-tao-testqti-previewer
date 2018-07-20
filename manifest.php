@@ -43,7 +43,7 @@ return [
             RegisterPreviewers::class
         ],
         'rdf' => [
-            __DIR__ . '/install/ontology/reviewerRole.rdf',
+            __DIR__ . '/install/ontology/previewerRole.rdf',
         ],
     ],
     'update' => Updater::class,
