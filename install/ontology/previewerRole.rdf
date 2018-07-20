@@ -8,7 +8,7 @@
         <generis:includesRole rdf:resource="http://www.tao.lu/Ontologies/TAOTest.rdf#TaoQtiTestPreviewerRole"/>
     </rdf:Description>
 
-    <rdf:Description rdf:about="http://www.tao.lu/Ontologies/TAOResult.rdf#TaoQtiReviewerRole">
+    <rdf:Description rdf:about="http://www.tao.lu/Ontologies/TAOResult.rdf#TaoReviewerRole">
         <generis:includesRole rdf:resource="http://www.tao.lu/Ontologies/TAOTest.rdf#TaoQtiTestPreviewerRole"/>
     </rdf:Description>
 </rdf:RDF>
