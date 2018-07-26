@@ -78,6 +78,11 @@ class Updater extends \common_ext_ExtensionUpdater
                 'http://www.tao.lu/Ontologies/TAOTest.rdf#TestsManagerRole',
                 ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer']
             ));
+            AclProxy::applyRule(new AccessRule(
+                AccessRule::GRANT,
+                'http://www.tao.lu/Ontologies/TAOTest.rdf#TaoQtiTestPreviewerRole',
+                ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer']
+            ));
             OntologyUpdater::syncModels();
             $this->setVersion('0.2.0');
         }
