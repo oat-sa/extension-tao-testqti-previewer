@@ -23,6 +23,7 @@ namespace oat\taoQtiTestPreviewer\scripts\update;
 use oat\tao\model\accessControl\func\AccessRule;
 use oat\tao\model\accessControl\func\AclProxy;
 use oat\tao\model\modules\DynamicModule;
+use oat\tao\scripts\update\OntologyUpdater;
 use oat\taoItems\model\preview\ItemPreviewerService;
 use oat\taoOutcomeUi\model\ResultsViewerService;
 
@@ -41,8 +42,6 @@ class Updater extends \common_ext_ExtensionUpdater
     public function update($initialVersion)
     {
         if ($this->isVersion('0.0.0')) {
-            AclProxy::applyRule(new AccessRule('grant', 'http://www.tao.lu/Ontologies/TAOTest.rdf#TestsManagerRole', array('ext'=>'taoQtiTestPreviewer', 'mod' => 'Previewer')));
-
             $registry = $this->getServiceManager()->get(ItemPreviewerService::SERVICE_ID);
             $registry->registerAdapter(
                 DynamicModule::fromArray(
@@ -67,5 +66,25 @@ class Updater extends \common_ext_ExtensionUpdater
         }
         
         $this->skip('0.1.0', '0.1.1');
+
+        if ($this->isVersion('0.1.1')) {
+            AclProxy::revokeRule(new AccessRule(
+                AccessRule::GRANT,
+                'http://www.tao.lu/Ontologies/TAOTest.rdf#TaoQtiManagerRole',
+                ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer']
+            ));
+            AclProxy::revokeRule(new AccessRule(
+                AccessRule::GRANT,
+                'http://www.tao.lu/Ontologies/TAOTest.rdf#TestsManagerRole',
+                ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer']
+            ));
+            AclProxy::applyRule(new AccessRule(
+                AccessRule::GRANT,
+                'http://www.tao.lu/Ontologies/TAOTest.rdf#TaoQtiTestPreviewerRole',
+                ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer']
+            ));
+            OntologyUpdater::syncModels();
+            $this->setVersion('0.2.0');
+        }
     }
 }
