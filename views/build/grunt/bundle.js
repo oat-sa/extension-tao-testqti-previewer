@@ -31,11 +31,14 @@ module.exports = function(grunt) {
                     outputDir : 'loader',
                     dependencies : ['taoItems', 'taoQtiItem', 'taoTests', 'taoQtiTest'],
                     bundles : [{
-                        name : 'taoQtiTestPreviewer',
+                        name : 'qtiPreviewer',
                         include: [
                             'taoQtiTestPreviewer/previewer/**/*'
                         ],
                         dependencies : [
+                            'taoItems/loader/taoItemsRunner.min',
+                            'taoTests/loader/taoTestsRunner.min',
+                            'taoQtiItem/loader/taoQtiItemRunner.min',
                             'taoQtiTest/loader/taoQtiTestRunner.min',
                             'taoQtiTest/loader/testPlugins.min'
                         ]
