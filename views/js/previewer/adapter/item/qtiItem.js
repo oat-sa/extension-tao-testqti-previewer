@@ -19,11 +19,12 @@
  * @author Jean-Sébastien Conan <jean-sebastien@taotesting.com>
  */
 define([
+    'jquery',
     'lodash',
     'core/logger',
     'taoQtiTestPreviewer/previewer/runner',
     'css!taoQtiTestPreviewer/previewer/provider/item/css/item'
-], function (_, loggerFactory, previewerFactory) {
+], function ($, _, loggerFactory, previewerFactory) {
     'use strict';
 
     var logger = loggerFactory('taoQtiTest/previewer');
@@ -89,13 +90,19 @@ define([
                     logger.error(err);
                 })
                 .on('ready', function (runner) {
+                    var $body = $(document.body);
+
                     runner
-                        .on('renderitem', function () {
-                            if (state) {
-                                runner.itemRunner.setState(state);
-                            }
-                        })
-                        .loadItem(uri);
+                    .on('renderitem', function () {
+                        $body.addClass('modal-open');
+                        if (state) {
+                            runner.itemRunner.setState(state);
+                        }
+                    })
+                    .on('finish', function () {
+                        $body.removeClass('modal-open');
+                    })
+                    .loadItem(uri);
                 });
         }
     };

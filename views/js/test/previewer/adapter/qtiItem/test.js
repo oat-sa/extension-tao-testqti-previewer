@@ -65,7 +65,7 @@ define([
             readOnly: true
         };
 
-        function dislpayPreviewer(config) {
+        function displayPreviewer(config) {
             $.mockjax.clear();
 
             $.mockjax({
@@ -113,24 +113,27 @@ define([
                 });
         }
 
-        QUnit.expect(1);
+        QUnit.expect(2);
 
-        dislpayPreviewer(configReadOnly)
+        displayPreviewer(configReadOnly)
             .before('ready', function (e, runner) {
+                var $body = $(document.body);
+
                 runner.after('renderitem.runnerComponent', function () {
                     assert.ok(true, 'The previewer has been rendered');
+                    assert.ok($body.hasClass('modal-open'), 'The body has modal-open class');
                     QUnit.start();
                 });
             });
 
         $('#show-interactive').on('click', function(e) {
             e.preventDefault();
-            dislpayPreviewer(configInteractive);
+            displayPreviewer(configInteractive);
         });
 
         $('#show-readonly').on('click', function(e) {
             e.preventDefault();
-            dislpayPreviewer(configReadOnly);
+            displayPreviewer(configReadOnly);
         });
     });
 });
