@@ -31,8 +31,8 @@ return [
         'tao'          => '>=21.0.0',
         'taoTests'     => '>=8.0.0',
         'taoItems'     => '>=6.0.0',
-        'taoQtiTest'   => '>=25.8.0',
-        'taoOutcomeUi' => '>=5.12.0'
+        'taoQtiTest'   => '>=29.0.0',
+        'taoOutcomeUi' => '>=6.0.0'
     ],
     'managementRole' => 'http://www.tao.lu/Ontologies/TAOTest.rdf#TaoQtiTestPreviewerRole',
     'acl' => [
