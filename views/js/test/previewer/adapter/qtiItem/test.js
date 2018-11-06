@@ -121,7 +121,7 @@ define([
 
                 runner.after('renderitem.runnerComponent', function () {
                     assert.ok(true, 'The previewer has been rendered');
-                    assert.ok($sectionContainer.css('display').toLowerCase() == 'none', 'Section display is removed from rendering');
+                    assert.ok($sectionContainer.css('display').toLowerCase() === 'none', 'Section display is removed from rendering');
                     QUnit.start();
                 });
             });
