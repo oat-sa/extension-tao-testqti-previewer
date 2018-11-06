@@ -117,11 +117,11 @@ define([
 
         displayPreviewer(configReadOnly)
             .before('ready', function (e, runner) {
-                var $body = $(document.body);
+                var $sectionContainer = $(document.body).find(".section-container");
 
                 runner.after('renderitem.runnerComponent', function () {
                     assert.ok(true, 'The previewer has been rendered');
-                    assert.ok($body.hasClass('modal-open'), 'The body has modal-open class');
+                    assert.ok($sectionContainer.css('display').toLowerCase() == 'none', 'Section display is removed from rendering');
                     QUnit.start();
                 });
             });

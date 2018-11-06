@@ -90,17 +90,17 @@ define([
                     logger.error(err);
                 })
                 .on('ready', function (runner) {
-                    var $body = $(document.body);
+                    var $sectionContainer = $(document.body).find(".section-container");
 
                     runner
                     .on('renderitem', function () {
-                        $body.addClass('modal-open');
+                        $sectionContainer.css("display", "none");
                         if (state) {
                             runner.itemRunner.setState(state);
                         }
                     })
                     .on('finish', function () {
-                        $body.removeClass('modal-open');
+                        $sectionContainer.css("display", "");
                     })
                     .loadItem(uri);
                 });
