@@ -1,59 +1,53 @@
+/**
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; under version 2
+ * of the License (non-upgradable).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *
+ * Copyright (c) 2014-2018 (original work) Open Assessment Technologies SA;
+ */
+
+/**
+ * configure the extension bundles
+ * @author Bertrand Chevrier <bertrand@taotesting.com>
+ */
 module.exports = function(grunt) {
     'use strict';
 
-    var root        = grunt.option('root');
-    var libs        = grunt.option('mainlibs');
-    var ext         = require(root + '/tao/views/build/tasks/helpers/extensions')(grunt, root);
-    var out         = 'output';
-
-    var paths = {
-        'taoTests':                    root + '/taoTests/views/js',
-        'taoQtiTest':                  root + '/taoQtiTest/views/js',
-        'taoQtiTestCss':               root + '/taoQtiTest/views/css',
-        'taoQtiTestPreviewer':         root + '/taoQtiTestPreviewer/views/js',
-        'taoQtiTestPreviewerCss':      root + '/taoQtiTestPreviewer/views/css',
-        'taoQtiItem':                  root + '/taoQtiItem/views/js',
-        'taoQtiItemCss':               root + '/taoQtiItem/views/css',
-        'taoItems':                    root + '/taoItems/views/js',
-        'qtiCustomInteractionContext': root + '/taoQtiItem/views/js/runtime/qtiCustomInteractionContext',
-        'qtiInfoControlContext':       root + '/taoQtiItem/views/js/runtime/qtiInfoControlContext'
-    };
-
-    var itemRuntime = ext.getExtensionSources('taoQtiItem', ['views/js/qtiItem/core/**/*.js', 'views/js/qtiCommonRenderer/renderers/**/*.js',  'views/js/qtiCommonRenderer/helpers/**/*.js'], true);
-    var testPlugins = ext.getExtensionSources('taoQtiTest', ['views/js/runner/plugins/**/*.js'], true);
-    var qtiPreviewer = ext.getExtensionSources('taoQtiTestPreviewer', ['views/js/previewer/**/*.js'], true);
-
     grunt.config.merge({
-
-        /**
-        * Compile tao files into a bundle
-        */
-        requirejs : {
-            qtipreviewer : {
-                options: {
-                    paths : paths,
-                    include: [].concat(qtiPreviewer).concat(itemRuntime),
-                    excludeShallow : ['mathJax', 'ckeditor'].concat(testPlugins).concat(libs),
-                    exclude : ['json!i18ntr/messages.json'],
-                    out: out + "/qtiPreviewer.min.js"
+        bundle : {
+            taoqtitestpreviewer : {
+                options : {
+                    extension : 'taoQtiTestPreviewer',
+                    outputDir : 'loader',
+                    dependencies : ['taoItems', 'taoQtiItem', 'taoTests', 'taoQtiTest'],
+                    bundles : [{
+                        name : 'qtiPreviewer',
+                        include: [
+                            'taoQtiTestPreviewer/previewer/**/*'
+                        ],
+                        dependencies : [
+                            'taoItems/loader/taoItemsRunner.min',
+                            'taoTests/loader/taoTestsRunner.min',
+                            'taoQtiItem/loader/taoQtiItemRunner.min',
+                            'taoQtiTest/loader/taoQtiTestRunner.min',
+                            'taoQtiTest/loader/testPlugins.min'
+                        ]
+                    }]
                 }
-            }
-        },
-
-        copy : {
-            taoqtitestpreviewerbundle : {
-                files: [
-                    { src: [out + '/qtiPreviewer.min.js'],  dest: root + '/taoQtiTestPreviewer/views/js/loader/qtiPreviewer.min.js' },
-                    { src: [out + '/qtiPreviewer.min.js.map'],  dest: root + '/taoQtiTestPreviewer/views/js/loader/qtiPreviewer.min.js.map' }
-                ]
             }
         }
     });
 
     // bundle task
-    grunt.registerTask('taoqtitestpreviewerbundle', [
-        'clean:bundle',
-        'requirejs:qtipreviewer',
-        'copy:taoqtitestpreviewerbundle'
-    ]);
+    grunt.registerTask('taoqtitestpreviewerbundle', ['bundle:taoqtitestpreviewer']);
 };
