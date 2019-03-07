@@ -19,6 +19,7 @@
 
 namespace oat\taoQtiTestPreviewer\controller;
 
+use oat\tao\model\routing\AnnotationReader\security;
 use oat\taoQtiTestPreviewer\models\ItemPreviewer;
 use oat\taoResultServer\models\classes\ResultServerService;
 use tao_actions_ServiceModule as ServiceModule;
@@ -33,6 +34,7 @@ class Previewer extends ServiceModule
 {
     /**
      * taoQtiTest_actions_Runner constructor.
+     * @security("hide")
      */
     public function __construct()
     {
