@@ -19,33 +19,33 @@
 /**
  * @author Jean-Sébastien Conan <jean-sebastien@taotesting.com>
  */
-define( [
+define([
 
     'jquery',
     'taoQtiTestPreviewer/previewer/adapter/item/qtiItem',
     'json!taoQtiItem/test/samples/json/space-shuttle.json',
     'lib/jquery.mockjax/jquery.mockjax'
-], function(  $, previewerAdapter, itemData ) {
+], function($, previewerAdapter, itemData) {
     'use strict';
 
-    QUnit.module( 'API' );
+    QUnit.module('API');
 
     // Prevent the AJAX mocks to pollute the logs
     $.mockjaxSettings.logger = null;
     $.mockjaxSettings.responseTime = 1;
 
     // Restore AJAX method after each test
-    QUnit.testDone( function() {
+    QUnit.testDone(function() {
         $.mockjax.clear();
-    } );
+    });
 
-    QUnit.test( 'module', function( assert ) {
-        assert.expect( 2 );
-        assert.equal( typeof previewerAdapter, 'object', 'The previewerAdapter module exposes an object' );
-        assert.equal( typeof previewerAdapter.init, 'function', 'The previewerAdapter object has a init() method' );
-    } );
+    QUnit.test('module', function(assert) {
+        assert.expect(2);
+        assert.equal(typeof previewerAdapter, 'object', 'The previewerAdapter module exposes an object');
+        assert.equal(typeof previewerAdapter.init, 'function', 'The previewerAdapter object has a init() method');
+    });
 
-    QUnit.test( 'integration', function( assert ) {
+    QUnit.test('integration', function(assert) {
         var ready = assert.async();
         var serviceCallId = 'previewer';
         var itemRef = {
@@ -53,7 +53,7 @@ define( [
             itemDefinition: 'item-2',
             deliveryUri: 'http://ce.tao/tao.rdf#i15265411295469108'
         };
-        var state = { 'RESPONSE': { 'response': { 'base': { 'identifier': 'Atlantis' } } } };
+        var state = {'RESPONSE': {'response': {'base': {'identifier': 'Atlantis'}}}};
         var configInteractive = {
             serviceCallId: serviceCallId,
             fullPage: true
@@ -64,17 +64,17 @@ define( [
             readOnly: true
         };
 
-        function dislpayPreviewer( config ) {
+        function dislpayPreviewer(config) {
             $.mockjax.clear();
 
-            $.mockjax( {
+            $.mockjax({
                 url: '/init*',
                 responseText: {
                     success: true
                 }
-            } );
+            });
 
-            $.mockjax( {
+            $.mockjax({
                 url: '/getItem*',
                 responseText: {
                     success: true,
@@ -85,13 +85,13 @@ define( [
                     baseUrl: '',
                     state: {}
                 }
-            } );
+            });
 
-            return previewerAdapter.init( itemRef, state, config )
-                .before( 'ready', function( e, runner ) {
+            return previewerAdapter.init(itemRef, state, config)
+                .before('ready', function(e, runner) {
                     runner
-                        .before( 'submititem', function() {
-                            $.mockjax( {
+                        .before('submititem', function() {
+                            $.mockjax({
                                 url: '/submitItem*',
                                 responseText: {
                                     success: true,
@@ -104,32 +104,32 @@ define( [
                                         }
                                     }
                                 }
-                            } );
-                        } )
-                        .after( 'submititem', function() {
+                            });
+                        })
+                        .after('submititem', function() {
                             $.mockjax.clear();
-                        } );
-                } );
+                        });
+                });
         }
 
-        assert.expect( 1 );
+        assert.expect(1);
 
-        dislpayPreviewer( configReadOnly )
-            .before( 'ready', function( e, runner ) {
-                runner.after( 'renderitem.runnerComponent', function() {
-                    assert.ok( true, 'The previewer has been rendered' );
+        dislpayPreviewer(configReadOnly)
+            .before('ready', function(e, runner) {
+                runner.after('renderitem.runnerComponent', function() {
+                    assert.ok(true, 'The previewer has been rendered');
                     ready();
-                } );
-            } );
+                });
+            });
 
-        $( '#show-interactive' ).on( 'click', function( e ) {
+        $('#show-interactive').on('click', function(e) {
             e.preventDefault();
-            dislpayPreviewer( configInteractive );
-        } );
+            dislpayPreviewer(configInteractive);
+        });
 
-        $( '#show-readonly' ).on( 'click', function( e ) {
+        $('#show-readonly').on('click', function(e) {
             e.preventDefault();
-            dislpayPreviewer( configReadOnly );
-        } );
-    } );
-} );
+            dislpayPreviewer(configReadOnly);
+        });
+    });
+});
