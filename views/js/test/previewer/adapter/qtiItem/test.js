@@ -20,41 +20,40 @@
  * @author Jean-Sébastien Conan <jean-sebastien@taotesting.com>
  */
 define([
+
     'jquery',
     'taoQtiTestPreviewer/previewer/adapter/item/qtiItem',
     'json!taoQtiItem/test/samples/json/space-shuttle.json',
     'lib/jquery.mockjax/jquery.mockjax'
-], function ($, previewerAdapter, itemData) {
+], function($, previewerAdapter, itemData) {
     'use strict';
 
     QUnit.module('API');
 
-
-    // prevent the AJAX mocks to pollute the logs
+    // Prevent the AJAX mocks to pollute the logs
     $.mockjaxSettings.logger = null;
     $.mockjaxSettings.responseTime = 1;
 
-    // restore AJAX method after each test
-    QUnit.testDone(function () {
+    // Restore AJAX method after each test
+    QUnit.testDone(function() {
         $.mockjax.clear();
     });
 
-
-    QUnit.test('module', function (assert) {
-        QUnit.expect(2);
-        assert.equal(typeof previewerAdapter, 'object', "The previewerAdapter module exposes an object");
-        assert.equal(typeof previewerAdapter.init, 'function', "The previewerAdapter object has a init() method");
+    QUnit.test('module', function(assert) {
+        assert.expect(2);
+        assert.equal(typeof previewerAdapter, 'object', 'The previewerAdapter module exposes an object');
+        assert.equal(typeof previewerAdapter.init, 'function', 'The previewerAdapter object has a init() method');
     });
 
-
-    QUnit.asyncTest('integration', function (assert) {
+    QUnit.test('integration', function(assert) {
+        var ready = assert.async();
         var serviceCallId = 'previewer';
         var itemRef = {
             resultId: 'http://ce.tao/tao.rdf#i15265414071682172',
             itemDefinition: 'item-2',
             deliveryUri: 'http://ce.tao/tao.rdf#i15265411295469108'
         };
-        var state = {"RESPONSE": {"response": {"base": {"identifier": "Atlantis"}}}};
+        var state = {'RESPONSE': {'response': {'base': {'identifier': 'Atlantis'}}}};
         var configInteractive = {
             serviceCallId: serviceCallId,
             fullPage: true
@@ -89,9 +88,9 @@ define([
             });
 
             return previewerAdapter.init(itemRef, state, config)
-                .before('ready', function (e, runner) {
+                .before('ready', function(e, runner) {
                     runner
-                        .before('submititem', function () {
+                        .before('submititem', function() {
                             $.mockjax({
                                 url: '/submitItem*',
                                 responseText: {
@@ -107,19 +106,19 @@ define([
                                 }
                             });
                         })
-                        .after('submititem', function () {
+                        .after('submititem', function() {
                             $.mockjax.clear();
                         });
                 });
         }
 
-        QUnit.expect(1);
+        assert.expect(1);
 
         dislpayPreviewer(configReadOnly)
-            .before('ready', function (e, runner) {
-                runner.after('renderitem.runnerComponent', function () {
+            .before('ready', function(e, runner) {
+                runner.after('renderitem.runnerComponent', function() {
                     assert.ok(true, 'The previewer has been rendered');
-                    QUnit.start();
+                    ready();
                 });
             });
 
