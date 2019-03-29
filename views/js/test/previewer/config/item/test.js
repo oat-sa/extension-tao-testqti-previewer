@@ -20,29 +20,28 @@
  * @author Jean-Sébastien Conan <jean-sebastien@taotesting.com>
  */
 define([
+
     'lodash',
     'util/url',
     'taoQtiTestPreviewer/previewer/config/item'
-], function (_, urlUtil, itemConfig) {
+], function(_, urlUtil, itemConfig) {
     'use strict';
 
     QUnit.module('itemConfig');
 
-
-    QUnit.test('module', function (assert) {
+    QUnit.test('module', function(assert) {
         var config = {
             serviceCallId: 'foo'
         };
 
-        QUnit.expect(3);
-        assert.equal(typeof itemConfig, 'function', "The itemConfig module exposes a function");
-        assert.equal(typeof itemConfig(config), 'object', "The itemConfig factory produces an instance");
-        assert.notStrictEqual(itemConfig(config), itemConfig(config), "The itemConfig factory provides a different instance on each call");
+        assert.expect(3);
+        assert.equal(typeof itemConfig, 'function', 'The itemConfig module exposes a function');
+        assert.equal(typeof itemConfig(config), 'object', 'The itemConfig factory produces an instance');
+        assert.notStrictEqual(itemConfig(config), itemConfig(config), 'The itemConfig factory provides a different instance on each call');
     });
 
-
     QUnit
-        .cases([
+        .cases.init([
             {title: 'getParameters'},
             {title: 'getServiceCallId'},
             {title: 'getServiceController'},
@@ -51,19 +50,18 @@ define([
             {title: 'getItemActionUrl'},
             {title: 'getTimeout'}
         ])
-        .test('proxy API ', function (data, assert) {
+        .test('proxy API ', function(data, assert) {
             var instance = itemConfig({
                 serviceCallId: 'foo'
             });
 
-            QUnit.expect(1);
+            assert.expect(1);
 
             assert.equal(typeof instance[data.title], 'function', 'The itemConfig instances expose a "' + data.title + '" function');
         });
 
-
-    QUnit.test('itemConfig factory', function (assert) {
-        QUnit.expect(1);
+    QUnit.test('itemConfig factory', function(assert) {
+        assert.expect(1);
 
         itemConfig({
             serviceCallId: 'foo'
@@ -71,9 +69,8 @@ define([
         assert.ok(true, 'The itemConfig() factory must not throw an exception when all the required config entries are provided');
     });
 
-
     QUnit
-        .cases([{
+        .cases.init([{
             title: 'No item identifier',
             config: {
                 serviceCallId: 'http://tao.rdf/1234#56789'
@@ -108,57 +105,54 @@ define([
                 deliveryUri: 'http://tao.rdf/delivery#123'
             }
         }])
-        .test('itemConfig.getParameters', function (data, assert) {
+        .test('itemConfig.getParameters', function(data, assert) {
             var instance = itemConfig(data.config);
 
-            QUnit.expect(1);
+            assert.expect(1);
 
             assert.deepEqual(instance.getParameters(data.itemId), data.expected, 'The itemConfig.getParameters() method has returned the expected value');
         });
 
-
     QUnit
-        .cases([
+        .cases.init([
             {title: 'number', itemId: 10},
             {title: 'boolean', itemId: true},
             {title: 'array', itemId: [1, 2, 3]}
         ])
-        .test('itemConfig.getParameters#error', function (data, assert) {
+        .test('itemConfig.getParameters#error', function(data, assert) {
             var expectedServiceCallId = 'http://tao.rdf/1234#56789';
             var config = {
                 serviceCallId: expectedServiceCallId
             };
             var instance = itemConfig(config);
 
-            QUnit.expect(1);
+            assert.expect(1);
 
-            assert.throws(function(){
+            assert.throws(function() {
                 instance.getParameters(data.itemId);
             }, 'The itemConfig.getParameters() method should throw an error if the parameter does not have the right type');
         });
 
-
-    QUnit.test('itemConfig.getServiceCallId', function (assert) {
+    QUnit.test('itemConfig.getServiceCallId', function(assert) {
         var expectedServiceCallId = 'http://tao.rdf/1234#56789';
         var config = {
             serviceCallId: expectedServiceCallId
         };
         var instance = itemConfig(config);
 
-        QUnit.expect(1);
+        assert.expect(1);
 
         assert.equal(instance.getServiceCallId(), expectedServiceCallId, 'The itemConfig.getServiceCallId() method has returned the expected value');
     });
 
-
-    QUnit.test('itemConfig.getServiceController', function (assert) {
+    QUnit.test('itemConfig.getServiceController', function(assert) {
         var expectedServiceController = 'MockRunner';
         var config = {
             serviceCallId: 'foo'
         };
         var instance = itemConfig(config);
 
-        QUnit.expect(3);
+        assert.expect(3);
 
         assert.notEqual(instance.getServiceController(), expectedServiceController, 'The itemConfig.getServiceController() method must return the default value');
         assert.ok(!!instance.getServiceController(), 'The itemConfig.getServiceController() method must not return a null value');
@@ -170,15 +164,14 @@ define([
         assert.equal(instance.getServiceController(), expectedServiceController, 'The itemConfig.getServiceController() method has returned the expected value');
     });
 
-
-    QUnit.test('itemConfig.getServiceExtension', function (assert) {
+    QUnit.test('itemConfig.getServiceExtension', function(assert) {
         var expectedServiceExtension = 'MockExtension';
         var config = {
             serviceCallId: 'foo'
         };
         var instance = itemConfig(config);
 
-        QUnit.expect(3);
+        assert.expect(3);
 
         assert.notEqual(instance.getServiceExtension(), expectedServiceExtension, 'The itemConfig.getServiceExtension() method must return the default value');
         assert.ok(!!instance.getServiceExtension(), 'The itemConfig.getServiceExtension() method must not return a null value');
@@ -190,8 +183,7 @@ define([
         assert.equal(instance.getServiceExtension(), expectedServiceExtension, 'The itemConfig.getServiceExtension() method has returned the expected value');
     });
 
-
-    QUnit.test('itemConfig.getTestActionUrl', function (assert) {
+    QUnit.test('itemConfig.getTestActionUrl', function(assert) {
         var config = {
             serviceCallId: 'foo',
             bootstrap: {
@@ -207,14 +199,13 @@ define([
         });
         var instance = itemConfig(config);
 
-        QUnit.expect(2);
+        assert.expect(2);
 
         assert.equal(instance.getTestActionUrl('action1'), expectedUrl, 'The itemConfig.getTestActionUrl() method has returned the expected value');
         assert.equal(instance.getTestActionUrl('action2'), expectedUrl2, 'The itemConfig.getTestActionUrl() method has returned the expected value');
     });
 
-
-    QUnit.test('itemConfig.getItemActionUrl', function (assert) {
+    QUnit.test('itemConfig.getItemActionUrl', function(assert) {
         var config = {
             serviceCallId: 'foo',
             bootstrap: {
@@ -233,20 +224,19 @@ define([
         });
         var instance = itemConfig(config);
 
-        QUnit.expect(2);
+        assert.expect(2);
 
         assert.equal(instance.getItemActionUrl('item1', actionName), expectedUrl, 'The itemConfig.getItemActionUrl() method has returned the expected value');
         assert.equal(instance.getItemActionUrl('item2', actionName), expectedUrl2, 'The itemConfig.getItemActionUrl() method has returned the expected value');
     });
 
-
-    QUnit.test('itemConfig.getTimeout', function (assert) {
+    QUnit.test('itemConfig.getTimeout', function(assert) {
         var config = {
             serviceCallId: 'foo'
         };
         var instance = itemConfig(config);
 
-        QUnit.expect(2);
+        assert.expect(2);
 
         assert.equal(typeof instance.getTimeout(), 'undefined', 'The itemConfig.getTimeout() method must return an undefined value if no timeout has been set');
 
