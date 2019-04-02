@@ -24,26 +24,44 @@ define([
     'jquery',
     'lodash',
     'i18n',
-    'moment',
     'ui/hider',
-    'ui/autoscroll',
-    'util/strPad',
     'taoTests/runner/plugin',
-    'taoQtiItem/qtiCommonRenderer/helpers/PciResponse',
-    'tpl!taoQtiTestPreviewer/previewer/plugins/tools/scale/scale',
+    'taoQtiTestPreviewer/previewer/utils/devices',
+    'tpl!taoQtiTestPreviewer/previewer/plugins/tools/scale/preview-types',
+    'tpl!taoQtiTestPreviewer/previewer/plugins/tools/scale/mobile-devices',
+    'tpl!taoQtiTestPreviewer/previewer/plugins/tools/scale/desktop-devices'
 ], function (
     $,
     _,
     __,
-    moment,
     hider,
-    autoscroll,
-    strPad,
     pluginFactory,
-    pciResponse,
-    scaleTpl,
+    devices,
+    previewTypesTpl,
+    mobileDevicesTpl,
+    desktopDevicesTpl,
 ) {
     'use strict';
+
+    var overlay,
+        orientation = 'landscape',
+        previewType = 'standard',
+        previewTypes = {
+            desktop: __('Desktop preview'),
+            mobile: __('Mobile preview'),
+            standard: __('Actual size')
+        };
+    var _getPreviewTypes = function () {
+        var options = [];
+        _(previewTypes).forEach(function (_previewLabel, _previewType) {
+            options.push({
+                value: _previewType,
+                label: _previewLabel,
+                selected: previewType === _previewType
+            });
+        });
+        return options;
+    };
 
     return pluginFactory({
 
@@ -70,19 +88,25 @@ define([
 
 
             this.controls = {
-                $scale: $(scaleTpl({
-                    title: __('scale plugin'),
+                $previewTypes: $(previewTypesTpl({
+                    items: _getPreviewTypes(),
+                })),
+                $mobileDevices: $(mobileDevicesTpl({
+                    items: devices.byType('mobile'),
+                })),
+                $desktopDevices: $(desktopDevicesTpl({
+                    items: devices.byType('desktop'),
                 })),
             };
 
-            this.controls.$scale.on('click', function (e) {
-                e.preventDefault();
-                console.log("selectbox clicked");
-                // if (self.getState('enabled') !== false) {
-                //     self.disable();
-                //     testRunner.trigger('submititem');
-                // }
-            });
+            // this.controls.$scale.on('click', function (e) {
+            //     e.preventDefault();
+            //     console.log("selectbox clicked");
+            //     // if (self.getState('enabled') !== false) {
+            //     //     self.disable();
+            //     //     testRunner.trigger('submititem');
+            //     // }
+            // });
 
 
             if (!isPluginAllowed()) {
@@ -114,7 +138,9 @@ define([
 
             //attach the element to the navigation area
             var $controls = this.getAreaBroker().getHeaderArea();
-            $controls.append(this.controls.$scale);
+            $controls.append(this.controls.$previewTypes);
+            $controls.append(this.controls.$mobileDevices);
+            $controls.append(this.controls.$desktopDevices);
         },
 
         /**
@@ -131,21 +157,21 @@ define([
          * Enable the button
          */
         enable: function enable() {
-            this.controls.$scale.removeProp('disabled').removeClass('disabled');
+            this.controls.$previewTypes.removeProp('disabled').removeClass('disabled');
         },
 
         /**
          * Disable the button
          */
         disable: function disable() {
-            this.controls.$scale.prop('disabled', true).addClass('disabled');
+            this.controls.$previewTypes.prop('disabled', true).addClass('disabled');
         },
 
         /**
          * Show the button
          */
         show: function show() {
-            hider.show(this.controls.$scale);
+            hider.show(this.controls.$previewTypes);
         },
 
         /**
