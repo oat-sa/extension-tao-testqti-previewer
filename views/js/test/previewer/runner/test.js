@@ -197,6 +197,10 @@ define([
                 'category': 'previewer'
             }],
             plugins: [{
+                module: 'taoQtiTestPreviewer/previewer/plugins/tools/scale/scale',
+                bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+                category: 'controls'
+            },{
                 module: 'taoQtiTestPreviewer/previewer/plugins/navigation/submit/submit',
                 bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
                 category: 'navigation'
