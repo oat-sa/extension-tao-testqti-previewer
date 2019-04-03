@@ -29,7 +29,8 @@ define([
     'taoQtiTestPreviewer/previewer/utils/devices',
     'tpl!taoQtiTestPreviewer/previewer/plugins/tools/scale/preview-types',
     'tpl!taoQtiTestPreviewer/previewer/plugins/tools/scale/mobile-devices',
-    'tpl!taoQtiTestPreviewer/previewer/plugins/tools/scale/desktop-devices'
+    'tpl!taoQtiTestPreviewer/previewer/plugins/tools/scale/desktop-devices',
+    'tpl!taoQtiTestPreviewer/previewer/plugins/tools/scale/scale-wrapper'
 ], function (
     $,
     _,
@@ -40,13 +41,16 @@ define([
     previewTypesTpl,
     mobileDevicesTpl,
     desktopDevicesTpl,
+    scaleWrapperTpl,
 ) {
     'use strict';
 
     var overlay,
         orientation = 'landscape',
-        previewType = 'standard',
-        previewTypes = {
+        DEFAULT_TYPE = 'standard',
+        //todo: update selected device
+        selectedDevice = 'standard',
+        deviceTypes = {
             desktop: __('Desktop preview'),
             mobile: __('Mobile preview'),
             standard: __('Actual size')
@@ -58,17 +62,26 @@ define([
     };
     var _getPreviewTypes = function () {
         var options = [];
-        _(previewTypes).forEach(function (_previewLabel, _previewType) {
+        _(deviceTypes).forEach(function (_deviceLabel, _deviceType) {
             options.push({
-                value: _previewType,
-                label: _previewLabel,
-                selected: previewType === _previewType
+                value: _deviceType,
+                label: _deviceLabel,
+                selected: selectedDevice === _deviceType
             });
         });
         return options;
     };
     var controls;
+    var testRunner;
     var api = {
+        /**
+         * Tells if the component is enabled
+         * @returns {Boolean}
+         */
+        isPluginAllowed: function isPluginAllowed() {
+            var config = testRunner.getConfig();
+            return !config.readOnly;
+        },
         /**
          * Show particular control and hide other except of the default visible control
          * @param {String} controlName - name of the particular control to show
@@ -79,7 +92,7 @@ define([
 
             if($control){
                 _.forEach(controls, function ($control, name) {
-                    if( name === controlName || name === devicesToControls['standard']){
+                    if( name === controlName || name === devicesToControls[DEFAULT_TYPE]){
                         hider.show($control);
                     } else{
                         hider.hide($control);
@@ -95,8 +108,31 @@ define([
          * @param {String} deviceType - type of supposed device screen ['mobile','desktop', 'standard']
          */
         composeControlsByDeviceType: function composeControlsByDeviceType(deviceType){
-            var controlName = devicesToControls[deviceType] ? devicesToControls[deviceType] : 'standard';
+            var controlName = devicesToControls[deviceType] ? devicesToControls[deviceType] : DEFAULT_TYPE;
             this.toggleControl(controlName);
+        },
+        /**
+         * change device imitation frame
+         * @param {String} deviceType
+         * @param {Boolean} isReplacing param shows whether to to replace previously made wrapper
+         */
+        changeDeviceFrame: function changeDeviceFrame(deviceType, isReplacing) {
+            if(isReplacing){
+                this.removeDeviceFrame();
+            }
+            var $content = testRunner.getAreaBroker().getContentArea();
+            controls.$scaleWrapper = $(scaleWrapperTpl({
+                type:deviceType
+            }))
+            .wrap($content);
+        },
+        /**
+         * removes previewer content ot its initial state without device frame and scaling (Actual size )
+         */
+        removeDeviceFrame: function removeDeviceFrame() {
+            var $content = testRunner.getAreaBroker().getContentArea();
+            controls.$scaleWrapper.unwrap($content);
+            delete controls.$scaleWrapper;
         }
     };
 
@@ -109,16 +145,8 @@ define([
          */
         init: function init() {
             var self = this;
-            var testRunner = this.getTestRunner();
+            testRunner = this.getTestRunner();
 
-            /**
-             * Tells if the component is enabled
-             * @returns {Boolean}
-             */
-            function isPluginAllowed() {
-                var config = testRunner.getConfig();
-                return !config.readOnly;
-            }
 
             controls = this.controls = {
                 $deviceTypes: $(previewTypesTpl({
@@ -129,7 +157,7 @@ define([
                 })),
                 $desktopDevices: $(desktopDevicesTpl({
                     items: devices.byType('desktop'),
-                })),
+                }))
             };
 
 
@@ -174,8 +202,8 @@ define([
 
             testRunner
                 .on('render', function () {
-                    if (isPluginAllowed()) {
-                        api.composeControlsByDeviceType('standard');
+                    if (api.isPluginAllowed()) {
+                        api.composeControlsByDeviceType(DEFAULT_TYPE);
                     } else {
                         self.hide();
                     }
@@ -198,6 +226,7 @@ define([
             $headerControls.append(this.controls.$deviceTypes);
             $headerControls.append(this.controls.$mobileDevices);
             $headerControls.append(this.controls.$desktopDevices);
+
         },
 
         /**
