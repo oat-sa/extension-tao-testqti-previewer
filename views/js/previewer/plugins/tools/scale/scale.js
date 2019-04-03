@@ -51,6 +51,11 @@ define([
             mobile: __('Mobile preview'),
             standard: __('Actual size')
         };
+    var devicesToControls = {
+        'mobile': '$mobileDevices',
+        'desktop': '$desktopDevices',
+        'standard': '$deviceTypes'
+    };
     var _getPreviewTypes = function () {
         var options = [];
         _(previewTypes).forEach(function (_previewLabel, _previewType) {
@@ -61,6 +66,38 @@ define([
             });
         });
         return options;
+    };
+    var controls;
+    var api = {
+        /**
+         * Show particular control and hide other except of the default visible control
+         * @param {String} controlName - name of the particular control to show
+         * @param {String} action - name of the particular control to show - [hide,show]
+         */
+        toggleControl: function toggleControl(controlName) {
+            var $control = controls[controlName];
+
+            if($control){
+                _.forEach(controls, function ($control, name) {
+                    if( name === controlName || name === devicesToControls['standard']){
+                        hider.show($control);
+                    } else{
+                        hider.hide($control);
+                    }
+                });
+
+            }else{
+                throw new TypeError('toggleControl method MUSt have parameter "controlName"');
+            }
+        },
+        /**
+         * manipulates controls visibility on page according to given preview type
+         * @param {String} deviceType - type of supposed device screen ['mobile','desktop', 'standard']
+         */
+        composeControlsByDeviceType: function composeControlsByDeviceType(deviceType){
+            var controlName = devicesToControls[deviceType] ? devicesToControls[deviceType] : 'standard';
+            this.toggleControl(controlName);
+        }
     };
 
     return pluginFactory({
@@ -83,12 +120,8 @@ define([
                 return !config.readOnly;
             }
 
-
-
-
-
-            this.controls = {
-                $previewTypes: $(previewTypesTpl({
+            controls = this.controls = {
+                $deviceTypes: $(previewTypesTpl({
                     items: _getPreviewTypes(),
                 })),
                 $mobileDevices: $(mobileDevicesTpl({
@@ -99,26 +132,50 @@ define([
                 })),
             };
 
-            // this.controls.$scale.on('click', function (e) {
-            //     e.preventDefault();
-            //     console.log("selectbox clicked");
-            //     // if (self.getState('enabled') !== false) {
-            //     //     self.disable();
-            //     //     testRunner.trigger('submititem');
-            //     // }
-            // });
 
+            /**
+             *  when user changes device type he/she want to test item in
+             *  @event preview-scale-device-type
+             */
+           this.controls.$deviceTypes.get(0).addEventListener('change', function (event) {
+               var element = event.target;
+               api.composeControlsByDeviceType(element.value);
+               self.trigger('preview-scale-device-type', element.value);
+           });
 
-            if (!isPluginAllowed()) {
-                this.hide();
-            }
+            /**
+             *  when user changes mobile device model he/she want to test item in
+             *  @event preview-scale-device-mobile-type
+             */
+            this.controls.$mobileDevices.children('.mobile-device-selector').get(0).addEventListener('change', function (event) {
+                var element = event.target;
+                self.trigger('preview-scale-device-mobile-type', element.value);
+            });
+
+            /**
+             *  when user changes mobile device screen orientation he/she want to test item in
+             *  @event preview-scale-device-mobile-orientation-type
+             */
+            this.controls.$mobileDevices.children('.mobile-orientation-selector').get(0).addEventListener('change', function (event) {
+                var element = event.target;
+                self.trigger('preview-scale-device-mobile-orientation-type', element.value);
+            });
+
+            /**
+             *  when user changes mobile device model he/she want to test item in
+             *  @event preview-scale-device-desktop-type
+             */
+            this.controls.$desktopDevices.get(0).addEventListener('change', function (event) {
+                var element = event.target;
+                self.trigger('preview-scale-device-desktop-type', element.value);
+            });
 
             this.disable();
 
             testRunner
                 .on('render', function () {
                     if (isPluginAllowed()) {
-                        self.show();
+                        api.composeControlsByDeviceType('standard');
                     } else {
                         self.hide();
                     }
@@ -137,10 +194,10 @@ define([
         render: function render() {
 
             //attach the element to the navigation area
-            var $controls = this.getAreaBroker().getHeaderArea();
-            $controls.append(this.controls.$previewTypes);
-            $controls.append(this.controls.$mobileDevices);
-            $controls.append(this.controls.$desktopDevices);
+            var $headerControls = this.getAreaBroker().getHeaderArea();
+            $headerControls.append(this.controls.$deviceTypes);
+            $headerControls.append(this.controls.$mobileDevices);
+            $headerControls.append(this.controls.$desktopDevices);
         },
 
         /**
@@ -154,31 +211,35 @@ define([
         },
 
         /**
-         * Enable the button
+         * Enable default controls
          */
         enable: function enable() {
-            this.controls.$previewTypes.removeProp('disabled').removeClass('disabled');
+            this.controls.$deviceTypes.removeProp('disabled').removeClass('disabled');
         },
 
         /**
-         * Disable the button
+         * Disable default controls
          */
         disable: function disable() {
-            this.controls.$previewTypes.prop('disabled', true).addClass('disabled');
+            this.controls.$deviceTypes.prop('disabled', true).addClass('disabled');
         },
 
         /**
-         * Show the button
+         * Show default controls
          */
         show: function show() {
-            hider.show(this.controls.$previewTypes);
+            hider.show(this.controls.$deviceTypes);
         },
 
         /**
-         * Hide the button
+         * Hide default controls
          */
         hide: function hide() {
-            _.forEach(this.controls, hider.hide);
+            hider.hide(this.controls.$deviceTypes);
+
         }
+
+
+
     });
 });
