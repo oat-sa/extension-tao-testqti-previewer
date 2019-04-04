@@ -117,22 +117,27 @@ define([
          * @param {Boolean} isReplacing param shows whether to to replace previously made wrapper
          */
         changeDeviceFrame: function changeDeviceFrame(deviceType, isReplacing) {
-            if(isReplacing){
+            if(isReplacing && controls.$scaleWrapper){
                 this.removeDeviceFrame();
             }
             var $content = testRunner.getAreaBroker().getContentArea();
+            var $children = $content.children().detach();
             controls.$scaleWrapper = $(scaleWrapperTpl({
                 type:deviceType
-            }))
-            .wrap($content);
+            }));
+            controls.$scaleWrapper.find('.preview-item-container').append($children);
+            $content.append(controls.$scaleWrapper);
+
         },
         /**
          * removes previewer content ot its initial state without device frame and scaling (Actual size )
          */
         removeDeviceFrame: function removeDeviceFrame() {
+            var $children = controls.$scaleWrapper.find('.preview-item-container').children().detach();
             var $content = testRunner.getAreaBroker().getContentArea();
-            controls.$scaleWrapper.unwrap($content);
-            delete controls.$scaleWrapper;
+            $content.empty();
+            $content.append($children);
+            controls.$scaleWrapper = null;
         }
     };
 
@@ -168,6 +173,12 @@ define([
            this.controls.$deviceTypes.get(0).addEventListener('change', function (event) {
                var element = event.target;
                api.composeControlsByDeviceType(element.value);
+               if(element.value === DEFAULT_TYPE){
+                   api.removeDeviceFrame();
+               }else{
+                   api.changeDeviceFrame(element.value, true);
+               }
+               selectedDevice = element.value;
                self.trigger('preview-scale-device-type', element.value);
            });
 
