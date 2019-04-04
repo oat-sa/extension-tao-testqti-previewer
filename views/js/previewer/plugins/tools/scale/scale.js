@@ -30,7 +30,8 @@ define([
     'tpl!taoQtiTestPreviewer/previewer/plugins/tools/scale/preview-types',
     'tpl!taoQtiTestPreviewer/previewer/plugins/tools/scale/mobile-devices',
     'tpl!taoQtiTestPreviewer/previewer/plugins/tools/scale/desktop-devices',
-    'tpl!taoQtiTestPreviewer/previewer/plugins/tools/scale/scale-wrapper'
+    'tpl!taoQtiTestPreviewer/previewer/plugins/tools/scale/scale-wrapper',
+    'css!taoItemsCss/preview'
 ], function (
     $,
     _,
@@ -45,16 +46,21 @@ define([
 ) {
     'use strict';
 
-    var overlay,
-        orientation = 'landscape',
-        DEFAULT_TYPE = 'standard',
-        //todo: update selected device
-        selectedDevice = 'standard',
-        deviceTypes = {
+    var overlay;
+    var orientation = 'landscape';
+    var scaleFactor = 1;
+    var DEFAULT_TYPE = 'standard';
+    var selectedDevice = 'standard';
+    var deviceTypes = {
             desktop: __('Desktop preview'),
             mobile: __('Mobile preview'),
             standard: __('Actual size')
         };
+    var $window = $(window);
+    var screenSize = {
+        width: $window.innerWidth(),
+        height: $window.innerHeight()
+    };
     var devicesToControls = {
         'mobile': '$mobileDevices',
         'desktop': '$desktopDevices',
@@ -126,7 +132,9 @@ define([
                 type:deviceType
             }));
             controls.$scaleWrapper.find('.preview-item-container').append($children);
+            controls.$scaleWrapper.css('display', 'block');
             $content.append(controls.$scaleWrapper);
+            this.positionPreview();
 
         },
         /**
@@ -138,7 +146,95 @@ define([
             $content.empty();
             $content.append($children);
             controls.$scaleWrapper = null;
+        },
+        /**
+         * Setting up screen size according preview viewport size
+         * @private
+         */
+        setupScreenSize: function setupScreenSize() {
+            screenSize = {
+                width: controls.$scaleWrapper.innerWidth(),
+                height: controls.$scaleWrapper.innerHeight()
+            };
+        },
+        /**
+         * Set the size for the standard preview
+         * @param height
+         * @private
+         */
+        updateStandardPreviewSize: function updateStandardPreviewSize(height) {
+            var $selector = controls.$deviceTypes,
+                values = ($selector.val() ? $selector.val().split(',') : '') || [$window.width().toString()],
+                valueStr = values.join(',');
+
+            values[1] = height || values[1] || '1200';
+
+            $selector.val(valueStr).data('value', valueStr);
+        },
+        /**
+         * Compute scale factor based on screen size and device size
+         *
+         * @private
+         */
+        computeScaleFactor: function computeScaleFactor() {
+
+            var scaleValues = {
+                x: 1,
+                y: 1
+            };
+
+            // 150/200 = device frames plus toolbar plus console plus some margin
+
+            var requiredSize = {
+                width: sizeSettings.width + 150,
+                height: sizeSettings.height + 275
+            };
+
+            if (requiredSize.width > screenSize.width) {
+                scaleValues.x = screenSize.width / requiredSize.width;
+            }
+
+            if (requiredSize.height > screenSize.height) {
+                scaleValues.y = screenSize.height / requiredSize.height;
+            }
+
+            scaleFactor = Math.min(scaleValues.x, scaleValues.y);
+        },
+        /**
+         * Scale devices down to fit screen
+         * @private
+         */
+        scaleFrame: function scale() {
+
+            this.computeScaleFactor();
+
+            var $scaleContainer = controls.$scaleWrapper.find('.preview-scale-container'),
+                _scaleFactor = previewType === 'standard' ? 1 : scaleFactor,
+                containerScaledWidth = $scaleContainer.width() * _scaleFactor,
+                left = (screenSize.width - containerScaledWidth) / 2;
+
+            $scaleContainer.css({
+                left: left > 0 ? left : 0,
+                '-webkit-transform': 'scale(' + _scaleFactor + ',' + _scaleFactor + ')',
+                '-ms-transform': 'scale(' + _scaleFactor + ',' + _scaleFactor + ')',
+                'transform': 'scale(' + _scaleFactor + ',' + _scaleFactor + ')',
+                '-webkit-transform-origin': '0 0',
+                '-ms-transform-origin': '0 0',
+                'transform-origin': '0 0'
+            });
+        },
+        /**
+         * position the preview depending on the height of the toolbar
+         *
+         * @private
+         */
+        positionPreview: function positionPreview() {
+            var topBarHeight = testRunner.getAreaBroker().getHeaderArea().outerHeight();
+
+            controls.$scaleWrapper.css('top', topBarHeight+ 'px');
+            controls.$scaleWrapper.css('max-height', 'calc(100vh - ' + topBarHeight + 'px )');
         }
+
     };
 
     return pluginFactory({
@@ -207,6 +303,16 @@ define([
             this.controls.$desktopDevices.get(0).addEventListener('change', function (event) {
                 var element = event.target;
                 self.trigger('preview-scale-device-desktop-type', element.value);
+            });
+
+            /**
+             * adjust device frame position and size when browser size change
+             */
+            $window.on('resize orientationchange', function () {
+                api.setupScreenSize();
+                api.updateStandardPreviewSize();
+                api.computeScaleFactor();
+                api.scaleFrame();
             });
 
             this.disable();
