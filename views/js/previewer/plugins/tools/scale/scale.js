@@ -254,6 +254,73 @@ define([
 
             // reset global orientation
             orientation = newOrientation;
+        },
+        onDeviceChange: function onDeviceChange(event){
+            var element = event.target;
+            var type = selectedDevice;
+            var val = element.value.split(',');
+            var i = val.length;
+            var container = controls.$scaleWrapper.find('.' + type + '-preview-container');
+
+            while (i--) {
+                val[i] = parseFloat(val[i]);
+            }
+            if (type === 'mobile' && orientation === 'portrait') {
+                sizeSettings = {
+                    width: val[1],
+                    height: val[0]
+                };
+            }
+            else {
+                sizeSettings = {
+                    width: val[0],
+                    height: val[1]
+                };
+            }
+
+            if (sizeSettings.width === container.width() && sizeSettings.height === container.height()) {
+                return false;
+            }
+
+            container.css(sizeSettings);
+            this.scaleFrame();
+        },
+        onOrientationChange: function onOrientationChange(event) {
+            var element = event.target;
+            var type = selectedDevice;
+            var container = controls.$scaleWrapper.find('.' + type + '-preview-container');
+            var newOrientation = element.value;
+
+            if (newOrientation === orientation) {
+                return false;
+            }
+            sizeSettings = {
+                height: container.width(),
+                width: container.height()
+            };
+
+            container.css(sizeSettings);
+
+            this.setOrientation(newOrientation);
+            this.scaleFrame();
+        },
+        onDeviceTypeChange: function onDeviceTypeChange(event) {
+            var element = event.target;
+            selectedDevice = element.value;
+            this.composeControlsByDeviceType(element.value);
+            if(element.value === DEFAULT_TYPE){
+                this.removeDeviceFrame();
+            }else{
+                this.changeDeviceFrame(element.value, true);
+                this.scaleFrame();
+                this.setupScreenSize();
+                if (element.value === 'mobile'){
+                    controls.$mobileDevices.children('.mobile-device-selector').get(0).dispatchEvent(new Event('change'));
+                } else if( element.value === 'desktop'){
+                    controls.$desktopDevices.get(0).dispatchEvent(new Event('change'));
+                }
+
+            }
         }
 
     };
@@ -288,19 +355,8 @@ define([
              *  @event preview-scale-device-type
              */
            this.controls.$deviceTypes.get(0).addEventListener('change', function (event) {
-               var element = event.target;
-               selectedDevice = element.value;
-               api.composeControlsByDeviceType(element.value);
-               if(element.value === DEFAULT_TYPE){
-                   api.removeDeviceFrame();
-               }else{
-                   api.changeDeviceFrame(element.value, true);
-                   api.scaleFrame();
-                   api.setupScreenSize();
-                   controls.$mobileDevices.children('.mobile-device-selector').get(0).dispatchEvent(new Event('change'));
-
-               }
-               self.trigger('preview-scale-device-type', element.value);
+               api.onDeviceTypeChange(event);
+               self.trigger('preview-scale-device-type', event.target.value);
 
            });
 
@@ -309,36 +365,8 @@ define([
              *  @event preview-scale-device-mobile-type
              */
             this.controls.$mobileDevices.children('.mobile-device-selector').get(0).addEventListener('change', function (event) {
-                var element = event.target;
-                var type = selectedDevice;
-                var val = element.value.split(',');
-                var i = val.length;
-                var container = controls.$scaleWrapper.find('.' + type + '-preview-container');
-
-                while (i--) {
-                    val[i] = parseFloat(val[i]);
-                }
-                if (type === 'mobile' && orientation === 'portrait') {
-                    sizeSettings = {
-                        width: val[1],
-                        height: val[0]
-                    };
-                }
-                else {
-                    sizeSettings = {
-                        width: val[0],
-                        height: val[1]
-                    };
-                }
-
-                if (sizeSettings.width === container.width() && sizeSettings.height === container.height()) {
-                    return false;
-                }
-
-                container.css(sizeSettings);
-                api.scaleFrame();
-
-                self.trigger('preview-scale-device-mobile-type', element.value);
+                api.onDeviceChange(event);
+                self.trigger('preview-scale-device-mobile-type', event.target.value);
 
             });
 
@@ -347,25 +375,8 @@ define([
              *  @event preview-scale-device-mobile-orientation-type
              */
             this.controls.$mobileDevices.children('.mobile-orientation-selector').get(0).addEventListener('change', function (event) {
-                var element = event.target;
-                var type = selectedDevice;
-                var container = controls.$scaleWrapper.find('.' + type + '-preview-container');
-                var newOrientation = element.value;
-
-                if (newOrientation === orientation) {
-                    return false;
-                }
-                sizeSettings = {
-                    height: container.width(),
-                    width: container.height()
-                };
-
-                container.css(sizeSettings);
-
-                api.setOrientation(newOrientation);
-                api.scaleFrame();
-
-                self.trigger('preview-scale-device-mobile-orientation-type', element.value);
+                api.onOrientationChange(event);
+                self.trigger('preview-scale-device-mobile-orientation-type', event.target.value);
             });
 
             /**
@@ -373,8 +384,8 @@ define([
              *  @event preview-scale-device-desktop-type
              */
             this.controls.$desktopDevices.get(0).addEventListener('change', function (event) {
-                var element = event.target;
-                self.trigger('preview-scale-device-desktop-type', element.value);
+                api.onDeviceChange(event);
+                self.trigger('preview-scale-device-desktop-type', event.target.value);
             });
             /**
              * adjust device frame position and size when browser size change
