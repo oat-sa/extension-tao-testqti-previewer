@@ -46,29 +46,39 @@ define([
 ) {
     'use strict';
 
-    var overlay;
     var orientation = 'landscape';
     var DEFAULT_TYPE = 'standard';
     var selectedDevice = 'standard';
+
     var deviceTypes = {
             desktop: __('Desktop preview'),
             mobile: __('Mobile preview'),
             standard: __('Actual size')
         };
+
     var $window = $(window);
+
     var screenSize = {
         width: $window.innerWidth(),
         height: $window.innerHeight()
     };
+
     var sizeSettings = {
         width: 0,
         height: 0
     };
+
     var devicesToControls = {
         'mobile': '$mobileDevices',
         'desktop': '$desktopDevices',
         'standard': '$deviceTypes'
     };
+
+    /**
+     * prepares data for list of devices user would chose from.
+     * @returns {Array} - list of devices user would work throug with help of ui-controls
+     * @private
+     */
     var _getPreviewTypes = function () {
         var options = [];
         _(deviceTypes).forEach(function (_deviceLabel, _deviceType) {
@@ -80,8 +90,11 @@ define([
         });
         return options;
     };
+
     var controls;
+
     var testRunner;
+
     var api = {
         /**
          * Tells if the component is enabled
@@ -91,10 +104,10 @@ define([
             var config = testRunner.getConfig();
             return !config.readOnly;
         },
+
         /**
          * Show particular control and hide other except of the default visible control
          * @param {String} controlName - name of the particular control to show
-         * @param {String} action - name of the particular control to show - [hide,show]
          */
         toggleControl: function toggleControl(controlName) {
             var $control = controls[controlName];
@@ -112,44 +125,59 @@ define([
                 throw new TypeError('toggleControl method MUSt have parameter "controlName"');
             }
         },
+
         /**
          * manipulates controls visibility on page according to given preview type
          * @param {String} deviceType - type of supposed device screen ['mobile','desktop', 'standard']
          */
         composeControlsByDeviceType: function composeControlsByDeviceType(deviceType){
             var controlName = devicesToControls[deviceType] ? devicesToControls[deviceType] : DEFAULT_TYPE;
+
             this.toggleControl(controlName);
         },
+
         /**
          * change device imitation frame
          * @param {String} deviceType
          * @param {Boolean} isReplacing param shows whether to to replace previously made wrapper
          */
         changeDeviceFrame: function changeDeviceFrame(deviceType, isReplacing) {
+            var $content;
+            var $children;
+
             if(isReplacing && controls.$scaleWrapper){
                 this.removeDeviceFrame();
             }
-            var $content = testRunner.getAreaBroker().getContentArea();
-            var $children = $content.children().detach();
+
+            $content = testRunner.getAreaBroker().getContentArea();
+            $children = $content.children().detach();
+
             controls.$scaleWrapper = $(scaleWrapperTpl({
                 type:deviceType
             }));
+
             controls.$scaleWrapper.find('.preview-item-container').append($children);
             controls.$scaleWrapper.css('display', 'block');
+
             $content.append(controls.$scaleWrapper);
+
             this.positionPreview();
 
         },
+
         /**
          * removes previewer content ot its initial state without device frame and scaling (Actual size )
+         * @private
          */
         removeDeviceFrame: function removeDeviceFrame() {
             var $children = controls.$scaleWrapper.find('.preview-item-container').children().detach();
             var $content = testRunner.getAreaBroker().getContentArea();
+
             $content.empty();
             $content.append($children);
             controls.$scaleWrapper = null;
         },
+
         /**
          * Setting up screen size according preview viewport size
          * @private
@@ -160,28 +188,27 @@ define([
                 height: controls.$scaleWrapper.innerHeight()
             };
         },
+
         /**
          * Set the size for the standard preview
          * @param height
          * @private
          */
         updateStandardPreviewSize: function updateStandardPreviewSize(height) {
-            var $selector = controls.$mobileDevices.children('.mobile-device-selector'),
-                values = ($selector.val() ? $selector.val().split(',') : '') || [$window.width().toString()],
-                valueStr = values.join(',');
+            var $selector = controls.$mobileDevices.children('.mobile-device-selector');
+            var values = ($selector.val() ? $selector.val().split(',') : '') || [$window.width().toString()];
+            var valueStr = values.join(',');
 
             values[1] = height || values[1] || '1200';
 
             $selector.val(valueStr).data('value', valueStr);
         },
+
         /**
          * Compute scale factor based on screen size and device size
-         *
          * @private
          */
         computeScaleFactor: function computeScaleFactor() {
-            var scaleFactor = 1;
-
             var scaleValues = {
                 x: 1,
                 y: 1
@@ -201,10 +228,10 @@ define([
             if (requiredSize.height > screenSize.height) {
                 scaleValues.y = screenSize.height / requiredSize.height;
             }
-            scaleFactor = Math.min(scaleValues.x, scaleValues.y);
 
-            return scaleFactor;
+            return Math.min(scaleValues.x, scaleValues.y);
         },
+
         /**
          * Scale devices down to fit screen
          * @private
@@ -227,9 +254,9 @@ define([
                 'transform-origin': '0 0'
             });
         },
+
         /**
          * position the preview depending on the height of the toolbar
-         *
          * @private
          */
         positionPreview: function positionPreview() {
@@ -239,6 +266,11 @@ define([
             controls.$scaleWrapper.css('max-height', 'calc(100vh - ' + topBarHeight + 'px )');
         },
 
+        /**
+         * sets orientation of selected device globally and does some configuration around
+         * @param {String} newOrientation - Device's orientation  could be: 'landscape' or 'portrait'
+         * @private
+         */
         setOrientation: function setOrientation(newOrientation) {
             var re;
             var previewFrame;
@@ -249,12 +281,16 @@ define([
 
             re = new RegExp(orientation, 'g');
             previewFrame = controls.$scaleWrapper.find('.preview-outer-frame')[0];
-
             previewFrame.className = previewFrame.className.replace(re, newOrientation);
-
-            // reset global orientation
             orientation = newOrientation;
         },
+
+        /**
+         * Configures screen size configuration state according to passed value from affected control
+         * and calls this.scaleFrame() after all.
+         * @param {Event} event - event object related to affected control.
+         * @private
+         */
         onDeviceChange: function onDeviceChange(event){
             var element = event.target;
             var type = selectedDevice;
@@ -285,10 +321,16 @@ define([
             container.css(sizeSettings);
             this.scaleFrame();
         },
+
+        /**
+         * Configures selected device's orientation configuration state according to passed value from affected control
+         * and calls this.setOrientation(newOrientation) and this.scaleFrame() after all.
+         * @param {Event} event - event object related to affected control.
+         * @private
+         */
         onOrientationChange: function onOrientationChange(event) {
             var element = event.target;
-            var type = selectedDevice;
-            var container = controls.$scaleWrapper.find('.' + type + '-preview-container');
+            var container = controls.$scaleWrapper.find('.' + selectedDevice + '-preview-container');
             var newOrientation = element.value;
 
             if (newOrientation === orientation) {
@@ -304,10 +346,20 @@ define([
             this.setOrientation(newOrientation);
             this.scaleFrame();
         },
+        
+        /**
+         * Configures selected device type on which depends all other parts of the plugin
+         * decides whether it needs to draw device frame around item content and scale it accordingly
+         * @param {Event} event - event object related to affected control.
+         * @private
+         */
         onDeviceTypeChange: function onDeviceTypeChange(event) {
             var element = event.target;
+
             selectedDevice = element.value;
+
             this.composeControlsByDeviceType(element.value);
+
             if(element.value === DEFAULT_TYPE){
                 this.removeDeviceFrame();
             }else{
@@ -352,7 +404,7 @@ define([
 
             /**
              *  when user changes device type he/she want to test item in
-             *  @event preview-scale-device-type
+             *  @event scale#preview-scale-device-type
              */
            this.controls.$deviceTypes.get(0).addEventListener('change', function (event) {
                api.onDeviceTypeChange(event);
@@ -362,7 +414,7 @@ define([
 
             /**
              *  when user changes mobile device model he/she want to test item in
-             *  @event preview-scale-device-mobile-type
+             *  @event scale#preview-scale-device-mobile-type
              */
             this.controls.$mobileDevices.children('.mobile-device-selector').get(0).addEventListener('change', function (event) {
                 api.onDeviceChange(event);
@@ -372,7 +424,7 @@ define([
 
             /**
              *  when user changes mobile device screen orientation user want to test item in
-             *  @event preview-scale-device-mobile-orientation-type
+             *  @event scale#preview-scale-device-mobile-orientation-type
              */
             this.controls.$mobileDevices.children('.mobile-orientation-selector').get(0).addEventListener('change', function (event) {
                 api.onOrientationChange(event);
@@ -381,16 +433,16 @@ define([
 
             /**
              *  when user changes mobile device model he/she want to test item in
-             *  @event preview-scale-device-desktop-type
+             *  @event scale#preview-scale-device-desktop-type
              */
             this.controls.$desktopDevices.get(0).addEventListener('change', function (event) {
                 api.onDeviceChange(event);
                 self.trigger('preview-scale-device-desktop-type', event.target.value);
             });
+
             /**
              * adjust device frame position and size when browser size change
              */
-
             $window.on('resize orientationchange', function () {
                 if(controls.$scaleWrapper){
                     api.setupScreenSize();
@@ -419,6 +471,7 @@ define([
 
         /**
          * Called during the runner's render phase
+         * Rendeds plugins controlls on proper place
          */
         render: function render() {
 
@@ -432,6 +485,7 @@ define([
 
         /**
          * Called during the runner's destroy phase
+         * clears all controls tied to applications DOM
          */
         destroy: function destroy() {
             _.forEach(this.controls, function ($el) {
