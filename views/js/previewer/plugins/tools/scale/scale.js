@@ -48,7 +48,6 @@ define([
 
     var overlay;
     var orientation = 'landscape';
-    var scaleFactor = 1;
     var DEFAULT_TYPE = 'standard';
     var selectedDevice = 'standard';
     var deviceTypes = {
@@ -60,6 +59,10 @@ define([
     var screenSize = {
         width: $window.innerWidth(),
         height: $window.innerHeight()
+    };
+    var sizeSettings = {
+        width: 0,
+        height: 0
     };
     var devicesToControls = {
         'mobile': '$mobileDevices',
@@ -163,7 +166,7 @@ define([
          * @private
          */
         updateStandardPreviewSize: function updateStandardPreviewSize(height) {
-            var $selector = controls.$deviceTypes,
+            var $selector = controls.$mobileDevices.children('.mobile-device-selector'),
                 values = ($selector.val() ? $selector.val().split(',') : '') || [$window.width().toString()],
                 valueStr = values.join(',');
 
@@ -177,6 +180,7 @@ define([
          * @private
          */
         computeScaleFactor: function computeScaleFactor() {
+            var scaleFactor = 1;
 
             var scaleValues = {
                 x: 1,
@@ -197,19 +201,19 @@ define([
             if (requiredSize.height > screenSize.height) {
                 scaleValues.y = screenSize.height / requiredSize.height;
             }
-
             scaleFactor = Math.min(scaleValues.x, scaleValues.y);
+
+            return scaleFactor;
         },
         /**
          * Scale devices down to fit screen
          * @private
          */
         scaleFrame: function scale() {
-
-            this.computeScaleFactor();
+            var scaleFactor = this.computeScaleFactor();
 
             var $scaleContainer = controls.$scaleWrapper.find('.preview-scale-container'),
-                _scaleFactor = previewType === 'standard' ? 1 : scaleFactor,
+                _scaleFactor = selectedDevice === 'standard' ? 1 : scaleFactor,
                 containerScaledWidth = $scaleContainer.width() * _scaleFactor,
                 left = (screenSize.width - containerScaledWidth) / 2;
 
@@ -233,6 +237,23 @@ define([
 
             controls.$scaleWrapper.css('top', topBarHeight+ 'px');
             controls.$scaleWrapper.css('max-height', 'calc(100vh - ' + topBarHeight + 'px )');
+        },
+
+        setOrientation: function setOrientation(newOrientation) {
+            var re;
+            var previewFrame;
+
+            if (newOrientation === orientation) {
+                return;
+            }
+
+            re = new RegExp(orientation, 'g');
+            previewFrame = controls.$scaleWrapper.find('.preview-outer-frame')[0];
+
+            previewFrame.className = previewFrame.className.replace(re, newOrientation);
+
+            // reset global orientation
+            orientation = newOrientation;
         }
 
     };
@@ -268,14 +289,19 @@ define([
              */
            this.controls.$deviceTypes.get(0).addEventListener('change', function (event) {
                var element = event.target;
+               selectedDevice = element.value;
                api.composeControlsByDeviceType(element.value);
                if(element.value === DEFAULT_TYPE){
                    api.removeDeviceFrame();
                }else{
                    api.changeDeviceFrame(element.value, true);
+                   api.scaleFrame();
+                   api.setupScreenSize();
+                   controls.$mobileDevices.children('.mobile-device-selector').get(0).dispatchEvent(new Event('change'));
+
                }
-               selectedDevice = element.value;
                self.trigger('preview-scale-device-type', element.value);
+
            });
 
             /**
@@ -284,15 +310,61 @@ define([
              */
             this.controls.$mobileDevices.children('.mobile-device-selector').get(0).addEventListener('change', function (event) {
                 var element = event.target;
+                var type = selectedDevice;
+                var val = element.value.split(',');
+                var i = val.length;
+                var container = controls.$scaleWrapper.find('.' + type + '-preview-container');
+
+                while (i--) {
+                    val[i] = parseFloat(val[i]);
+                }
+                if (type === 'mobile' && orientation === 'portrait') {
+                    sizeSettings = {
+                        width: val[1],
+                        height: val[0]
+                    };
+                }
+                else {
+                    sizeSettings = {
+                        width: val[0],
+                        height: val[1]
+                    };
+                }
+
+                if (sizeSettings.width === container.width() && sizeSettings.height === container.height()) {
+                    return false;
+                }
+
+                container.css(sizeSettings);
+                api.scaleFrame();
+
                 self.trigger('preview-scale-device-mobile-type', element.value);
+
             });
 
             /**
-             *  when user changes mobile device screen orientation he/she want to test item in
+             *  when user changes mobile device screen orientation user want to test item in
              *  @event preview-scale-device-mobile-orientation-type
              */
             this.controls.$mobileDevices.children('.mobile-orientation-selector').get(0).addEventListener('change', function (event) {
                 var element = event.target;
+                var type = selectedDevice;
+                var container = controls.$scaleWrapper.find('.' + type + '-preview-container');
+                var newOrientation = element.value;
+
+                if (newOrientation === orientation) {
+                    return false;
+                }
+                sizeSettings = {
+                    height: container.width(),
+                    width: container.height()
+                };
+
+                container.css(sizeSettings);
+
+                api.setOrientation(newOrientation);
+                api.scaleFrame();
+
                 self.trigger('preview-scale-device-mobile-orientation-type', element.value);
             });
 
@@ -304,15 +376,16 @@ define([
                 var element = event.target;
                 self.trigger('preview-scale-device-desktop-type', element.value);
             });
-
             /**
              * adjust device frame position and size when browser size change
              */
+
             $window.on('resize orientationchange', function () {
-                api.setupScreenSize();
-                api.updateStandardPreviewSize();
-                api.computeScaleFactor();
-                api.scaleFrame();
+                if(controls.$scaleWrapper){
+                    api.setupScreenSize();
+                    api.updateStandardPreviewSize();
+                    api.scaleFrame();
+                }
             });
 
             this.disable();
