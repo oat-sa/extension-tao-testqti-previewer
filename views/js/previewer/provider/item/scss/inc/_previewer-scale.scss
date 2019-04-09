@@ -1,0 +1,23 @@
+
+.item-previewer-scope {
+    .action-bar.content-action-bar {
+
+
+        &.horizontal-action-bar {
+
+
+            & > .control-box {
+
+                .select2-container{
+                    text-shadow: none;
+                    min-width: 130px;
+                    margin-right: 1em;
+                    margin-top: .3em;
+                }
+            }
+        }
+    }
+
+}
+
+

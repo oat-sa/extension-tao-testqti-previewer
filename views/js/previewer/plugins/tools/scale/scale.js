@@ -31,6 +31,7 @@ define([
     'tpl!taoQtiTestPreviewer/previewer/plugins/tools/scale/mobile-devices',
     'tpl!taoQtiTestPreviewer/previewer/plugins/tools/scale/desktop-devices',
     'tpl!taoQtiTestPreviewer/previewer/plugins/tools/scale/scale-wrapper',
+    'ui/selecter',
     'css!taoItemsCss/preview'
 ], function (
     $,
@@ -43,6 +44,7 @@ define([
     mobileDevicesTpl,
     desktopDevicesTpl,
     scaleWrapperTpl,
+    selecter
 ) {
     'use strict';
 
@@ -406,17 +408,17 @@ define([
              *  when user changes device type he/she want to test item in
              *  @event scale#preview-scale-device-type
              */
-           this.controls.$deviceTypes.get(0).addEventListener('change', function (event) {
+            this.controls.$deviceTypes.on('change', function (event) {
                api.onDeviceTypeChange(event);
                self.trigger('preview-scale-device-type', event.target.value);
 
-           });
+            });
 
             /**
              *  when user changes mobile device model he/she want to test item in
              *  @event scale#preview-scale-device-mobile-type
              */
-            this.controls.$mobileDevices.children('.mobile-device-selector').get(0).addEventListener('change', function (event) {
+            this.controls.$mobileDevices.children('.mobile-device-selector').on('change', function (event) {
                 api.onDeviceChange(event);
                 self.trigger('preview-scale-device-mobile-type', event.target.value);
 
@@ -426,7 +428,7 @@ define([
              *  when user changes mobile device screen orientation user want to test item in
              *  @event scale#preview-scale-device-mobile-orientation-type
              */
-            this.controls.$mobileDevices.children('.mobile-orientation-selector').get(0).addEventListener('change', function (event) {
+            this.controls.$mobileDevices.children('.mobile-orientation-selector').on('change', function (event) {
                 api.onOrientationChange(event);
                 self.trigger('preview-scale-device-mobile-orientation-type', event.target.value);
             });
@@ -435,7 +437,7 @@ define([
              *  when user changes mobile device model he/she want to test item in
              *  @event scale#preview-scale-device-desktop-type
              */
-            this.controls.$desktopDevices.get(0).addEventListener('change', function (event) {
+            this.controls.$desktopDevices.on('change', function (event) {
                 api.onDeviceChange(event);
                 self.trigger('preview-scale-device-desktop-type', event.target.value);
             });
@@ -474,12 +476,13 @@ define([
          * Rendeds plugins controlls on proper place
          */
         render: function render() {
-
-            //attach the element to the navigation area
             var $headerControls = this.getAreaBroker().getHeaderArea();
+
             $headerControls.append(this.controls.$deviceTypes);
             $headerControls.append(this.controls.$mobileDevices);
             $headerControls.append(this.controls.$desktopDevices);
+
+            selecter($headerControls);
 
         },
 
