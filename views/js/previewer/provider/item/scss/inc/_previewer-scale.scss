@@ -10,9 +10,11 @@
 
                 .select2-container{
                     text-shadow: none;
-                    min-width: 130px;
                     margin-right: 1em;
                     margin-top: .3em;
+                }
+                .mobile-selectors-container{
+                    display: inline-block;
                 }
             }
         }

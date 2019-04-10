@@ -1,5 +1,5 @@
-<div id="mobile-devices-preview-selectors" style="display: inline-block">
-    <select class="mobile-device-selector preview-device-selector select2" data-target="mobile" data-has-search="false">
+<div class="mobile-selectors-container">
+    <select data-width="200" class="mobile-device-selector preview-device-selector select2" data-target="mobile" data-has-search="false">
         {{#each items}}
         <option value="{{dataValue}}" data-value="{{dataValue}}" {{#if selected}}selected="selected"{{/if}}>{{label}}</option>
         {{/each}}
