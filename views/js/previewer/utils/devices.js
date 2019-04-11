@@ -23,8 +23,10 @@
  * @author Pavel Hendelman <pavel@taotesting.com>
  */
 define([
+    'lodash',
     'json!taoItems/preview/resources/device-list.json'
 ], function (
+    _,
     deviceList
 ) {
     'use strict';
@@ -43,19 +45,15 @@ define([
          * I have http://en.wikipedia.org/wiki/List_of_displays_by_pixel_density in mind but we
          * will need to figure what criteria to apply when generating the list.
          */
-        var devices = type === 'mobile' ? deviceList.tablets : deviceList.screens,
-            options = [];
+        var devices = type === 'mobile' ? deviceList.tablets : deviceList.screens;
 
-        _.forEach(devices, function (value) {
-
-            options.push({
+        return _.map(devices, function (value) {
+            return {
                 value: value.label,
                 label: value.label,
                 dataValue: [value.width, value.height].join(',')
-            });
+            }
         });
-
-        return options;
     }
 
     return {
