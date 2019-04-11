@@ -31,8 +31,7 @@ define([
     'tpl!taoQtiTestPreviewer/previewer/plugins/tools/scale/desktop-devices',
     'tpl!taoQtiTestPreviewer/previewer/plugins/tools/scale/scale-wrapper',
     'taoQtiTestPreviewer/previewer/plugins/tools/scale/responsive-design-testing',
-    'ui/selecter',
-    'css!taoItemsCss/preview'
+    'ui/selecter'
 ], function (
     $,
     _,
@@ -111,8 +110,8 @@ define([
              *  @event scale#preview-scale-device-type
              */
             this.controls.$deviceTypes.on('change', function (event) {
-               self.api.onDeviceTypeChange(event.target);
-               self.trigger('preview-scale-device-type', event.target.value);
+                self.api.onDeviceTypeChange(event.target);
+                self.trigger('preview-scale-device-type', event.target.value);
 
             });
 
@@ -157,7 +156,7 @@ define([
 
             this.disable();
 
-        this.getTestRunner()
+            this.getTestRunner()
                 .on('render', function () {
                     var defaultType = self.api.defaultType();
                     if (self.isPluginAllowed()) {
@@ -228,8 +227,5 @@ define([
             hider.hide(this.controls.$deviceTypes);
 
         }
-
-
-
     });
 });

@@ -18,9 +18,10 @@
 
 define([
     'lodash',
+    'jquery',
     'ui/hider',
     'tpl!taoQtiTestPreviewer/previewer/plugins/tools/scale/scale-wrapper',
-], function (_, hider, scaleWrapperTpl) {
+], function (_, $, hider, scaleWrapperTpl) {
     'use strict';
 
     /**
@@ -59,9 +60,9 @@ define([
              * @param {String} controlName - name of the particular control to show
              */
             toggleControl: function toggleControl(controlName) {
-                var $control = context.controls[controlName];
+                var $currentControl = context.controls[controlName];
 
-                if($control){
+                if($currentControl){
                     _.forEach(context.controls, function ($control, name) {
                         if( name === controlName || name === devicesToControls[defaultName]){
                             hider.show($control);
@@ -299,7 +300,6 @@ define([
              * @param {HTMLDocument} element - select-box element DOM object of affected control.
              */
             onDeviceTypeChange: function onDeviceTypeChange(element) {
-
                 selectedDevice = element.value;
 
                 this.composeControlsByDeviceType(element.value);
@@ -315,9 +315,9 @@ define([
                     } else if( element.value === 'desktop'){
                         context.controls.$desktopDevices.trigger('change');
                     }
-
                 }
             },
+
             /**
              * passes out default device type name constant value
              * @returns {String}
@@ -325,10 +325,7 @@ define([
             defaultType: function defaultType() {
                 return _.clone(defaultName);
             }
-
-
         };
-        
         return api;
     };
 });
