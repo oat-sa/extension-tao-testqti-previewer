@@ -20,8 +20,9 @@ define([
     'lodash',
     'jquery',
     'ui/hider',
+    'ui/transformer',
     'tpl!taoQtiTestPreviewer/previewer/plugins/tools/scale/scale-wrapper',
-], function (_, $, hider, scaleWrapperTpl) {
+], function (_, $, hider, transformer, scaleWrapperTpl) {
     'use strict';
 
     /**
@@ -117,7 +118,6 @@ define([
 
             /**
              * removes previewer content ot its initial state without device frame and scaling (Actual size )
-             * @private
              */
             removeDeviceFrame: function removeDeviceFrame() {
                 var $children = context.controls.$scaleWrapper.find('.preview-item-container').children().detach();
@@ -130,7 +130,6 @@ define([
 
             /**
              * Setting up screen size according preview viewport size
-             * @private
              */
             setupScreenSize: function setupScreenSize() {
                 screenSize = {
@@ -141,8 +140,7 @@ define([
 
             /**
              * Set the size for the standard preview
-             * @param height
-             * @private
+             * @param {Number} height
              */
             updateStandardPreviewSize: function updateStandardPreviewSize(height) {
                 var $selector = context.controls.$mobileDevices.children('.mobile-device-selector');
@@ -156,7 +154,6 @@ define([
 
             /**
              * Compute scale factor based on screen size and device size
-             * @private
              */
             computeScaleFactor: function computeScaleFactor() {
                 var scaleValues = {
@@ -184,9 +181,8 @@ define([
 
             /**
              * Scale devices down to fit screen
-             * @private
              */
-            scaleFrame: function scale() {
+            scaleFrame: function scaleFrame() {
                 var scaleFactor = this.computeScaleFactor();
 
                 var $scaleContainer = context.controls.$scaleWrapper.find('.preview-scale-container'),
@@ -195,19 +191,14 @@ define([
                     left = (screenSize.width - containerScaledWidth) / 2;
 
                 $scaleContainer.css({
-                    left: left > 0 ? left : 0,
-                    '-webkit-transform': 'scale(' + _scaleFactor + ',' + _scaleFactor + ')',
-                    '-ms-transform': 'scale(' + _scaleFactor + ',' + _scaleFactor + ')',
-                    'transform': 'scale(' + _scaleFactor + ',' + _scaleFactor + ')',
-                    '-webkit-transform-origin': '0 0',
-                    '-ms-transform-origin': '0 0',
-                    'transform-origin': '0 0'
+                    left: left > 0 ? left : 0
                 });
+                transformer.setTransformOrigin($scaleContainer, 0, 0);
+                transformer.scale($scaleContainer, _scaleFactor);
             },
 
             /**
              * position the preview depending on the height of the toolbar
-             * @private
              */
             positionPreview: function positionPreview() {
                 var topBarHeight = testRunner.getAreaBroker().getHeaderArea().outerHeight();
@@ -219,7 +210,6 @@ define([
             /**
              * sets orientation of selected device globally and does some configuration around
              * @param {String} newOrientation - Device's orientation  could be: 'landscape' or 'portrait'
-             * @private
              */
             setOrientation: function setOrientation(newOrientation) {
                 var re;
@@ -239,7 +229,6 @@ define([
              * Configures screen size configuration state according to passed value from affected control
              * and calls this.scaleFrame() after all.
              * @param {HTMLDocument} element - select-box element DOM object of affected control.
-             * @private
              */
             onDeviceChange: function onDeviceChange(element){
                 var type = selectedDevice;
