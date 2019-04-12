@@ -32,10 +32,8 @@ define([
     'use strict';
     /**
      * Create data set for device selectors
-     *
-     * @param type
-     * @returns {Array}
-     * @private
+     * @param {String} type - device type ['mobile', 'desktop']
+     * @returns {Array} - list of devices to test item through, regarding of device type passed as a parameter
      */
     function getDeviceSelectorData(type){
         /*
@@ -52,7 +50,7 @@ define([
                 value: value.label,
                 label: value.label,
                 dataValue: [value.width, value.height].join(',')
-            }
+            };
         });
     }
 

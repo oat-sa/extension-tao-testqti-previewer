@@ -48,7 +48,6 @@ define([
 ) {
     'use strict';
 
-
     return pluginFactory({
 
         name: 'scale',
@@ -122,7 +121,6 @@ define([
             this.controls.$mobileDevices.children('.mobile-device-selector').on('change', function (event) {
                 self.api.onDeviceChange(event.target);
                 self.trigger('preview-scale-device-mobile-type', event.target.value);
-
             });
 
             /**
@@ -185,7 +183,6 @@ define([
             $headerControls.append(this.controls.$desktopDevices);
 
             selecter($headerControls);
-
         },
 
         /**
