@@ -188,12 +188,15 @@ define([
         /**
          * Called during the runner's destroy phase
          * clears all controls tied to applications DOM
+         * detaches the global events
          */
         destroy: function destroy() {
             _.forEach(this.controls, function ($el) {
                 $el.remove();
             });
             this.controls = null;
+
+            $(window).off('resize orientationchange');
         },
 
         /**
