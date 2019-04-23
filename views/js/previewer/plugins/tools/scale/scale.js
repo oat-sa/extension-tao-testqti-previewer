@@ -22,146 +22,74 @@
 define([
     'jquery',
     'lodash',
-    'i18n',
-    'ui/hider',
+    'lib/uuid',
+    'util/namespace',
     'taoTests/runner/plugin',
-    'taoQtiTestPreviewer/previewer/utils/devices',
-    'tpl!taoQtiTestPreviewer/previewer/plugins/tools/scale/preview-types',
-    'tpl!taoQtiTestPreviewer/previewer/plugins/tools/scale/mobile-devices',
-    'tpl!taoQtiTestPreviewer/previewer/plugins/tools/scale/desktop-devices',
-    'tpl!taoQtiTestPreviewer/previewer/plugins/tools/scale/scale-wrapper',
-    'taoQtiTestPreviewer/previewer/plugins/tools/scale/responsive-design-testing',
-    'ui/selecter'
+    'taoQtiTestPreviewer/previewer/plugins/tools/scale/component/devicesSelector'
 ], function (
     $,
     _,
-    __,
-    hider,
+    uuid,
+    namespaceHelper,
     pluginFactory,
-    devices,
-    previewTypesTpl,
-    mobileDevicesTpl,
-    desktopDevicesTpl,
-    scaleWrapperTpl,
-    responsiveDesignTesting,
-    selecter
+    devicesSelectorFactory
 ) {
     'use strict';
 
     return pluginFactory({
 
         name: 'scale',
-        install: function install(){
-            /**
-             * Tells if the component is enabled
-             * @returns {Boolean}
-             */
-            this.isPluginAllowed = function isPluginAllowed() {
 
-                var config = this.getTestRunner().getConfig();
-                return !config.readOnly;
-            };
-
-            this.api = responsiveDesignTesting(this);
-            /**
-             * device types list to use from "select device type" select-box.
-             * @type {*[]}
-             */
-            this.deviceTypes = [
-                {
-                    value: 'desktop',
-                    label: __('Desktop preview'),
-                    selected: false
-                },
-                {
-                    value: 'mobile',
-                    label: __('Mobile preview'),
-                    selected: false
-                },
-                {
-                    value: 'standard',
-                    label: __('Actual size'),
-                    selected: true
-                },
-            ];
-        },
         /**
          * Initialize the plugin (called during runner's init)
          */
         init: function init() {
             var self = this;
+            var testRunner = this.getTestRunner();
 
-            this.controls = {
-                $deviceTypes: $(previewTypesTpl({
-                    items: this.deviceTypes,
-                })),
-                $mobileDevices: $(mobileDevicesTpl({
-                    items: devices.byType('mobile'),
-                })),
-                $desktopDevices: $(desktopDevicesTpl({
-                    items: devices.byType('desktop'),
-                }))
+            /**
+             * Tells if the component is enabled
+             * @returns {Boolean}
+             */
+            function isPluginAllowed() {
+                var config = testRunner.getConfig();
+                return !config.readOnly;
+            }
+
+            // generate unite id for global events
+            this.nsId = this.getName() + uuid(6);
+
+            /**
+             * Triggers an item resize based on the current selected device
+             */
+            this.resizeItem = function resizeItem() {
+                if (self.devicesSelector) {
+                    testRunner.trigger(
+                        'resizeitem',
+                        self.devicesSelector.getType(),
+                        self.devicesSelector.getDeviceData(),
+                        self.devicesSelector.getOrientation()
+                    );
+                }
             };
 
-
-            /**
-             *  when user changes device type he/she want to test item in
-             *  @event scale#preview-scale-device-type
-             */
-            this.controls.$deviceTypes.on('change', function (event) {
-                self.api.onDeviceTypeChange(event.target);
-                self.trigger('preview-scale-device-type', event.target.value);
-
-            });
-
-            /**
-             *  when user changes mobile device model he/she want to test item in
-             *  @event scale#preview-scale-device-mobile-type
-             */
-            this.controls.$mobileDevices.children('.mobile-device-selector').on('change', function (event) {
-                self.api.onDeviceChange(event.target);
-                self.trigger('preview-scale-device-mobile-type', event.target.value);
-            });
-
-            /**
-             *  when user changes mobile device screen orientation user want to test item in
-             *  @event scale#preview-scale-device-mobile-orientation-type
-             */
-            this.controls.$mobileDevices.children('.mobile-orientation-selector').on('change', function (event) {
-                self.api.onOrientationChange(event.target);
-                self.trigger('preview-scale-device-mobile-orientation-type', event.target.value);
-            });
-
-            /**
-             *  when user changes mobile device model he/she want to test item in
-             *  @event scale#preview-scale-device-desktop-type
-             */
-            this.controls.$desktopDevices.on('change', function (event) {
-                self.api.onDeviceChange(event.target);
-                self.trigger('preview-scale-device-desktop-type', event.target.value);
-            });
-
-            /**
-             * adjust device frame position and size when browser size change
-             */
-            $(window).on('resize orientationchange', function () {
-                if(self.controls.$scaleWrapper){
-                    self.api.setupScreenSize();
-                    self.api.updateStandardPreviewSize();
-                    self.api.scaleFrame();
-                }
-            });
+            if (!isPluginAllowed()) {
+                this.hide();
+            }
 
             this.disable();
 
-            this.getTestRunner()
+            testRunner
                 .on('render', function () {
-                    var defaultType = self.api.defaultType();
-                    if (self.isPluginAllowed()) {
-                        self.api.composeControlsByDeviceType(defaultType);
+                    if (isPluginAllowed()) {
+                        self.show();
                     } else {
                         self.hide();
                     }
+                })
+                .on('resizeitem', function (type, size, orientation) {
+                    // todo
+                    console.log('resizeitem', type, size, orientation);
                 })
                 .on('enablenav', function () {
                     self.enable();
@@ -176,13 +104,38 @@ define([
          * Rendeds plugins controlls on proper place
          */
         render: function render() {
+            var self = this;
             var $headerControls = this.getAreaBroker().getHeaderArea();
 
-            $headerControls.append(this.controls.$deviceTypes);
-            $headerControls.append(this.controls.$mobileDevices);
-            $headerControls.append(this.controls.$desktopDevices);
+            /**
+             * adjust device frame position and size when browser size change
+             */
+            $(window).on(namespaceHelper.namespaceAll('resize orientationchange', this.nsId), _.throttle(function () {
+                if (self.devicesSelector && self.devicesSelector.isDeviceMode()) {
+                    self.resizeItem();
+                }
+            }, 50));
 
-            selecter($headerControls);
+            return new Promise(function (resolve) {
+                self.devicesSelector = devicesSelectorFactory($headerControls)
+                    .on('ready', function () {
+                        if (!self.getState('enabled')) {
+                            this.disable();
+                        }
+
+                        this.on('typechange', function () {
+                            if (!this.isDeviceMode()) {
+                                self.resizeItem();
+                            }
+                        });
+
+                        this.on('devicechange orientationchange', function () {
+                            self.resizeItem();
+                        });
+
+                        resolve();
+                    });
+            });
         },
 
         /**
@@ -191,41 +144,49 @@ define([
          * detaches the global events
          */
         destroy: function destroy() {
-            _.forEach(this.controls, function ($el) {
-                $el.remove();
-            });
-            this.controls = null;
-
-            $(window).off('resize orientationchange');
+            if (this.nsId) {
+                $(window).off('.' + this.nsId);
+            }
+            if (this.devicesSelector) {
+                this.devicesSelector.destroy();
+            }
+            this.devicesSelector = null;
         },
 
         /**
          * Enable default controls
          */
         enable: function enable() {
-            this.controls.$deviceTypes.removeProp('disabled').removeClass('disabled');
+            if (this.devicesSelector) {
+                this.devicesSelector.enable();
+            }
         },
 
         /**
          * Disable default controls
          */
         disable: function disable() {
-            this.controls.$deviceTypes.prop('disabled', true).addClass('disabled');
+            if (this.devicesSelector) {
+                this.devicesSelector.disable();
+            }
         },
 
         /**
          * Show default controls
          */
         show: function show() {
-            hider.show(this.controls.$deviceTypes);
+            if (this.devicesSelector) {
+                this.devicesSelector.show();
+            }
         },
 
         /**
          * Hide default controls
          */
         hide: function hide() {
-            hider.hide(this.controls.$deviceTypes);
-
+            if (this.devicesSelector) {
+                this.devicesSelector.hide();
+            }
         }
     });
 });

@@ -20,7 +20,6 @@
  * @author Jean-Sébastien Conan <jean-sebastien@taotesting.com>
  */
 define([
-
     'jquery',
     'lodash',
     'core/promise',
