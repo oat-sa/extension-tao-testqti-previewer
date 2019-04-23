@@ -1,0 +1,35 @@
+@import "inc/bootstrap";
+
+.devices-selector {
+    @include vendor-prefix(display, flex, value, (-ms-, -webkit-, ''));
+    @include vendor-prefix(flex-direction, row, property, (-ms-, -webkit-, ''));
+
+    &[data-type="standard"] {
+        .desktop-selector,
+        .mobile-selector,
+        .orientation-selector {
+            display: none;
+        }
+    }
+    &[data-type="desktop"] {
+        .mobile-selector,
+        .orientation-selector {
+            display: none;
+        }
+    }
+    &[data-type="mobile"] {
+        .desktop-selector {
+            display: none;
+        }
+    }
+
+    .selector {
+        display: inline-block;
+        &:not(:last-child) {
+            margin-right: 1rem;
+        }
+        select {
+            overflow: visible;
+        }
+    }
+}

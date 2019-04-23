@@ -8,7 +8,8 @@ module.exports = function(grunt) {
         sass : {
             taoqtitestpreviewer: {
                 files : [
-                    { dest : root + 'js/previewer/provider/item/css/item.css', src :  root + 'js/previewer/provider/item/scss/item.scss'}
+                    { dest : root + 'js/previewer/provider/item/css/item.css', src :  root + 'js/previewer/provider/item/scss/item.scss'},
+                    { dest : root + 'js/previewer/plugins/tools/scale/component/css/devicesSelector.css', src :  root + 'js/previewer/plugins/tools/scale/component/scss/devicesSelector.scss'}
                 ]
             },
         },
