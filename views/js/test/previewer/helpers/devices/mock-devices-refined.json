@@ -1,0 +1,72 @@
+{
+  "mobile": [
+    {
+      "label": "Amazon Kindle Fire HDX 7\u2033",
+      "value": "193986c3715c81838870f908fa98d69a",
+      "width": 960,
+      "height": 600
+    },
+    {
+      "label": "Apple iPad",
+      "value": "4e8eafab11aad1486992d7ee2c8c16ca",
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "label": "Google Nexus 10, Motorola Xoom, Xyboard",
+      "value": "5aac2932d9ad00d6d8a1604b8f9e4e8d",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "label": "Google Nexus 7",
+      "value": "9805d9753ad08c7630a9ee5418aa6c6c",
+      "width": 966,
+      "height": 604
+    },
+    {
+      "label": "Samsung Galaxy Tab 7.7, 8.9, 10.1",
+      "value": "d4a431cedf4705d6bf2cba6d5788378b",
+      "width": 1280,
+      "height": 800
+    }
+  ],
+  "desktop": [
+    {
+      "label": "1920 \u00d7 1080",
+      "value": "9e523ae15b61dc766f5c818726881ecf",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "label": "1366 \u00d7 768",
+      "value": "07769cd8d0a7d09818b2f0b018042fb7",
+      "width": 1366,
+      "height": 768
+    },
+    {
+      "label": "1280 \u00d7 1024",
+      "value": "72d5478a24194f98b9378e8e0fd65737",
+      "width": 1280,
+      "height": 1024
+    },
+    {
+      "label": "1280 \u00d7 800",
+      "value": "b7a6dd5900cc72e61f0d3479c7e314ec",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "label": "1024 \u00d7 768",
+      "value": "43193b0ff671a37d8232ab664190a125",
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "label": "800 \u00d7 600",
+      "value": "c29e48814af5443ff5688d9e967ce917",
+      "width": 800,
+      "height": 600
+    }
+  ]
+}
