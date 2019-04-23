@@ -43,15 +43,21 @@ define([
 
         assert.equal(typeof devicesSelectorFactory, 'function', 'The module exposes a function');
 
-        instance = devicesSelectorFactory('#fixture-api');
+        instance = devicesSelectorFactory('#fixture-api')
+            .on('ready', function() {
+                this.destroy();
+            });
         assert.equal(typeof instance, 'object', 'The factory produces an object');
-        instance.destroy();
 
-        instance = devicesSelectorFactory('#fixture-api');
-        instance2 = devicesSelectorFactory('#fixture-api');
+        instance = devicesSelectorFactory('#fixture-api')
+            .on('ready', function() {
+                this.destroy();
+            });
+        instance2 = devicesSelectorFactory('#fixture-api')
+            .on('ready', function() {
+                this.destroy();
+            });
         assert.notStrictEqual(instance, instance2, 'The factory provides a different object on each call');
-        instance.destroy();
-        instance2.destroy();
     });
 
     QUnit.cases.init([
@@ -71,10 +77,12 @@ define([
         {title: 'setTemplate'},
         {title: 'getConfig'}
     ]).test('inherited API ', function (data, assert) {
-        var instance = devicesSelectorFactory('#fixture-api');
+        var instance = devicesSelectorFactory('#fixture-api')
+            .on('ready', function() {
+                this.destroy();
+            });
         assert.expect(1);
         assert.equal(typeof instance[data.title], 'function', 'The instance exposes a "' + data.title + '" function');
-        instance.destroy();
     });
 
     QUnit.cases.init([
@@ -83,10 +91,12 @@ define([
         {title: 'trigger'},
         {title: 'spread'}
     ]).test('event API ', function (data, assert) {
-        var instance = devicesSelectorFactory('#fixture-api');
+        var instance = devicesSelectorFactory('#fixture-api')
+            .on('ready', function() {
+                this.destroy();
+            });
         assert.expect(1);
         assert.equal(typeof instance[data.title], 'function', 'The instance exposes a "' + data.title + '" function');
-        instance.destroy();
     });
 
     QUnit.cases.init([
@@ -102,10 +112,12 @@ define([
         {title: 'select'},
         {title: 'reset'}
     ]).test('devicesSelector API ', function (data, assert) {
-        var instance = devicesSelectorFactory('#fixture-api');
+        var instance = devicesSelectorFactory('#fixture-api')
+            .on('ready', function() {
+                this.destroy();
+            });
         assert.expect(1);
         assert.equal(typeof instance[data.title], 'function', 'The instance exposes a "' + data.title + '" function');
-        instance.destroy();
     });
 
     QUnit.module('Life cycle');
