@@ -181,9 +181,11 @@ define([
             });
     });
 
-    QUnit.test('integration', function(assert) {
+    QUnit.module('Visual');
+
+    QUnit.test('Visual test', function (assert) {
         var ready = assert.async();
-        var $container = $('#previewer');
+        var $container = $('#visual-test');
         var serviceCallId = 'previewer';
         var itemRef = 'item-1';
         var config = {
@@ -196,7 +198,7 @@ define([
                 'category': 'previewer'
             }],
             plugins: [{
-                module: 'taoQtiTestPreviewer/previewer/plugins/tools/scale/scale',
+                module: 'taoQtiTestPreviewer/previewer/plugins/controls/close',
                 bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
                 category: 'controls'
             },{
@@ -206,6 +208,10 @@ define([
             }, {
                 module: 'taoQtiTest/runner/plugins/tools/itemThemeSwitcher/itemThemeSwitcher',
                 bundle: 'taoQtiTest/loader/testPlugins.min',
+                category: 'tools'
+            }, {
+                module: 'taoQtiTestPreviewer/previewer/plugins/tools/scale/scale',
+                bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
                 category: 'tools'
             }]
         };
@@ -230,11 +236,28 @@ define([
                 state: {}
             }
         });
+        $.mockjax({
+            url: '/submitItem*',
+            responseText: {
+                success: true,
+                displayFeedbacks: false,
+                itemSession: {
+                    SCORE: {
+                        base: {
+                            float: 0
+                        }
+                    }
+                }
+            }
+        });
 
         previewerFactory(config, $container)
             .on('error', function(err) {
-                console.error(err);
                 assert.ok(false, 'An error has occurred');
+                assert.pushResult({
+                    result: false,
+                    message: err
+                });
                 ready();
             })
             .on('ready', function(runner) {

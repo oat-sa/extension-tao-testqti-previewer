@@ -483,4 +483,47 @@ define([
             .on('destroy', ready);
     });
 
+    QUnit.module('Visual');
+
+    QUnit.test('Visual test', function (assert) {
+        var ready = assert.async();
+        var $container = $('#visual-test');
+        var serviceCallId = 'previewer';
+        var itemRef = 'item-1';
+        var config = {
+            serviceCallId: serviceCallId,
+            provider: 'qtiItemPreviewer',
+            providers: [{
+                'id': 'qtiItemPreviewer',
+                'module': 'taoQtiTestPreviewer/previewer/provider/item/item',
+                'bundle': 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+                'category': 'previewer'
+            }],
+            plugins: [{
+                module: 'taoQtiTestPreviewer/previewer/plugins/tools/scale/scale',
+                bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+                category: 'controls'
+            }]
+        };
+
+        assert.expect(1);
+
+        previewerFactory(config, $container)
+            .on('error', function(err) {
+                assert.ok(false, 'An error has occurred');
+                assert.pushResult({
+                    result: false,
+                    message: err
+                });
+                ready();
+            })
+            .on('ready', function(runner) {
+                runner
+                    .after('renderitem.runnerComponent', function() {
+                        assert.ok(true, 'The previewer has been rendered');
+                        ready();
+                    })
+                    .loadItem(itemRef);
+            });
+    });
 });
