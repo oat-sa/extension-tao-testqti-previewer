@@ -205,6 +205,17 @@ define([
         var typeData = null;
         var controls = null;
 
+        /**
+         * Changes a DOM property on each selector
+         * @param {String} property
+         * @param {String|Boolean|Number} value
+         */
+        var setControlsProp = function setControlsProp(property, value) {
+            _.forEach(controls, function($selector) {
+                $selector.prop(property, value);
+            });
+        };
+
         // component specific API
         var api = {
             /**
@@ -460,6 +471,18 @@ define([
                  * @event ready
                  */
                 this.trigger('ready');
+            })
+
+            // take care of the disable state
+            .on('disable', function () {
+                if (this.is('rendered')) {
+                    setControlsProp("disabled", true);
+                }
+            })
+            .on('enable', function () {
+                if (this.is('rendered')) {
+                    setControlsProp("disabled", false);
+                }
             })
 
             // cleanup the place

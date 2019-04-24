@@ -44,17 +44,17 @@ define([
         assert.equal(typeof devicesSelectorFactory, 'function', 'The module exposes a function');
 
         instance = devicesSelectorFactory('#fixture-api')
-            .on('ready', function() {
+            .on('ready', function () {
                 this.destroy();
             });
         assert.equal(typeof instance, 'object', 'The factory produces an object');
 
         instance = devicesSelectorFactory('#fixture-api')
-            .on('ready', function() {
+            .on('ready', function () {
                 this.destroy();
             });
         instance2 = devicesSelectorFactory('#fixture-api')
-            .on('ready', function() {
+            .on('ready', function () {
                 this.destroy();
             });
         assert.notStrictEqual(instance, instance2, 'The factory provides a different object on each call');
@@ -78,7 +78,7 @@ define([
         {title: 'getConfig'}
     ]).test('inherited API ', function (data, assert) {
         var instance = devicesSelectorFactory('#fixture-api')
-            .on('ready', function() {
+            .on('ready', function () {
                 this.destroy();
             });
         assert.expect(1);
@@ -92,7 +92,7 @@ define([
         {title: 'spread'}
     ]).test('event API ', function (data, assert) {
         var instance = devicesSelectorFactory('#fixture-api')
-            .on('ready', function() {
+            .on('ready', function () {
                 this.destroy();
             });
         assert.expect(1);
@@ -113,7 +113,7 @@ define([
         {title: 'reset'}
     ]).test('devicesSelector API ', function (data, assert) {
         var instance = devicesSelectorFactory('#fixture-api')
-            .on('ready', function() {
+            .on('ready', function () {
                 this.destroy();
             });
         assert.expect(1);
@@ -245,6 +245,111 @@ define([
                 assert.equal($container.find('.orientation-selector select').length, 1, 'The component contains an area for the list of orientations');
 
                 this.destroy();
+            })
+            .on('destroy', function () {
+                ready();
+            })
+            .on('error', function (err) {
+                assert.ok(false, 'The operation should not fail!');
+                assert.pushResult({
+                    result: false,
+                    message: err
+                });
+                ready();
+            });
+    });
+
+    QUnit.test('show', function (assert) {
+        var ready = assert.async();
+        var $container = $('#fixture-show');
+        var instance;
+
+        assert.expect(12);
+
+        assert.equal($container.children().length, 0, 'The container is empty');
+
+        instance = devicesSelectorFactory($container);
+        instance
+            .on('init', function () {
+                assert.equal(this, instance, 'The instance has been initialized');
+            })
+            .on('ready', function () {
+                assert.equal($container.children().length, 1, 'The container contains an element');
+                assert.equal($container.children().is('.devices-selector'), true, 'The container contains the expected element');
+
+                assert.equal($container.find('.devices-selector').attr('data-type'), 'standard', 'The component contains the device type as an attribute');
+
+                assert.equal($container.find('.type-selector select').length, 1, 'The component contains an area for the list of types');
+                assert.equal($container.find('.desktop-selector select').length, 1, 'The component contains an area for the list of desktop devices');
+                assert.equal($container.find('.mobile-selector select').length, 1, 'The component contains an area for the list of mobile devices');
+                assert.equal($container.find('.orientation-selector select').length, 1, 'The component contains an area for the list of orientations');
+
+                assert.equal($container.find('.type-selector select:visible').length, 1, 'The list of types is visible');
+                instance.hide();
+
+                assert.equal($container.find('.type-selector select:visible').length, 0, 'The list of types is hidden');
+                instance.show();
+
+                assert.equal($container.find('.type-selector select:visible').length, 1, 'The list of types is visible again');
+
+                instance.destroy();
+            })
+            .on('destroy', function () {
+                ready();
+            })
+            .on('error', function (err) {
+                assert.ok(false, 'The operation should not fail!');
+                assert.pushResult({
+                    result: false,
+                    message: err
+                });
+                ready();
+            });
+    });
+
+    QUnit.test('enable', function (assert) {
+        var ready = assert.async();
+        var $container = $('#fixture-enable');
+        var instance;
+
+        assert.expect(21);
+
+        assert.equal($container.children().length, 0, 'The container is empty');
+
+        instance = devicesSelectorFactory($container);
+        instance
+            .on('init', function () {
+                assert.equal(this, instance, 'The instance has been initialized');
+            })
+            .on('ready', function () {
+                assert.equal($container.children().length, 1, 'The container contains an element');
+                assert.equal($container.children().is('.devices-selector'), true, 'The container contains the expected element');
+
+                assert.equal($container.find('.devices-selector').attr('data-type'), 'standard', 'The component contains the device type as an attribute');
+
+                assert.equal($container.find('.type-selector select').length, 1, 'The component contains an area for the list of types');
+                assert.equal($container.find('.desktop-selector select').length, 1, 'The component contains an area for the list of desktop devices');
+                assert.equal($container.find('.mobile-selector select').length, 1, 'The component contains an area for the list of mobile devices');
+                assert.equal($container.find('.orientation-selector select').length, 1, 'The component contains an area for the list of orientations');
+
+                assert.equal($container.find('.type-selector select:enabled').length, 1, 'The list of types is enabled');
+                assert.equal($container.find('.desktop-selector select:enabled').length, 1, 'The list of desktop devices is enabled');
+                assert.equal($container.find('.mobile-selector select:enabled').length, 1, 'The list of mobile devices is enabled');
+                assert.equal($container.find('.orientation-selector select:enabled').length, 1, 'The list of orientations is enabled');
+                instance.disable();
+
+                assert.equal($container.find('.type-selector select:enabled').length, 0, 'The list of types is disabled');
+                assert.equal($container.find('.desktop-selector select:enabled').length, 0, 'The list of desktop devices is disabled');
+                assert.equal($container.find('.mobile-selector select:enabled').length, 0, 'The list of mobile devices is disabled');
+                assert.equal($container.find('.orientation-selector select:enabled').length, 0, 'The list of orientations is disabled');
+                instance.enable();
+
+                assert.equal($container.find('.type-selector select:enabled').length, 1, 'The list of types is enabled again');
+                assert.equal($container.find('.desktop-selector select:enabled').length, 1, 'The list of desktop devices is enabled again');
+                assert.equal($container.find('.mobile-selector select:enabled').length, 1, 'The list of mobile devices is enabled again');
+                assert.equal($container.find('.orientation-selector select:enabled').length, 1, 'The list of orientations is enabled again');
+
+                instance.destroy();
             })
             .on('destroy', function () {
                 ready();
@@ -735,22 +840,22 @@ define([
             })
             .on('ready', function () {
                 Promise.resolve()
-                    .then(function() {
+                    .then(function () {
                         assert.equal(instance.getType(), 'standard', 'The type is initialized');
                         assert.equal(instance.getDevice(), null, 'The device is initialized');
                         assert.equal(instance.getOrientation(), null, 'The orientation is initialized');
                     })
-                    .then(function() {
+                    .then(function () {
                         return Promise.all([
-                            new Promise(function(resolve) {
-                                instance.on('typechange.test', function(type) {
+                            new Promise(function (resolve) {
+                                instance.on('typechange.test', function (type) {
                                     assert.equal(type, 'desktop', 'The type should be changed to desktop');
                                     assert.equal(instance.getType(), 'desktop', 'The type has been changed to desktop');
                                     resolve();
                                 });
                             }),
-                            new Promise(function(resolve) {
-                                instance.on('devicechange.test', function(device, data) {
+                            new Promise(function (resolve) {
+                                instance.on('devicechange.test', function (device, data) {
                                     assert.equal(device, '9e523ae15b61dc766f5c818726881ecf', 'The device should be changed to 9e523ae15b61dc766f5c818726881ecf');
                                     assert.equal(instance.getDevice(), '9e523ae15b61dc766f5c818726881ecf', 'The device has been changed to 9e523ae15b61dc766f5c818726881ecf');
                                     assert.equal(typeof data, 'object', 'The data is provided');
@@ -758,17 +863,17 @@ define([
                                     resolve();
                                 });
                             }),
-                            new Promise(function(resolve) {
+                            new Promise(function (resolve) {
                                 instance.setType('desktop');
                                 resolve();
                             })
                         ]);
                     })
-                    .then(function() {
+                    .then(function () {
                         instance.off('.test');
-                        return new Promise(function(resolve) {
+                        return new Promise(function (resolve) {
                             instance
-                                .on('devicechange.test', function(device, data) {
+                                .on('devicechange.test', function (device, data) {
                                     assert.equal(device, '43193b0ff671a37d8232ab664190a125', 'The device should be changed to 43193b0ff671a37d8232ab664190a125');
                                     assert.equal(instance.getDevice(), '43193b0ff671a37d8232ab664190a125', 'The device has been changed to 43193b0ff671a37d8232ab664190a125');
                                     assert.equal(typeof data, 'object', 'The data is provided');
@@ -778,9 +883,9 @@ define([
                                 .setDevice('43193b0ff671a37d8232ab664190a125');
                         });
                     })
-                    .then(function() {
+                    .then(function () {
                         instance.off('.test');
-                        return new Promise(function(resolve) {
+                        return new Promise(function (resolve) {
                             instance
                                 .on('typechange.test', function (type) {
                                     assert.equal(type, 'standard', 'The type should be changed to standard');
@@ -793,18 +898,18 @@ define([
                                 .setType('standard');
                         });
                     })
-                    .then(function() {
+                    .then(function () {
                         instance.off('.test');
                         return Promise.all([
-                            new Promise(function(resolve) {
-                                instance.on('typechange.test', function(type) {
+                            new Promise(function (resolve) {
+                                instance.on('typechange.test', function (type) {
                                     assert.equal(type, 'mobile', 'The type should be changed to mobile');
                                     assert.equal(instance.getType(), 'mobile', 'The type has been changed to mobile');
                                     resolve();
                                 });
                             }),
-                            new Promise(function(resolve) {
-                                instance.on('devicechange.test', function(device, data) {
+                            new Promise(function (resolve) {
+                                instance.on('devicechange.test', function (device, data) {
                                     assert.equal(device, '193986c3715c81838870f908fa98d69a', 'The device should be changed to 193986c3715c81838870f908fa98d69a');
                                     assert.equal(instance.getDevice(), '193986c3715c81838870f908fa98d69a', 'The device has been changed to 193986c3715c81838870f908fa98d69a');
                                     assert.equal(typeof data, 'object', 'The data is provided');
@@ -812,17 +917,17 @@ define([
                                     resolve();
                                 });
                             }),
-                            new Promise(function(resolve) {
+                            new Promise(function (resolve) {
                                 instance.setType('mobile');
                                 resolve();
                             })
                         ]);
                     })
-                    .then(function() {
+                    .then(function () {
                         instance.off('.test');
-                        return new Promise(function(resolve) {
+                        return new Promise(function (resolve) {
                             instance
-                                .on('orientationchange.test', function(orientation) {
+                                .on('orientationchange.test', function (orientation) {
                                     assert.equal(orientation, 'portrait', 'The orientation should be changed to portrait');
                                     assert.equal(instance.getOrientation(), 'portrait', 'The orientation has been changed to portrait');
                                     resolve();
@@ -830,11 +935,11 @@ define([
                                 .setOrientation('portrait');
                         });
                     })
-                    .then(function() {
+                    .then(function () {
                         instance.off('.test');
                         instance.destroy();
                     })
-                    .catch(function(err) {
+                    .catch(function (err) {
                         assert.ok(false, 'The operation should not fail!');
                         assert.pushResult({
                             result: false,
@@ -869,22 +974,22 @@ define([
             })
             .on('ready', function () {
                 Promise.resolve()
-                    .then(function() {
+                    .then(function () {
                         assert.equal(instance.getType(), 'standard', 'The type is initialized');
                         assert.equal(instance.getDevice(), null, 'The device is initialized');
                         assert.equal(instance.getOrientation(), null, 'The orientation is initialized');
                     })
-                    .then(function() {
+                    .then(function () {
                         return Promise.all([
-                            new Promise(function(resolve) {
-                                instance.on('typechange.test', function(type) {
+                            new Promise(function (resolve) {
+                                instance.on('typechange.test', function (type) {
                                     assert.equal(type, 'desktop', 'The type should be changed to desktop');
                                     assert.equal(instance.getType(), 'desktop', 'The type has been changed to desktop');
                                     resolve();
                                 });
                             }),
-                            new Promise(function(resolve) {
-                                instance.on('devicechange.test', function(device, data) {
+                            new Promise(function (resolve) {
+                                instance.on('devicechange.test', function (device, data) {
                                     assert.equal(device, '9e523ae15b61dc766f5c818726881ecf', 'The device should be changed to 9e523ae15b61dc766f5c818726881ecf');
                                     assert.equal(instance.getDevice(), '9e523ae15b61dc766f5c818726881ecf', 'The device has been changed to 9e523ae15b61dc766f5c818726881ecf');
                                     assert.equal(typeof data, 'object', 'The data is provided');
@@ -892,16 +997,16 @@ define([
                                     resolve();
                                 });
                             }),
-                            new Promise(function(resolve) {
+                            new Promise(function (resolve) {
                                 instance.getElement().find('.type-selector select').val('desktop').trigger('change');
                                 resolve();
                             })
                         ]);
                     })
-                    .then(function() {
+                    .then(function () {
                         instance.off('.test');
-                        return new Promise(function(resolve) {
-                            instance.on('devicechange.test', function(device, data) {
+                        return new Promise(function (resolve) {
+                            instance.on('devicechange.test', function (device, data) {
                                 assert.equal(device, '43193b0ff671a37d8232ab664190a125', 'The device should be changed to 43193b0ff671a37d8232ab664190a125');
                                 assert.equal(instance.getDevice(), '43193b0ff671a37d8232ab664190a125', 'The device has been changed to 43193b0ff671a37d8232ab664190a125');
                                 assert.equal(typeof data, 'object', 'The data is provided');
@@ -911,9 +1016,9 @@ define([
                             instance.getElement().find('.desktop-selector select').val('43193b0ff671a37d8232ab664190a125').trigger('change');
                         });
                     })
-                    .then(function() {
+                    .then(function () {
                         instance.off('.test');
-                        return new Promise(function(resolve) {
+                        return new Promise(function (resolve) {
                             instance
                                 .on('typechange.test', function (type) {
                                     assert.equal(type, 'standard', 'The type should be changed to standard');
@@ -926,18 +1031,18 @@ define([
                             instance.getElement().find('.type-selector select').val('standard').trigger('change');
                         });
                     })
-                    .then(function() {
+                    .then(function () {
                         instance.off('.test');
                         return Promise.all([
-                            new Promise(function(resolve) {
-                                instance.on('typechange.test', function(type) {
+                            new Promise(function (resolve) {
+                                instance.on('typechange.test', function (type) {
                                     assert.equal(type, 'mobile', 'The type should be changed to mobile');
                                     assert.equal(instance.getType(), 'mobile', 'The type has been changed to mobile');
                                     resolve();
                                 });
                             }),
-                            new Promise(function(resolve) {
-                                instance.on('devicechange.test', function(device, data) {
+                            new Promise(function (resolve) {
+                                instance.on('devicechange.test', function (device, data) {
                                     assert.equal(device, '193986c3715c81838870f908fa98d69a', 'The device should be changed to 193986c3715c81838870f908fa98d69a');
                                     assert.equal(instance.getDevice(), '193986c3715c81838870f908fa98d69a', 'The device has been changed to 193986c3715c81838870f908fa98d69a');
                                     assert.equal(typeof data, 'object', 'The data is provided');
@@ -945,16 +1050,16 @@ define([
                                     resolve();
                                 });
                             }),
-                            new Promise(function(resolve) {
+                            new Promise(function (resolve) {
                                 instance.getElement().find('.type-selector select').val('mobile').trigger('change');
                                 resolve();
                             })
                         ]);
                     })
-                    .then(function() {
+                    .then(function () {
                         instance.off('.test');
-                        return new Promise(function(resolve) {
-                            instance.on('orientationchange.test', function(orientation) {
+                        return new Promise(function (resolve) {
+                            instance.on('orientationchange.test', function (orientation) {
                                 assert.equal(orientation, 'portrait', 'The orientation should be changed to portrait');
                                 assert.equal(instance.getOrientation(), 'portrait', 'The orientation has been changed to portrait');
                                 resolve();
@@ -962,11 +1067,11 @@ define([
                             instance.getElement().find('.orientation-selector select').val('portrait').trigger('change');
                         });
                     })
-                    .then(function() {
+                    .then(function () {
                         instance.off('.test');
                         instance.destroy();
                     })
-                    .catch(function(err) {
+                    .catch(function (err) {
                         assert.ok(false, 'The operation should not fail!');
                         assert.pushResult({
                             result: false,
