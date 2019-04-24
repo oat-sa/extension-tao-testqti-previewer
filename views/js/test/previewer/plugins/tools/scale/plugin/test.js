@@ -373,7 +373,7 @@ define([
                             var $container = areaBroker.getHeaderArea();
                             var $devicesSelector = $container.find('.devices-selector');
                             runner
-                                .on('resizeitem.testselector', function(type, size, orientation) {
+                                .on('resizeitem.testselector', function(size, orientation, type) {
                                     assert.equal(type, 'desktop', 'Device type has been changed');
                                     assert.notEqual(size, null, 'Device data is provided');
                                     assert.equal(size.width, 1920, 'Device width is provided');
@@ -390,7 +390,7 @@ define([
                             var $container = areaBroker.getHeaderArea();
                             var $devicesSelector = $container.find('.devices-selector');
                             runner
-                                .on('resizeitem.testselector', function(type, size, orientation) {
+                                .on('resizeitem.testselector', function(size, orientation, type) {
                                     assert.equal(type, 'standard', 'Device type has been changed');
                                     assert.equal(size, null, 'No device data is provided');
                                     assert.equal(orientation, null, 'No orientation for desktop device');
@@ -405,7 +405,7 @@ define([
                             var $container = areaBroker.getHeaderArea();
                             var $devicesSelector = $container.find('.devices-selector');
                             runner
-                                .on('resizeitem.testselector', function(type, size, orientation) {
+                                .on('resizeitem.testselector', function(size, orientation, type) {
                                     assert.equal(type, 'mobile', 'Device type has been changed');
                                     assert.notEqual(size, null, 'Device data is provided');
                                     assert.equal(size.width, 960, 'Device width is provided');
@@ -422,7 +422,7 @@ define([
                             var $container = areaBroker.getHeaderArea();
                             var $devicesSelector = $container.find('.devices-selector');
                             runner
-                                .on('resizeitem.testselector', function(type, size, orientation) {
+                                .on('resizeitem.testselector', function(size, orientation, type) {
                                     assert.equal(type, 'mobile', 'Device type is still the same');
                                     assert.notEqual(size, null, 'Device data is provided');
                                     assert.equal(size.width, 960, 'Device width is provided');
@@ -439,7 +439,7 @@ define([
                             var $container = areaBroker.getHeaderArea();
                             var $devicesSelector = $container.find('.devices-selector');
                             runner
-                                .on('resizeitem.testselector', function(type, size, orientation) {
+                                .on('resizeitem.testselector', function(size, orientation, type) {
                                     assert.equal(type, 'mobile', 'Device type is still the same');
                                     assert.notEqual(size, null, 'Device data is provided');
                                     assert.equal(size.width, 966, 'Device width is provided');
@@ -454,7 +454,7 @@ define([
                         runner.off('.testselector');
                         return new Promise(function(resolve) {
                             runner
-                                .on('resizeitem.testselector', function(type, size, orientation) {
+                                .on('resizeitem.testselector', function(size, orientation, type) {
                                     assert.equal(type, 'mobile', 'Device type is still the same');
                                     assert.notEqual(size, null, 'Device data is provided');
                                     assert.equal(size.width, 966, 'Device width is provided');

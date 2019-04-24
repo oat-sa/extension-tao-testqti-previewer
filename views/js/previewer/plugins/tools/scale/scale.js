@@ -25,6 +25,7 @@ define([
     'lib/uuid',
     'util/namespace',
     'taoTests/runner/plugin',
+    'taoQtiTestPreviewer/previewer/plugins/tools/scale/component/devicesPreviewer',
     'taoQtiTestPreviewer/previewer/plugins/tools/scale/component/devicesSelector'
 ], function (
     $,
@@ -32,6 +33,7 @@ define([
     uuid,
     namespaceHelper,
     pluginFactory,
+    devicesPreviewerFactory,
     devicesSelectorFactory
 ) {
     'use strict';
@@ -59,20 +61,6 @@ define([
             // generate unite id for global events
             this.nsId = this.getName() + uuid(6);
 
-            /**
-             * Triggers an item resize based on the current selected device
-             */
-            this.resizeItem = function resizeItem() {
-                if (self.devicesSelector) {
-                    testRunner.trigger(
-                        'resizeitem',
-                        self.devicesSelector.getType(),
-                        self.devicesSelector.getDeviceData(),
-                        self.devicesSelector.getOrientation()
-                    );
-                }
-            };
-
             if (!isPluginAllowed()) {
                 this.hide();
             }
@@ -87,9 +75,15 @@ define([
                         self.hide();
                     }
                 })
-                .on('resizeitem', function (type, size, orientation) {
-                    // todo
-                    console.log('resizeitem', type, size, orientation);
+                .on('resizeitem', function (size, orientation, type) {
+                    if (self.devicesPreviewer) {
+                        self.devicesPreviewer
+                            .setDeviceType(type)
+                            .setDeviceOrientation(orientation)
+                            .setDeviceWidth(size && size.width)
+                            .setDeviceHeight(size && size.height)
+                            .previewDevice();
+                    }
                 })
                 .on('enablenav', function () {
                     self.enable();
@@ -101,41 +95,70 @@ define([
 
         /**
          * Called during the runner's render phase
-         * Rendeds plugins controlls on proper place
+         * Renders plugins controls on proper place
          */
         render: function render() {
             var self = this;
-            var $headerControls = this.getAreaBroker().getHeaderArea();
+            var testRunner = this.getTestRunner();
+            var areaBroker = this.getAreaBroker();
+
+            /**
+             * Triggers an item resize based on the current selected device
+             */
+            function resizeItem() {
+                if (self.devicesSelector && self.getState('enabled')) {
+                    /**
+                     * @event resizeitem
+                     * @param {deviceScreen} deviceData - The device data, containing width and height
+                     * @param {String} orientation - The device orientation
+                     * @param {String} type - The type of device
+                     */
+                    testRunner.trigger(
+                        'resizeitem',
+                        self.devicesSelector.getDeviceData(),
+                        self.devicesSelector.getOrientation(),
+                        self.devicesSelector.getType()
+                    );
+                }
+            };
 
             /**
              * adjust device frame position and size when browser size change
              */
             $(window).on(namespaceHelper.namespaceAll('resize orientationchange', this.nsId), _.throttle(function () {
                 if (self.devicesSelector && self.devicesSelector.isDeviceMode()) {
-                    self.resizeItem();
+                    resizeItem();
                 }
             }, 50));
 
-            return new Promise(function (resolve) {
-                self.devicesSelector = devicesSelectorFactory($headerControls)
-                    .on('ready', function () {
-                        if (!self.getState('enabled')) {
-                            this.disable();
-                        }
-
-                        this.on('typechange', function () {
-                            if (!this.isDeviceMode()) {
-                                self.resizeItem();
+            return Promise.all([
+                new Promise(function (resolve) {
+                    self.devicesSelector = devicesSelectorFactory(areaBroker.getHeaderArea())
+                        .on('ready', function () {
+                            if (!self.getState('enabled')) {
+                                this.disable();
                             }
-                        });
 
-                        this.on('devicechange orientationchange', function () {
-                            self.resizeItem();
-                        });
+                            this.on('typechange', function () {
+                                if (!this.isDeviceMode()) {
+                                    resizeItem();
+                                }
+                            });
 
-                        resolve();
-                    });
-            });
+                            this.on('devicechange orientationchange', function () {
+                                resizeItem();
+                            });
+
+                            resolve();
+                        });
+                }),
+                new Promise(function (resolve) {
+                    self.devicesPreviewer = devicesPreviewerFactory(areaBroker.getContentArea())
+                        .on('ready', function () {
+                            resolve();
+                        });
+                })
+            ]);
         },
 
         /**
@@ -150,7 +173,11 @@ define([
             if (this.devicesSelector) {
                 this.devicesSelector.destroy();
             }
+            if (this.devicesPreviewer) {
+                this.devicesPreviewer.destroy();
+            }
             this.devicesSelector = null;
+            this.devicesPreviewer = null;
         },
 
         /**
