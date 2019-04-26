@@ -24,12 +24,14 @@ define([
     'lodash',
     'core/promise',
     'taoQtiTestPreviewer/previewer/plugins/tools/scale/component/devicesPreviewer',
+    'taoQtiTestPreviewer/previewer/plugins/tools/scale/component/devicesSelector',
     'tpl!taoQtiTestPreviewer/test/previewer/plugins/tools/scale/component/devicesPreviewer/mock'
 ], function (
     $,
     _,
     Promise,
     devicesPreviewerFactory,
+    devicesSelectorFactory,
     mockTpl
 ) {
     'use strict';
@@ -564,22 +566,49 @@ define([
 
     QUnit.test('Visual test', function (assert) {
         var ready = assert.async();
-        var $container = $('#visual-test');
-        var instance = devicesPreviewerFactory($container);
+        var $contentContainer = $('#visual-test .content');
+        var $toolbarContainer = $('#visual-test .toolbar');
+        var selector = devicesSelectorFactory($toolbarContainer);
+        var previewer = devicesPreviewerFactory($contentContainer);
 
-        assert.expect(3);
+        assert.expect(6);
 
-        assert.equal($container.children().length, 0, 'The container is empty');
+        assert.equal($toolbarContainer.children().length, 0, 'The toolbar container is empty');
+        assert.equal($contentContainer.children().length, 0, 'The content container is empty');
 
-        instance
-            .on('init', function () {
-                assert.equal(this, instance, 'The instance has been initialized');
+        Promise.all([
+            new Promise(function (resolve) {
+                selector.on('ready', function () {
+                    assert.equal(this, selector, 'The selector has been initialized');
+                    assert.equal($toolbarContainer.find('.devices-selector').length, 1, 'The selector has been rendered');
+                    resolve();
+                });
+            }),
+            new Promise(function (resolve) {
+                previewer.on('ready', function () {
+                    assert.equal(this, previewer, 'The previewer has been initialized');
+                    assert.equal($contentContainer.find('.devices-previewer').length, 1, 'The previewer has been rendered');
+                    resolve();
+                });
             })
-            .on('ready', function () {
-                assert.equal($container.children().length, 1, 'The container contains an element');
+        ])
+            .then(function () {
+                previewer
+                    .wrap(mockTpl())
+                    .previewDevice();
+
+                selector.on('typechange devicechange orientationchange', function () {
+                    var size = selector.getDeviceData();
+                    previewer.setDeviceType(selector.getType())
+                        .setDeviceOrientation(selector.getOrientation())
+                        .setDeviceWidth(size && size.width)
+                        .setDeviceHeight(size && size.height)
+                        .previewDevice();
+                });
+
                 ready();
             })
-            .on('error', function (err) {
+            .catch(function (err) {
                 assert.ok(false, 'The operation should not fail!');
                 assert.pushResult({
                     result: false,
