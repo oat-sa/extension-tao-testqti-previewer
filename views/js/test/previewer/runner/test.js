@@ -77,7 +77,10 @@ define([
                 previewer2.on('ready', resolve);
             })
         ]).catch(function(err) {
-            console.error(err);
+            assert.pushResult({
+                result: false,
+                message: err
+            });
         }).then(function() {
             ready();
         });
@@ -164,8 +167,11 @@ define([
 
         previewerFactory(config, $container)
             .on('error', function(err) {
-                console.error(err);
                 assert.ok(false, 'An error has occurred');
+                assert.pushResult({
+                    result: false,
+                    message: err
+                });
                 ready();
             })
             .on('ready', function(runner) {
@@ -178,6 +184,49 @@ define([
                 if (data.itemIdentifier) {
                     runner.loadItem(data.itemIdentifier);
                 }
+            });
+    });
+
+    QUnit.test('destroy', function(assert) {
+        var ready = assert.async();
+        var $container = $('#fixture-destroy');
+        var serviceCallId = 'previewer';
+        var config = {
+            serviceCallId: serviceCallId,
+            provider: 'qtiItemPreviewer',
+            providers: [{
+                'id': 'qtiItemPreviewer',
+                'module': 'taoQtiTestPreviewer/previewer/provider/item/item',
+                'bundle': 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+                'category': 'previewer'
+            }]
+        };
+
+        assert.expect(2);
+
+        $.mockjax({
+            url: '/init*',
+            responseText: {
+                success: true
+            }
+        });
+
+        previewerFactory(config, $container)
+            .on('error', function(err) {
+                assert.ok(false, 'An error has occurred');
+                assert.pushResult({
+                    result: false,
+                    message: err
+                });
+                ready();
+            })
+            .on('ready', function(runner) {
+                assert.equal($container.children().length, 1, 'The previewer has been rendered');
+                runner.destroy();
+            })
+            .after('destroy', function() {
+                assert.equal($container.children().length, 0, 'The previewer has been destroyed');
+                ready();
             });
     });
 
@@ -262,7 +311,6 @@ define([
             })
             .on('ready', function(runner) {
                 runner
-
                     .after('renderitem.runnerComponent', function() {
                         assert.ok(true, 'The previewer has been rendered');
                         ready();
