@@ -153,8 +153,9 @@ define([
                         });
                 }),
                 new Promise(function (resolve) {
-                    self.devicesPreviewer = devicesPreviewerFactory(areaBroker.getContentArea())
+                    self.devicesPreviewer = devicesPreviewerFactory(areaBroker.getArea('contentWrapper'))
                         .on('ready', function () {
+                            this.wrap(areaBroker.getContentArea());
                             resolve();
                         });
                 })

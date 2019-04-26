@@ -62,6 +62,10 @@ define([
      * @fires ready - When the component is ready to work
      */
     function devicesPreviewerFactory(container, config) {
+        var $previewContainer = null;
+        var $previousContainer = null;
+        var $wrappedElement = null;
+
         // component specific API
         var api = {
             /**
@@ -190,6 +194,7 @@ define([
              */
             previewDevice: function previewDevice() {
                 if (this.is('rendered')) {
+                    // todo
                 }
 
                 return this;
@@ -202,6 +207,13 @@ define([
              */
             wrap: function wrap(element) {
                 if (this.is('rendered')) {
+                    // restore current wrapped element to its previous place
+                    this.unwrap();
+
+                    // move the element to wrap in the preview container
+                    $wrappedElement = $(element);
+                    $previousContainer = $wrappedElement.parent();
+                    $previewContainer.append($wrappedElement);
                 }
 
                 return this;
@@ -212,7 +224,11 @@ define([
              * @returns {devicesPreviewer}
              */
             unwrap: function unwrap() {
-                if (this.is('rendered')) {
+                if (this.is('rendered') && $wrappedElement) {
+                    // restore current wrapped element to its previous place
+                    $previousContainer.append($wrappedElement);
+                    $previousContainer = null;
+                    $wrappedElement = null;
                 }
 
                 return this;
@@ -242,6 +258,8 @@ define([
 
             // renders the component
             .on('render', function () {
+                $previewContainer = this.getElement().find('.preview-container');
+
                 /**
                  * @event ready
                  */
@@ -250,6 +268,10 @@ define([
 
             // cleanup the place
             .on('destroy', function () {
+                this.unwrap();
+                $previewContainer = null;
+                $previousContainer = null;
+                $wrappedElement = null;
             });
 
         // initialize the component with the provided config

@@ -23,12 +23,14 @@ define([
     'jquery',
     'lodash',
     'core/promise',
-    'taoQtiTestPreviewer/previewer/plugins/tools/scale/component/devicesPreviewer'
+    'taoQtiTestPreviewer/previewer/plugins/tools/scale/component/devicesPreviewer',
+    'tpl!taoQtiTestPreviewer/test/previewer/plugins/tools/scale/component/devicesPreviewer/mock'
 ], function (
     $,
     _,
     Promise,
-    devicesPreviewerFactory
+    devicesPreviewerFactory,
+    mockTpl
 ) {
     'use strict';
 
@@ -207,7 +209,7 @@ define([
         var $container = $('#fixture-render');
         var instance;
 
-        assert.expect(4);
+        assert.expect(5);
 
         assert.equal($container.children().length, 0, 'The container is empty');
 
@@ -219,6 +221,7 @@ define([
             .on('ready', function () {
                 assert.equal($container.children().length, 1, 'The container contains an element');
                 assert.equal($container.children().is('.devices-previewer'), true, 'The container contains the expected element');
+                assert.equal($container.find('.devices-previewer .preview-container').length, 1, 'The preview container is there');
 
                 this.destroy();
             })
@@ -459,14 +462,33 @@ define([
         var $container = $('#fixture-wrap');
         var instance = devicesPreviewerFactory($container);
 
-        assert.expect(2);
+        assert.expect(12);
 
         instance
             .on('init', function () {
                 assert.equal(this, instance, 'The instance has been initialized');
             })
             .on('ready', function () {
+                var $mock = $(mockTpl());
                 assert.equal($container.children().length, 1, 'The container contains an element');
+                assert.equal($container.find('.preview-content-mock').length, 0, 'The container does not contain the mock');
+                assert.equal($container.find('.devices-previewer .preview-container').length, 1, 'The preview container is there');
+                assert.equal($container.find('.devices-previewer .preview-container').children().length, 0, 'The preview container is empty');
+
+                $container.append($mock);
+                assert.equal($container.children().length, 2, 'The container contains 2 elements');
+                assert.equal($container.find('.preview-content-mock').length, 1, 'The container now contains the mock');
+                assert.equal($container.find('.devices-previewer .preview-container .preview-content-mock').length, 0, 'The preview container is still empty');
+
+                this.wrap($mock);
+
+                assert.equal($container.children().length, 1, 'The container contains only 1 element now');
+                assert.equal($container.find('.devices-previewer .preview-container .preview-content-mock').length, 1, 'The preview container now contains the mock');
+
+                this.wrap($mock);
+
+                assert.equal($container.children().length, 1, 'The container contains only 1 element now');
+                assert.equal($container.find('.devices-previewer .preview-container .preview-content-mock').length, 1, 'The preview container now contains the mock');
 
                 this.destroy();
             })
@@ -488,14 +510,40 @@ define([
         var $container = $('#fixture-unwrap');
         var instance = devicesPreviewerFactory($container);
 
-        assert.expect(2);
+        assert.expect(16);
 
         instance
             .on('init', function () {
                 assert.equal(this, instance, 'The instance has been initialized');
             })
             .on('ready', function () {
+                var $mock = $(mockTpl());
                 assert.equal($container.children().length, 1, 'The container contains an element');
+                assert.equal($container.find('.preview-content-mock').length, 0, 'The container does not contain the mock');
+                assert.equal($container.find('.devices-previewer .preview-container').length, 1, 'The preview container is there');
+                assert.equal($container.find('.devices-previewer .preview-container').children().length, 0, 'The preview container is empty');
+
+                $container.append($mock);
+                assert.equal($container.children().length, 2, 'The container contains 2 elements');
+                assert.equal($container.find('.preview-content-mock').length, 1, 'The container now contains the mock');
+                assert.equal($container.find('.devices-previewer .preview-container .preview-content-mock').length, 0, 'The preview container is still empty');
+
+                this.wrap($mock);
+
+                assert.equal($container.children().length, 1, 'The container contains only 1 element now');
+                assert.equal($container.find('.devices-previewer .preview-container .preview-content-mock').length, 1, 'The preview container now contains the mock');
+
+                this.unwrap();
+
+                assert.equal($container.children().length, 2, 'The container contains again 2 elements');
+                assert.equal($container.find('.preview-content-mock').length, 1, 'The container now contains again the mock');
+                assert.equal($container.find('.devices-previewer .preview-container .preview-content-mock').length, 0, 'The preview container is empty again');
+
+                this.unwrap();
+
+                assert.equal($container.children().length, 2, 'Nothing changed, the container contains 2 elements');
+                assert.equal($container.find('.preview-content-mock').length, 1, 'Nothing changed, the container now contains the mock');
+                assert.equal($container.find('.devices-previewer .preview-container .preview-content-mock').length, 0, 'Nothing changed, the preview container is empty');
 
                 this.destroy();
             })
