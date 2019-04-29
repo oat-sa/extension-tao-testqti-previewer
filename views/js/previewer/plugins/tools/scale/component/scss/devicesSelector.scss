@@ -25,11 +25,15 @@
 
     .selector {
         display: inline-block;
+        margin-top: 0.3em;
         &:not(:last-child) {
             margin-right: 1rem;
         }
         select {
             overflow: visible;
+        }
+        .select2-container {
+            text-shadow: none;
         }
     }
 }

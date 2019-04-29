@@ -2,4 +2,52 @@
 
 .devices-previewer {
 
+    $previewBackground: #fff;
+    $previewFrameOuterBorder: #aaa;
+    $previewFrameInnerBorder1: #444;
+    $previewFrameInnerBorder2: #999;
+    $previewFrameColor1: rgb(90, 90, 90);
+    $previewFrameColor2: rgb(86, 86, 86);
+    $previewFrameColor3: rgb(68, 68, 68);
+    $previewFrameColor4: rgb(20, 20, 20);
+    $previewFrameShadow: rgba(0, 0, 0, .7);
+
+    &[data-type="desktop"],
+    &[data-type="mobile"] {
+        padding: 10px;
+
+        .preview-frame {
+            position: relative;
+            border: 3px $previewFrameOuterBorder ridge;
+            background: $previewFrameColor1;
+            background: linear-gradient(
+                135deg,
+                $previewFrameColor1 0%,
+                $previewFrameColor2 7%,
+                $previewFrameColor3 15%,
+                $previewFrameColor4 30%
+            );
+            @include vendor-prefix(box-shadow, 5px 5px 10px 0 $previewFrameShadow, property);
+        }
+
+        .preview-container {
+            background: $previewBackground;
+            border-radius: 3px;
+            border: 2px solid;
+            border-color: $previewFrameInnerBorder1 $previewFrameInnerBorder2 $previewFrameInnerBorder2 $previewFrameInnerBorder1;
+        }
+    }
+
+    &[data-type="mobile"] {
+        .preview-frame {
+            border-radius: 25px;
+            padding: 30px;
+        }
+    }
+    &[data-type="desktop"] {
+        .preview-frame {
+            border-radius: 5px;
+            padding: 10px;
+        }
+    }
 }
