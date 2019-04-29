@@ -66,6 +66,24 @@ define([
         var $previousContainer = null;
         var $wrappedElement = null;
 
+        /**
+         * Removes the scale settings applied on the devices previewer
+         */
+        var clearScale = function clearScale() {
+            // todo - update with actual preview scale data
+            $previewContainer.removeAttr('data-width').removeAttr('data-height');
+        };
+
+        /**
+         * Computes and applies the scale settings on the devices previewer
+         * @param {Number} width
+         * @param {Number} height
+         */
+        var applyScale = function applyScale(width, height) {
+            // todo - update with actual preview scale data
+            $previewContainer.attr('data-width', width).attr('data-height', height);
+        };
+
         // component specific API
         var api = {
             /**
@@ -189,12 +207,33 @@ define([
             },
 
             /**
-             * Preview the content using the current device settings
+             * Previews the content using the current device settings
              * @returns {devicesPreviewer}
+             * @fires devicepreview after the device has been set on preview
              */
             previewDevice: function previewDevice() {
+                var width, height;
+
                 if (this.is('rendered')) {
-                    // todo
+                    if (this.is('disabled') || this.getDeviceType() === 'standard') {
+                        // standard mode and disabled state both should be reflected by a "no scale" view
+                        clearScale();
+                    } else {
+                        // in device preview mode, we need to apply the device's size with respect to the orientation
+                        if (this.getDeviceOrientation() === 'portrait') {
+                            width = this.getDeviceHeight();
+                            height = this.getDeviceWidth();
+                        } else {
+                            width = this.getDeviceWidth();
+                            height = this.getDeviceHeight();
+                        }
+                        applyScale(width, height);
+                    }
+
+                    /**
+                     * @event devicepreview
+                     */
+                    this.trigger('devicepreview');
                 }
 
                 return this;
@@ -204,6 +243,7 @@ define([
              * Wraps the previewed content into the previewer frame
              * @param {HTMLElement|jQuery} element
              * @returns {devicesPreviewer}
+             * @fires wrap after the element has been wrapped
              */
             wrap: function wrap(element) {
                 if (this.is('rendered')) {
@@ -214,6 +254,12 @@ define([
                     $wrappedElement = $(element);
                     $previousContainer = $wrappedElement.parent();
                     $previewContainer.append($wrappedElement);
+
+                    /**
+                     * @event wrap
+                     * @param {jQuery} $wrappedElement - The element that has been wrapped
+                     */
+                    this.trigger('wrap', $wrappedElement);
                 }
 
                 return this;
@@ -222,13 +268,21 @@ define([
             /**
              * Unwraps the previewed content from the previewer frame
              * @returns {devicesPreviewer}
+             * @fires unwrap after the element has been unwrapped
              */
             unwrap: function unwrap() {
+                var $wasWrappedElement = $wrappedElement;
                 if (this.is('rendered') && $wrappedElement) {
                     // restore current wrapped element to its previous place
                     $previousContainer.append($wrappedElement);
                     $previousContainer = null;
                     $wrappedElement = null;
+
+                    /**
+                     * @event unwrap
+                     * @param {jQuery} $wrappedElement - The element that was wrapped
+                     */
+                    this.trigger('unwrap', $wasWrappedElement);
                 }
 
                 return this;
@@ -264,6 +318,17 @@ define([
                  * @event ready
                  */
                 this.trigger('ready');
+            })
+
+            // take care of the disable state
+            .on('disable enable', function () {
+                var self = this;
+                if (this.is('rendered')) {
+                    // need to defer the call as the enable/disable events are emitted before the state is updated
+                    _.defer(function () {
+                        self.previewDevice();
+                    });
+                }
             })
 
             // cleanup the place

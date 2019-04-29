@@ -240,6 +240,149 @@ define([
             });
     });
 
+    QUnit.test('show', function (assert) {
+        var ready = assert.async();
+        var $container = $('#fixture-show');
+        var instance;
+
+        assert.expect(12);
+
+        assert.equal($container.children().length, 0, 'The container is empty');
+
+        instance = devicesPreviewerFactory($container);
+        instance
+            .on('init', function () {
+                assert.equal(this, instance, 'The instance has been initialized');
+            })
+            .on('ready', function () {
+                var $mock = $(mockTpl());
+                assert.equal($container.children().length, 1, 'The container contains an element');
+                assert.equal($container.children().is('.devices-previewer'), true, 'The container contains the expected element');
+                assert.equal($container.find('.devices-previewer .preview-container').length, 1, 'The preview container is there');
+
+                this.wrap($mock);
+                assert.equal($container.find('.devices-previewer .preview-container .preview-content-mock').length, 1, 'The preview container contains the mock');
+
+                assert.equal($container.find('.devices-previewer .preview-container').is(':visible'), true, 'The preview container is visible');
+                assert.equal($mock.is(':visible'), true, 'The content is visible');
+                instance.hide();
+
+                assert.equal($container.find('.devices-previewer .preview-container').is(':visible'), false, 'The preview container is hidden');
+                assert.equal($mock.is(':visible'), false, 'The content is hidden');
+                instance.show();
+
+                assert.equal($container.find('.devices-previewer .preview-container').is(':visible'), true, 'The preview container is visible again');
+                assert.equal($mock.is(':visible'), true, 'The content is visible');
+
+                instance.destroy();
+            })
+            .on('destroy', function () {
+                ready();
+            })
+            .on('error', function (err) {
+                assert.ok(false, 'The operation should not fail!');
+                assert.pushResult({
+                    result: false,
+                    message: err
+                });
+                ready();
+            });
+    });
+
+    QUnit.test('enable', function (assert) {
+        var ready = assert.async();
+        var $container = $('#fixture-enable');
+        var instance;
+
+        assert.expect(18);
+
+        assert.equal($container.children().length, 0, 'The container is empty');
+
+        instance = devicesPreviewerFactory($container);
+        instance
+            .on('init', function () {
+                assert.equal(this, instance, 'The instance has been initialized');
+            })
+            .on('ready', function () {
+                var $mock = $(mockTpl());
+                assert.equal($container.children().length, 1, 'The container contains an element');
+                assert.equal($container.children().is('.devices-previewer'), true, 'The container contains the expected element');
+                assert.equal($container.find('.devices-previewer .preview-container').length, 1, 'The preview container is there');
+
+                assert.equal(this.is('disabled'), false, 'The element is enabled');
+                assert.equal($container.find('.devices-previewer.disabled').length, 0, 'The DOM element is enabled');
+
+                this.wrap($mock);
+                assert.equal($container.find('.devices-previewer .preview-container .preview-content-mock').length, 1, 'The preview container contains the mock');
+
+                this.setDeviceType('desktop')
+                    .setDeviceWidth(1920)
+                    .setDeviceHeight(1080)
+                    .previewDevice();
+
+                // todo - update test with actual preview scale data
+                assert.equal($container.find('.devices-previewer .preview-container').attr('data-width'), '1920', 'Desktop device, width is set');
+                assert.equal($container.find('.devices-previewer .preview-container').attr('data-height'), '1080', 'Desktop device, height is set');
+
+                Promise.resolve()
+                    .then(function () {
+                        return new Promise(function (resolve) {
+                            instance
+                                .off('.test')
+                                .on('devicepreview.test', function () {
+                                    assert.equal(instance.is('disabled'), true, 'The element is disabled');
+                                    assert.equal($container.find('.devices-previewer.disabled').length, 1, 'The DOM element is disabled');
+
+                                    // todo - update test with actual preview scale data
+                                    assert.equal($container.find('.devices-previewer .preview-container').attr('data-width'), null, 'Desktop device, width is removed');
+                                    assert.equal($container.find('.devices-previewer .preview-container').attr('data-height'), null, 'Desktop device, height is removed');
+                                    resolve();
+                                })
+                                .disable();
+                        });
+                    })
+                    .then(function () {
+                        return new Promise(function (resolve) {
+                            instance
+                                .off('.test')
+                                .on('devicepreview.test', function () {
+                                    assert.equal(instance.is('disabled'), false, 'The element is enabled again');
+                                    assert.equal($container.find('.devices-previewer.disabled').length, 0, 'The DOM element is enabled again');
+
+                                    // todo - update test with actual preview scale data
+                                    assert.equal($container.find('.devices-previewer .preview-container').attr('data-width'), '1920', 'Desktop device, width is restored');
+                                    assert.equal($container.find('.devices-previewer .preview-container').attr('data-height'), '1080', 'Desktop device, height is restored');
+                                    resolve();
+                                })
+                                .enable();
+                        });
+                    })
+                    .then(function () {
+                        instance
+                            .off('.test')
+                            .destroy();
+                    })
+                    .catch(function (err) {
+                        assert.ok(false, 'The operation should not fail!');
+                        assert.pushResult({
+                            result: false,
+                            message: err
+                        });
+                    });
+            })
+            .on('destroy', function () {
+                ready();
+            })
+            .on('error', function (err) {
+                assert.ok(false, 'The operation should not fail!');
+                assert.pushResult({
+                    result: false,
+                    message: err
+                });
+                ready();
+            });
+    });
+
     QUnit.test('destroy', function (assert) {
         var ready = assert.async();
         var $container = $('#fixture-destroy');
@@ -435,7 +578,7 @@ define([
         var $container = $('#fixture-preview');
         var instance = devicesPreviewerFactory($container);
 
-        assert.expect(2);
+        assert.expect(17);
 
         instance
             .on('init', function () {
@@ -444,7 +587,107 @@ define([
             .on('ready', function () {
                 assert.equal($container.children().length, 1, 'The container contains an element');
 
-                this.destroy();
+                Promise.resolve()
+                    .then(function () {
+                        return new Promise(function (resolve) {
+                            instance
+                                .off('.test')
+                                .on('devicepreview.test', function () {
+                                    assert.equal(this, instance, 'The preview should be in standard mode');
+
+                                    // todo - update test with actual preview scale data
+                                    assert.equal($container.find('.devices-previewer .preview-container').attr('data-width'), null, 'Standard device, no specific width');
+                                    assert.equal($container.find('.devices-previewer .preview-container').attr('data-height'), null, 'Standard device, no specific height');
+                                    resolve();
+                                })
+                                .previewDevice();
+                        });
+                    })
+                    .then(function () {
+                        return new Promise(function (resolve) {
+                            instance
+                                .off('.test')
+                                .setDeviceType('desktop')
+                                .setDeviceWidth(1920)
+                                .setDeviceHeight(1080)
+                                .on('devicepreview.test', function () {
+                                    assert.equal(this, instance, 'The preview should be in desktop mode');
+
+                                    // todo - update test with actual preview scale data
+                                    assert.equal($container.find('.devices-previewer .preview-container').attr('data-width'), '1920', 'Desktop device, width should be changed');
+                                    assert.equal($container.find('.devices-previewer .preview-container').attr('data-height'), '1080', 'Desktop device, height should be changed');
+                                    resolve();
+                                })
+                                .previewDevice();
+                        });
+                    })
+                    .then(function () {
+                        return new Promise(function (resolve) {
+                            instance
+                                .off('.test')
+                                .setDeviceType('mobile')
+                                .setDeviceOrientation('landscape')
+                                .setDeviceWidth(960)
+                                .setDeviceHeight(600)
+                                .on('devicepreview.test', function () {
+                                    assert.equal(this, instance, 'The preview should be in landscape mobile mode');
+
+                                    // todo - update test with actual preview scale data
+                                    assert.equal($container.find('.devices-previewer .preview-container').attr('data-width'), '960', 'Desktop device, width should be changed');
+                                    assert.equal($container.find('.devices-previewer .preview-container').attr('data-height'), '600', 'Desktop device, height should be changed');
+                                    resolve();
+                                })
+                                .previewDevice();
+                        });
+                    })
+                    .then(function () {
+                        return new Promise(function (resolve) {
+                            instance
+                                .off('.test')
+                                .setDeviceType('mobile')
+                                .setDeviceOrientation('portrait')
+                                .setDeviceWidth(960)
+                                .setDeviceHeight(600)
+                                .on('devicepreview.test', function () {
+                                    assert.equal(this, instance, 'The preview should be in portrait mobile mode');
+
+                                    // todo - update test with actual preview scale data
+                                    assert.equal($container.find('.devices-previewer .preview-container').attr('data-width'), '600', 'Desktop device, width should be changed');
+                                    assert.equal($container.find('.devices-previewer .preview-container').attr('data-height'), '960', 'Desktop device, height should be changed');
+                                    resolve();
+                                })
+                                .previewDevice();
+                        });
+                    })
+                    .then(function () {
+                        return new Promise(function (resolve) {
+                            instance
+                                .off('.test')
+                                .setDeviceType('standard')
+                                .on('devicepreview.test', function () {
+                                    assert.equal(this, instance, 'The preview should be back in standard mode');
+
+                                    // todo - update test with actual preview scale data
+                                    assert.equal($container.find('.devices-previewer .preview-container').attr('data-width'), null, 'Back to standard device, no specific width');
+                                    assert.equal($container.find('.devices-previewer .preview-container').attr('data-height'), null, 'Back to standard device, no specific height');
+                                    resolve();
+                                })
+                                .previewDevice();
+                        });
+                    })
+                    .then(function () {
+                        instance
+                            .off('.test')
+                            .destroy();
+                    })
+                    .catch(function (err) {
+                        assert.ok(false, 'The operation should not fail!');
+                        assert.pushResult({
+                            result: false,
+                            message: err
+                        });
+                    });
+
             })
             .on('destroy', function () {
                 ready();
@@ -464,7 +707,7 @@ define([
         var $container = $('#fixture-wrap');
         var instance = devicesPreviewerFactory($container);
 
-        assert.expect(12);
+        assert.expect(14);
 
         instance
             .on('init', function () {
@@ -482,17 +725,45 @@ define([
                 assert.equal($container.find('.preview-content-mock').length, 1, 'The container now contains the mock');
                 assert.equal($container.find('.devices-previewer .preview-container .preview-content-mock').length, 0, 'The preview container is still empty');
 
-                this.wrap($mock);
-
-                assert.equal($container.children().length, 1, 'The container contains only 1 element now');
-                assert.equal($container.find('.devices-previewer .preview-container .preview-content-mock').length, 1, 'The preview container now contains the mock');
-
-                this.wrap($mock);
-
-                assert.equal($container.children().length, 1, 'The container contains only 1 element now');
-                assert.equal($container.find('.devices-previewer .preview-container .preview-content-mock').length, 1, 'The preview container now contains the mock');
-
-                this.destroy();
+                Promise.resolve()
+                    .then(function () {
+                        return new Promise(function (resolve) {
+                            instance
+                                .off('.test')
+                                .on('wrap.test', function ($wrapped) {
+                                    assert.equal($wrapped.is($mock), true, 'Received the wrapped element');
+                                    assert.equal($container.children().length, 1, 'The container contains only 1 element now');
+                                    assert.equal($container.find('.devices-previewer .preview-container .preview-content-mock').length, 1, 'The preview container now contains the mock');
+                                    resolve();
+                                })
+                                .wrap($mock);
+                        });
+                    })
+                    .then(function () {
+                        return new Promise(function (resolve) {
+                            instance
+                                .off('.test')
+                                .on('wrap.test', function ($wrapped) {
+                                    assert.equal($wrapped.is($mock), true, 'Received the wrapped element');
+                                    assert.equal($container.children().length, 1, 'The container contains only 1 element now');
+                                    assert.equal($container.find('.devices-previewer .preview-container .preview-content-mock').length, 1, 'The preview container now contains the mock');
+                                    resolve();
+                                })
+                                .wrap($mock);
+                        });
+                    })
+                    .then(function () {
+                        instance
+                            .off('.test')
+                            .destroy();
+                    })
+                    .catch(function (err) {
+                        assert.ok(false, 'The operation should not fail!');
+                        assert.pushResult({
+                            result: false,
+                            message: err
+                        });
+                    });
             })
             .on('destroy', function () {
                 ready();
@@ -512,7 +783,7 @@ define([
         var $container = $('#fixture-unwrap');
         var instance = devicesPreviewerFactory($container);
 
-        assert.expect(16);
+        assert.expect(18);
 
         instance
             .on('init', function () {
@@ -530,24 +801,65 @@ define([
                 assert.equal($container.find('.preview-content-mock').length, 1, 'The container now contains the mock');
                 assert.equal($container.find('.devices-previewer .preview-container .preview-content-mock').length, 0, 'The preview container is still empty');
 
-                this.wrap($mock);
+                Promise.resolve()
+                    .then(function () {
+                        return new Promise(function (resolve) {
+                            instance
+                                .off('.test')
+                                .on('wrap.test', function ($wrapped) {
+                                    assert.equal($wrapped.is($mock), true, 'Received the wrapped element');
+                                    assert.equal($container.children().length, 1, 'The container contains only 1 element now');
+                                    assert.equal($container.find('.devices-previewer .preview-container .preview-content-mock').length, 1, 'The preview container now contains the mock');
+                                    resolve();
+                                })
+                                .wrap($mock);
+                        });
+                    })
+                    .then(function () {
+                        return new Promise(function (resolve) {
+                            instance
+                                .off('.test')
+                                .on('unwrap.test', function ($wrapped) {
+                                    assert.equal($wrapped.is($mock), true, 'Received the wrapped element');
+                                    assert.equal($container.children().length, 2, 'The container contains again 2 elements');
+                                    assert.equal($container.find('.preview-content-mock').length, 1, 'The container now contains again the mock');
+                                    assert.equal($container.find('.devices-previewer .preview-container .preview-content-mock').length, 0, 'The preview container is empty again');
+                                    resolve();
+                                })
+                                .unwrap();
+                        });
+                    })
+                    .then(function () {
+                        return new Promise(function (resolve) {
+                            var to = _.delay(function () {
+                                assert.equal($container.children().length, 2, 'Nothing changed, the container contains 2 elements');
+                                assert.equal($container.find('.preview-content-mock').length, 1, 'Nothing changed, the container now contains the mock');
+                                assert.equal($container.find('.devices-previewer .preview-container .preview-content-mock').length, 0, 'Nothing changed, the preview container is empty');
+                                resolve();
+                            }, 250);
 
-                assert.equal($container.children().length, 1, 'The container contains only 1 element now');
-                assert.equal($container.find('.devices-previewer .preview-container .preview-content-mock').length, 1, 'The preview container now contains the mock');
-
-                this.unwrap();
-
-                assert.equal($container.children().length, 2, 'The container contains again 2 elements');
-                assert.equal($container.find('.preview-content-mock').length, 1, 'The container now contains again the mock');
-                assert.equal($container.find('.devices-previewer .preview-container .preview-content-mock').length, 0, 'The preview container is empty again');
-
-                this.unwrap();
-
-                assert.equal($container.children().length, 2, 'Nothing changed, the container contains 2 elements');
-                assert.equal($container.find('.preview-content-mock').length, 1, 'Nothing changed, the container now contains the mock');
-                assert.equal($container.find('.devices-previewer .preview-container .preview-content-mock').length, 0, 'Nothing changed, the preview container is empty');
-
-                this.destroy();
+                            instance
+                                .off('.test')
+                                .on('unwrap.test', function () {
+                                    clearTimeout(to);
+                                    assert.ok('false', 'Should not unwrap again');
+                                    resolve();
+                                })
+                                .unwrap();
+                        });
+                    })
+                    .then(function () {
+                        instance
+                            .off('.test')
+                            .destroy();
+                    })
+                    .catch(function (err) {
+                        assert.ok(false, 'The operation should not fail!');
+                        assert.pushResult({
+                            result: false,
+                            message: err
+                        });
+                    });
             })
             .on('destroy', function () {
                 ready();
