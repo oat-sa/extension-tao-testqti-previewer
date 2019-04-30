@@ -23,10 +23,17 @@ define([
     'lodash',
     'i18n',
     'ui/component',
+    'ui/transformer',
     'tpl!taoQtiTestPreviewer/previewer/plugins/tools/scale/component/tpl/devices-previewer',
     'css!taoQtiTestPreviewer/previewer/plugins/tools/scale/component/css/devicesPreviewer.css'
-], function ($, _, __, componentFactory, devicesPreviewerTpl) {
+], function ($, _, __, componentFactory, transformer, devicesPreviewerTpl) {
     'use strict';
+
+    /**
+     * @typedef {Object} size
+     * @property {Number} width
+     * @property {Number} height
+     */
 
     /**
      * Some default config
@@ -47,10 +54,32 @@ define([
      * @example
      *  var devicesPreviewer = devicesPreviewerFactory('.previewer .previewer-content);
      *  ...
-     *  // react to type change
-     *  devicesPreviewer.on('resize', function(width, height) {
-     *      // the size has changed
-     *  });
+     *  // react to changes
+     *  devicesPreviewer
+     *      .on('devicewidthchange', function(width) {
+     *          // the width has changed
+     *      })
+     *      .on('deviceheightchange', function(height) {
+     *          // the height has changed
+     *      })
+     *      .on('deviceorientationchange', function(orientation) {
+     *          // the orientation has changed
+     *      })
+     *      .on('devicetypechange', function(type) {
+     *          // the type has changed
+     *      })
+     *      .on('devicepreview', function() {
+     *          // the device preview mode has been applied
+     *      });
+     *  ...
+     *  // apply changes
+     *  devicesPreviewer
+     *      .setDeviceType(type)
+     *      .setDeviceOrientation(orientation)
+     *      .setDeviceWidth(width)
+     *      .setDeviceHeight(height)
+     *      .previewDevice();
+     * ...
      *
      * @param {HTMLElement|String} container
      * @param {Object} config
@@ -62,26 +91,16 @@ define([
      * @fires ready - When the component is ready to work
      */
     function devicesPreviewerFactory(container, config) {
-        var $previewContainer = null;
-        var $previousContainer = null;
-        var $wrappedElement = null;
+        var controls = null;
 
         /**
-         * Removes the scale settings applied on the devices previewer
+         * Remove the applied scale
          */
-        var clearScale = function clearScale() {
-            // todo - update with actual preview scale data
-            $previewContainer.removeAttr('data-width').removeAttr('data-height');
-        };
-
-        /**
-         * Computes and applies the scale settings on the devices previewer
-         * @param {Number} width
-         * @param {Number} height
-         */
-        var applyScale = function applyScale(width, height) {
-            // todo - update with actual preview scale data
-            $previewContainer.attr('data-width', width).attr('data-height', height);
+        var resetScale = function resetScale() {
+            if (controls) {
+                controls.$previewContent.removeAttr('style');
+                controls.$previewContainer.removeAttr('style');
+            }
         };
 
         // component specific API
@@ -174,6 +193,15 @@ define([
             },
 
             /**
+             * Tells if the previewer has entered in a device mode or in the standard mode.
+             * Standard mode means 'actual size'.
+             * @returns {Boolean}
+             */
+            isDeviceMode: function isDeviceMode() {
+                return this.getDeviceType() !== 'standard';
+            },
+
+            /**
              * Gets the device type.
              * @returns {String}
              */
@@ -217,7 +245,7 @@ define([
                 if (this.is('rendered')) {
                     if (this.is('disabled') || this.getDeviceType() === 'standard') {
                         // standard mode and disabled state both should be reflected by a "no scale" view
-                        clearScale();
+                        this.clearScale();
                     } else {
                         // in device preview mode, we need to apply the device's size with respect to the orientation
                         if (this.getDeviceOrientation() === 'portrait') {
@@ -227,7 +255,7 @@ define([
                             width = this.getDeviceWidth();
                             height = this.getDeviceHeight();
                         }
-                        applyScale(width, height);
+                        this.applyScale(width, height);
                     }
 
                     /**
@@ -237,6 +265,123 @@ define([
                 }
 
                 return this;
+            },
+
+            /**
+             * Removes the scale settings applied on the devices previewer
+             * @returns {devicesPreviewer}
+             * @fires scaleclear after the scale settings have been cleared
+             */
+            clearScale: function clearScale() {
+                if (this.is('rendered')) {
+                    resetScale();
+
+                    /**
+                     * @event scaleclear
+                     */
+                    this.trigger('scaleclear');
+                }
+
+                return this;
+            },
+
+            /**
+             * Computes and applies the scale settings on the devices previewer
+             * @param {Number} width
+             * @param {Number} height
+             * @returns {devicesPreviewer}
+             * * @fires scalechange after the scale settings have been applied
+             */
+            applyScale: function applyScale(width, height) {
+                var frameSize, frameMargins, scaleFactor;
+
+                if (this.is('rendered')) {
+                    resetScale();
+
+                    frameSize = this.getFrameSize();
+                    frameMargins = this.getFrameMargins();
+                    scaleFactor = this.getScaleFactor(width, height);
+
+                    controls.$previewContent
+                        .width(width)
+                        .height(height);
+
+                    controls.$previewContainer
+                        .css('left', (frameSize.width - (width + frameMargins.width) * scaleFactor) / 2)
+                        .width(width + frameMargins.width)
+                        .height(height + frameMargins.height);
+
+                    transformer.setTransformOrigin(controls.$previewContainer, 0, 0);
+                    transformer.scale(controls.$previewContainer, scaleFactor);
+
+                    /**
+                     * @event scalechange
+                     */
+                    this.trigger('scalechange');
+                }
+
+                return this;
+            },
+
+            /**
+             * Computes and gets the margins of the previewer frame
+             * @returns {size}
+             */
+            getFrameMargins: function getFrameMargins() {
+                var margins = {
+                    width: 0,
+                    height: 0
+                };
+                if (this.is('rendered')) {
+                    margins.width = controls.$previewContainer.outerWidth() - controls.$previewContent.width();
+                    margins.height = controls.$previewContainer.outerHeight() - controls.$previewContent.height();
+                }
+                return margins;
+            },
+
+            /**
+             * Computes and gets the available size in the previewer frame
+             * @returns {size}
+             */
+            getFrameSize: function getFrameSize() {
+                var size = {
+                    width: 0,
+                    height: 0
+                };
+                if (this.is('rendered')) {
+                    size.width = this.getContainer().innerWidth();
+                    size.height = this.getContainer().innerHeight();
+                }
+                return size;
+            },
+
+            /**
+             * Computes and gets the scale factor of the previewer frame
+             * @param {Number} width
+             * @param {Number} height
+             * @returns {Number}
+             */
+            getScaleFactor: function getScaleFactor(width, height) {
+                var margins, frameSize;
+                var scaleFactor = {
+                    x: 1,
+                    y: 1
+                };
+                if (this.is('rendered') && this.isDeviceMode()) {
+                    frameSize = this.getFrameSize();
+                    margins = this.getFrameMargins();
+                    width += margins.width;
+                    height += margins.height;
+
+                    if (width > frameSize.width) {
+                        scaleFactor.x = frameSize.width / width;
+                    }
+
+                    if (height > frameSize.height) {
+                        scaleFactor.y = frameSize.height / height;
+                    }
+                }
+                return Math.min(scaleFactor.x, scaleFactor.y);
             },
 
             /**
@@ -251,15 +396,15 @@ define([
                     this.unwrap();
 
                     // move the element to wrap in the preview container
-                    $wrappedElement = $(element);
-                    $previousContainer = $wrappedElement.parent();
-                    $previewContainer.append($wrappedElement);
+                    controls.$wrappedElement = $(element);
+                    controls.$wrappedElementContainer = controls.$wrappedElement.parent();
+                    controls.$previewContent.append(controls.$wrappedElement);
 
                     /**
                      * @event wrap
                      * @param {jQuery} $wrappedElement - The element that has been wrapped
                      */
-                    this.trigger('wrap', $wrappedElement);
+                    this.trigger('wrap', controls.$wrappedElement);
                 }
 
                 return this;
@@ -271,12 +416,14 @@ define([
              * @fires unwrap after the element has been unwrapped
              */
             unwrap: function unwrap() {
-                var $wasWrappedElement = $wrappedElement;
-                if (this.is('rendered') && $wrappedElement) {
+                var $wasWrappedElement;
+                if (this.is('rendered') && controls.$wrappedElement) {
+                    $wasWrappedElement = controls.$wrappedElement;
+
                     // restore current wrapped element to its previous place
-                    $previousContainer.append($wrappedElement);
-                    $previousContainer = null;
-                    $wrappedElement = null;
+                    controls.$wrappedElementContainer.append(controls.$wrappedElement);
+                    controls.$wrappedElement = null;
+                    controls.$wrappedElementContainer = null;
 
                     /**
                      * @event unwrap
@@ -312,7 +459,17 @@ define([
 
             // renders the component
             .on('render', function () {
-                $previewContainer = this.getElement().find('.preview-container');
+                var $element = this.getElement();
+                controls = {
+                    // internal elements
+                    $previewContainer: $element.find('.preview-container'),
+                    $previewFrame: $element.find('.preview-frame'),
+                    $previewContent: $element.find('.preview-content'),
+
+                    // placeholder for the wrapped element
+                    $wrappedElement: null,
+                    $wrappedElementContainer: null
+                };
 
                 /**
                  * @event ready
@@ -334,9 +491,7 @@ define([
             // cleanup the place
             .on('destroy', function () {
                 this.unwrap();
-                $previewContainer = null;
-                $previousContainer = null;
-                $wrappedElement = null;
+                controls = null;
             });
 
         // initialize the component with the provided config

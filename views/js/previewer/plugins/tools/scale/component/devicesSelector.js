@@ -169,7 +169,7 @@ define([
      *  ...
      *  // react to type change
      *  devicesSelector.on('typechange', function(type) {
-     *      if (type === 'standard) {
+     *      if (!this.isDeviceMode()) {
      *          // reset the type to standard, we can re-apply the default size
      *      }
      *  });

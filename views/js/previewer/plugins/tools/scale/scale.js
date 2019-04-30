@@ -58,7 +58,7 @@ define([
                 return !config.readOnly;
             }
 
-            // generate unite id for global events
+            // generate unique id for global events
             this.nsId = this.getName() + uuid(6);
 
             if (!isPluginAllowed()) {
