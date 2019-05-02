@@ -22,8 +22,9 @@ define([
     'lodash',
     'core/logger',
     'taoQtiTestPreviewer/previewer/runner',
+    'ui/feedback',
     'css!taoQtiTestPreviewer/previewer/provider/item/css/item'
-], function (_, loggerFactory, previewerFactory) {
+], function (_, loggerFactory, previewerFactory, feedback) {
     'use strict';
 
     var logger = loggerFactory('taoQtiTest/previewer');
@@ -86,7 +87,11 @@ define([
 
             return previewerFactory(config)
                 .on('error', function (err) {
-                    logger.error(err);
+                    if (!_.isUndefined(err.message)) {
+                        feedback().error(err.message);
+                    } else {
+                        logger.error(err);
+                    }
                 })
                 .on('ready', function (runner) {
                     runner
