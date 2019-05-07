@@ -293,6 +293,7 @@ define([
                 identifier = getValidIdentifier(identifier, deviceTypesList);
                 if (identifier !== selected.type) {
                     selected.type = identifier;
+                    selected.device = null;
 
                     // when the type changes, the list of devices must be updated
                     devicesList = devicesHelper.getDevicesByType(selected.type);
