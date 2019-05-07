@@ -120,7 +120,7 @@ define([
                         self.devicesSelector.getType()
                     );
                 }
-            };
+            }
 
             /**
              * adjust device frame position and size when browser size change
