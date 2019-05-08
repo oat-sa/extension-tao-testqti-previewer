@@ -19,6 +19,12 @@
 
             //load the config
             require(['/tao/ClientConfig/config'], function(){
+                // mocks
+                requirejs.config({
+                    "paths": {
+                        "core/tokenHandler" : "/taoQtiTestPreviewer/views/js/test/previewer/mock/tokenHandlerMock"
+                    }
+                });
 
                 //load the test
                 require(['taoQtiTestPreviewer/test/previewer/runner/test'], function(){
