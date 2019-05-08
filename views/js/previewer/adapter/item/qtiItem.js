@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2018 (original work) Open Assessment Technologies SA ;
+ * Copyright (c) 2019 (original work) Open Assessment Technologies SA ;
  */
 /**
  * @author Jean-Sébastien Conan <jean-sebastien@taotesting.com>
@@ -22,8 +22,9 @@ define([
     'lodash',
     'core/logger',
     'taoQtiTestPreviewer/previewer/runner',
+    'ui/feedback',
     'css!taoQtiTestPreviewer/previewer/provider/item/css/item'
-], function (_, loggerFactory, previewerFactory) {
+], function (_, loggerFactory, previewerFactory, feedback) {
     'use strict';
 
     var logger = loggerFactory('taoQtiTest/previewer');
@@ -90,7 +91,11 @@ define([
 
             return previewerFactory(config)
                 .on('error', function (err) {
-                    logger.error(err);
+                    if (!_.isUndefined(err.message)) {
+                        feedback().error(err.message);
+                    } else {
+                        logger.error(err);
+                    }
                 })
                 .on('ready', function (runner) {
                     runner
