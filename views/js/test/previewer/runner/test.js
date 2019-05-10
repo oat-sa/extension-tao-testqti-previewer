@@ -20,7 +20,6 @@
  * @author Jean-Sébastien Conan <jean-sebastien@taotesting.com>
  */
 define([
-
     'jquery',
     'lodash',
     'core/promise',
@@ -78,7 +77,10 @@ define([
                 previewer2.on('ready', resolve);
             })
         ]).catch(function(err) {
-            console.error(err);
+            assert.pushResult({
+                result: false,
+                message: err
+            });
         }).then(function() {
             ready();
         });
@@ -165,8 +167,11 @@ define([
 
         previewerFactory(config, $container)
             .on('error', function(err) {
-                console.error(err);
                 assert.ok(false, 'An error has occurred');
+                assert.pushResult({
+                    result: false,
+                    message: err
+                });
                 ready();
             })
             .on('ready', function(runner) {
@@ -182,9 +187,54 @@ define([
             });
     });
 
-    QUnit.test('integration', function(assert) {
+    QUnit.test('destroy', function(assert) {
         var ready = assert.async();
-        var $container = $('#previewer');
+        var $container = $('#fixture-destroy');
+        var serviceCallId = 'previewer';
+        var config = {
+            serviceCallId: serviceCallId,
+            provider: 'qtiItemPreviewer',
+            providers: [{
+                'id': 'qtiItemPreviewer',
+                'module': 'taoQtiTestPreviewer/previewer/provider/item/item',
+                'bundle': 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+                'category': 'previewer'
+            }]
+        };
+
+        assert.expect(2);
+
+        $.mockjax({
+            url: '/init*',
+            responseText: {
+                success: true
+            }
+        });
+
+        previewerFactory(config, $container)
+            .on('error', function(err) {
+                assert.ok(false, 'An error has occurred');
+                assert.pushResult({
+                    result: false,
+                    message: err
+                });
+                ready();
+            })
+            .on('ready', function(runner) {
+                assert.equal($container.children().length, 1, 'The previewer has been rendered');
+                runner.destroy();
+            })
+            .after('destroy', function() {
+                assert.equal($container.children().length, 0, 'The previewer has been destroyed');
+                ready();
+            });
+    });
+
+    QUnit.module('Visual');
+
+    QUnit.test('Visual test', function (assert) {
+        var ready = assert.async();
+        var $container = $('#visual-test');
         var serviceCallId = 'previewer';
         var itemRef = 'item-1';
         var config = {
@@ -197,12 +247,20 @@ define([
                 'category': 'previewer'
             }],
             plugins: [{
+                module: 'taoQtiTestPreviewer/previewer/plugins/controls/close',
+                bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+                category: 'controls'
+            },{
                 module: 'taoQtiTestPreviewer/previewer/plugins/navigation/submit/submit',
                 bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
                 category: 'navigation'
             }, {
                 module: 'taoQtiTest/runner/plugins/tools/itemThemeSwitcher/itemThemeSwitcher',
                 bundle: 'taoQtiTest/loader/testPlugins.min',
+                category: 'tools'
+            }, {
+                module: 'taoQtiTestPreviewer/previewer/plugins/tools/scale/scale',
+                bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
                 category: 'tools'
             }]
         };
@@ -227,16 +285,32 @@ define([
                 state: {}
             }
         });
+        $.mockjax({
+            url: '/submitItem*',
+            responseText: {
+                success: true,
+                displayFeedbacks: false,
+                itemSession: {
+                    SCORE: {
+                        base: {
+                            float: 0
+                        }
+                    }
+                }
+            }
+        });
 
         previewerFactory(config, $container)
             .on('error', function(err) {
-                console.error(err);
                 assert.ok(false, 'An error has occurred');
+                assert.pushResult({
+                    result: false,
+                    message: err
+                });
                 ready();
             })
             .on('ready', function(runner) {
                 runner
-
                     .after('renderitem.runnerComponent', function() {
                         assert.ok(true, 'The previewer has been rendered');
                         ready();

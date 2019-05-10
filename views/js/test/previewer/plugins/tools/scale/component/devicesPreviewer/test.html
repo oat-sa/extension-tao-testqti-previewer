@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Test Previewer - Devices Previewer</title>
+        <base href="../../../../../../../../../../tao/views/" />
+        <link rel="stylesheet" type="text/css" href="js/lib/qunit/qunit.css">
+        <link rel="stylesheet" href="css/tao-main-style.css"/>
+        <link rel="stylesheet" href="css/tao-3.css"/>
+        <script type="text/javascript" src="js/lib/qunit/qunit.js"></script>
+        <script type="text/javascript" src="js/lib/require.js"></script>
+        <script type="text/javascript" src="js/lib/qunit/qunit-parameterize.js"></script>
+        <script type="text/javascript" src="js/lib/blanket/blanket.min.js" data-cover-flag="branchTracking" data-cover-only="previewer/plugins/tools/scale/component/devicesPreviewer.js"></script>
+
+        <script  type="text/javascript">
+
+             //don't start the test now
+            QUnit.config.autostart = false;
+
+            //load the config
+            require(['/tao/ClientConfig/config'], function(){
+
+                //load the test
+                require(['taoQtiTestPreviewer/test/previewer/plugins/tools/scale/component/devicesPreviewer/test'], function(){
+
+                    //Tests loaded, run tests
+                    QUnit.start();
+                });
+            });
+        </script>
+
+        <style>
+            #visual-test {
+                background: #fff;
+                position: relative;
+                display: block;
+                margin: 10px 0;
+                padding: 0;
+            }
+            #visual-test .toolbar {
+                background: #266d9c;
+                position: relative;
+                display: block;
+                height: 40px;
+            }
+            #visual-test .content {
+                background: #fff;
+                position: relative;
+                display: block;
+                border: 2px solid #266d9c;
+                height: calc(100vh - 44px);
+            }
+        </style>
+    </head>
+    <body>
+        <div id="qunit"></div>
+        <div id="qunit-fixture">
+            <div id="fixture-api"></div>
+            <div id="fixture-init"></div>
+            <div id="fixture-render"></div>
+            <div id="fixture-show"></div>
+            <div id="fixture-enable"></div>
+            <div id="fixture-destroy"></div>
+            <div id="fixture-width"></div>
+            <div id="fixture-height"></div>
+            <div id="fixture-orientation"></div>
+            <div id="fixture-type"></div>
+            <div id="fixture-preview"></div>
+            <div id="fixture-scale"></div>
+            <div id="fixture-margin"></div>
+            <div id="fixture-size"></div>
+            <div id="fixture-scale-factor"></div>
+            <div id="fixture-wrap"></div>
+            <div id="fixture-unwrap"></div>
+        </div>
+        <div id="visual-test">
+            <div class="toolbar"></div>
+            <div class="content"></div>
+        </div>
+    </body>
+</html>

@@ -2,23 +2,23 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>Test Previewer</title>
-        <base href="../../../../../../tao/views/" />
+        <title>Test Previewer - Plugin Close</title>
+        <base href="../../../../../../../../tao/views/"/>
         <link rel="stylesheet" type="text/css" href="js/lib/qunit/qunit.css">
-        <link rel="stylesheet" href="css/tao-main-style.css"/>
-        <link rel="stylesheet" href="css/tao-3.css"/>
+        <link rel="stylesheet" type="text/css" href="css/tao-main-style.css">
         <script type="text/javascript" src="js/lib/qunit/qunit.js"></script>
         <script type="text/javascript" src="js/lib/require.js"></script>
         <script type="text/javascript" src="js/lib/qunit/qunit-parameterize.js"></script>
-        <script type="text/javascript" src="js/lib/blanket/blanket.min.js" data-cover-flag="branchTracking" data-cover-only="previewer/runner.js"></script>
+        <script type="text/javascript" src="js/lib/blanket/blanket.min.js" data-cover-flag="branchTracking"
+                data-cover-only="previewer/plugins/controls/close.js"></script>
 
-        <script  type="text/javascript">
+        <script type="text/javascript">
 
-             //don't start the test now
+            //don't start the test now
             QUnit.config.autostart = false;
 
             //load the config
-            require(['/tao/ClientConfig/config'], function(){
+            require(['/tao/ClientConfig/config'], function () {
                 requirejs.config({
                     "config": {
                         "core/request" : {
@@ -28,7 +28,7 @@
                 });
 
                 //load the test
-                require(['taoQtiTestPreviewer/test/previewer/runner/test'], function(){
+                require(['taoQtiTestPreviewer/test/previewer/plugins/controls/close/test'], function () {
 
                     //Tests loaded, run tests
                     QUnit.start();
@@ -39,12 +39,11 @@
     <body>
         <div id="qunit"></div>
         <div id="qunit-fixture">
-            <div id="fixture-item-1"></div>
-            <div id="fixture-item-2"></div>
-            <div id="fixture-item-3"></div>
-            <div id="fixture-destroy"></div>
-            <div id="fixture-1"></div>
-            <div id="fixture-2"></div>
+            <div id="fixture-api"></div>
+            <div id="fixture-render"></div>
+            <div id="fixture-enable"></div>
+            <div id="fixture-show"></div>
+            <div id="fixture-close"></div>
         </div>
         <div id="visual-test">
         </div>
