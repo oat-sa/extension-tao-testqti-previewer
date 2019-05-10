@@ -75,6 +75,7 @@ define([
             var $layout = $(layoutTpl());
 
             return areaBrokerFactory($layout, {
+                contentWrapper: $('.content-wrapper', $layout),
                 content: $('#qti-content', $layout),
                 toolbox: $('.bottom-action-bar .tools-box', $layout),
                 navigation: $('.bottom-action-bar .navi-box-list', $layout),

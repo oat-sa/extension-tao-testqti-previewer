@@ -7,9 +7,13 @@ module.exports = function(grunt) {
     grunt.config.merge({
         sass : {
             taoqtitestpreviewer: {
-                files : [
-                    { dest : root + 'js/previewer/provider/item/css/item.css', src :  root + 'js/previewer/provider/item/scss/item.scss'}
-                ]
+                files : [{
+                    expand: true,
+                    src: root + 'js/**/scss/*.scss',
+                    rename : function rename(dest, src){
+                        return src.replace(/scss/g, 'css');
+                    }
+                }]
             },
         },
         watch : {

@@ -28,9 +28,9 @@ define([
     'core/promise',
     'core/promiseQueue',
     'core/communicator',
-    'taoQtiTestPreviewer/previewer/config/item',
-    'util/httpErrorParser'
-], function($, _, __, Promise, promiseQueue, communicatorFactory, configFactory, httpErrorParser) {
+    'core/request',
+    'taoQtiTestPreviewer/previewer/config/item'
+], function($, _, __, Promise, promiseQueue, communicatorFactory, coreRequest, configFactory) {
     'use strict';
 
     /**
@@ -83,92 +83,31 @@ define([
              * @returns {Promise}
              */
             this.request = function request(url, reqParams, contentType, noToken) {
+                return coreRequest({
+                    url: url,
+                    data: self.prepareParams(reqParams),
+                    method: reqParams ? 'POST' : 'GET',
+                    contentType: contentType,
+                    noToken: noToken,
+                    background: false,
+                    sequential: true,
+                    timeout: self.configStorage.getTimeout()
+                })
+                    .then(function(response) {
+                        self.setOnline();
 
-                //run the request, just a function wrapper
-                var runRequest = function runRequest() {
-                    return new Promise(function(resolve, reject) {
-                        var token;
-                        var noop;
-                        var headers        = {};
-                        var action         = reqParams ? 'POST' : 'GET';
-                        var preparedParams = self.prepareParams(reqParams);
-                        var tokenHandler   = self.getTokenHandler();
-
-                        if (!noToken) {
-                            token = tokenHandler.getToken();
-                            if (token) {
-                                headers['X-Auth-Token'] = token;
-                            }
+                        if (response && response.success) {
+                            return Promise.resolve(response);
+                        } else {
+                            return Promise.reject(response);
                         }
-
-                        $.ajax({
-                            url : url,
-                            type : action,
-                            cache : false,
-                            data : preparedParams,
-                            headers : headers,
-                            async : true,
-                            dataType : 'json',
-                            contentType : contentType || noop,
-                            timeout : self.configStorage.getTimeout()
-                        })
-                            .done(function(data) {
-
-                                if (data && data.token) {
-                                    tokenHandler.setToken(data.token);
-                                }
-
-                                self.setOnline();
-
-                                if (data && data.success) {
-                                    resolve(data);
-                                } else {
-                                    reject(data);
-                                }
-                            })
-                            .fail(function(jqXHR, textStatus, errorThrown) {
-                                var data;
-
-                                try {
-                                    data = JSON.parse(jqXHR.responseText);
-                                } catch(err) {
-                                    data = {};
-                                }
-
-                                data = _.defaults(data, {
-                                    success: false,
-                                    source: 'network',
-                                    cause : url,
-                                    purpose: 'proxy',
-                                    context: this,
-                                    code: jqXHR.status,
-                                    sent: jqXHR.readyState > 0,
-                                    type: textStatus || 'error',
-                                    message: errorThrown || __('An error occurred!')
-                                });
-
-                                if (data.token) {
-                                    tokenHandler.setToken(data.token);
-                                } else if (!noToken) {
-                                    tokenHandler.setToken(token);
-                                }
-
-                                if(self.isConnectivityError(data)){
-                                    self.setOffline('request');
-                                    return resolve(data);
-                                }
-
-                                reject(httpErrorParser.parse(jqXHR, textStatus, errorThrown));
-                            });
+                    })
+                    .catch(function(error) {
+                        if (error.data && self.isConnectivityError(error.data)) {
+                            self.setOffline('request');
+                        }
+                        return Promise.reject(error);
                     });
-                };
-
-                //no token protection, run the request
-                if (noToken === true) {
-                    return runRequest();
-                }
-
-                return this.queue.serie(runRequest);
             };
         },
 
