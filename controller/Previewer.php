@@ -24,6 +24,8 @@ use oat\taoQtiTestPreviewer\models\ItemPreviewer;
 use oat\taoResultServer\models\classes\ResultServerService;
 use tao_actions_ServiceModule as ServiceModule;
 use taoQtiTest_helpers_TestRunnerUtils as TestRunnerUtils;
+use oat\taoItems\model\pack\ItemPack;
+use oat\taoItems\model\pack\Packer;
 
 /**
  * Class taoQtiTest_actions_Runner
@@ -192,8 +194,17 @@ class Previewer extends ServiceModule
                 $response['baseUrl'] = $itemPreviewer->getBaseUrl();
 
             } else if ($itemUri) {
-                // Load RESOURCE item data
-                // TODO
+                $packer = new Packer(
+                    new \core_kernel_classes_Resource($itemUri),
+                    \common_session_SessionManager::getSession()->getDataLanguage()
+                );
+                $packer->setServiceLocator($this->getServiceLocator());
+
+                /** @var ItemPack $itemPack */
+                $itemPack = $packer->pack();
+                $response['content'] = $itemPack->JsonSerialize();
+                $response['baseUrl'] = '';
+
             } else {
                 throw new \common_exception_BadRequest('Either itemUri or resultId needs to be provided.');
             }
