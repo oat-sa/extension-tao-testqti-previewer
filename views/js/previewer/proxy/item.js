@@ -27,10 +27,9 @@ define([
     'i18n',
     'core/promise',
     'core/promiseQueue',
-    'core/communicator',
     'core/request',
     'taoQtiTestPreviewer/previewer/config/item'
-], function($, _, __, Promise, promiseQueue, communicatorFactory, coreRequest, configFactory) {
+], function($, _, __, Promise, promiseQueue,  coreRequest, configFactory) {
     'use strict';
 
     /**
@@ -39,6 +38,8 @@ define([
      * @type {Object}
      */
     return {
+
+        name : 'item-preview',
 
         /**
          * Installs the proxy
