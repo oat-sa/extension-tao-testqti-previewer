@@ -40,6 +40,36 @@ define([
 ) {
     'use strict';
 
+    const runnerConfig = {
+        serviceCallId : 'foo',
+        providers : {
+            runner: {
+                'id': 'qtiItemPreviewer',
+                'module': 'taoQtiTestPreviewer/previewer/provider/item/item',
+                'bundle': 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+                'category': 'previewer'
+            },
+            proxy: {
+                id: 'qti',
+                module: 'taoQtiTest/runner/proxy/qtiServiceProxy',
+                bundle: 'taoQtiTest/loader/qtiTestRunner.min',
+                category: 'online'
+            },
+            communicator: {
+                id: 'request',
+                module: 'core/communicator/request',
+                bundle: 'loader/vendor.min',
+                category: 'request'
+            },
+            plugins: [{
+                module: 'taoQtiTestPreviewer/previewer/plugins/navigation/submit/submit',
+                bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+                category: 'navigation'
+            }]
+        },
+        options : {}
+    };
+
     // Prevent the AJAX mocks to pollute the logs
     $.mockjaxSettings.logger = null;
     $.mockjaxSettings.responseTime = 1;
@@ -80,20 +110,11 @@ define([
 
     QUnit.module('API');
 
-    QUnit.test('module', function (assert) {
-        var ready = assert.async();
-        var config = {
-            serviceCallId: 'foo',
-            provider: 'qtiItemPreviewer',
-            providers: [{
-                'id': 'qtiItemPreviewer',
-                'module': 'taoQtiTestPreviewer/previewer/provider/item/item',
-                'bundle': 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                'category': 'previewer'
-            }]
-        };
+    QUnit.test('module', assert =>  {
+        const ready = assert.async();
         assert.expect(3);
-        previewerFactory(config, $('#fixture-api'))
+
+        previewerFactory(runnerConfig, $('#fixture-api'))
             .on('ready', function (runner) {
                 assert.equal(typeof pluginFactory, 'function', 'The module exposes a function');
                 assert.equal(typeof pluginFactory(runner), 'object', 'The factory produces an instance');
@@ -119,23 +140,13 @@ define([
         {title: 'hide'},
         {title: 'enable'},
         {title: 'disable'}
-    ]).test('plugin API ', function (data, assert) {
-        var ready = assert.async();
-        var config = {
-            serviceCallId: 'foo',
-            provider: 'qtiItemPreviewer',
-            providers: [{
-                'id': 'qtiItemPreviewer',
-                'module': 'taoQtiTestPreviewer/previewer/provider/item/item',
-                'bundle': 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                'category': 'previewer'
-            }]
-        };
+    ]).test('plugin API ', (data, assert) =>  {
+        const ready = assert.async();
         assert.expect(1);
-        previewerFactory(config, $('#fixture-api'))
+        previewerFactory(runnerConfig, $('#fixture-api'))
             .on('ready', function (runner) {
-                var plugin = pluginFactory(runner);
-                assert.equal(typeof plugin[data.title], 'function', 'The instances expose a "' + data.title + '" function');
+                const plugin = pluginFactory(runner);
+                assert.equal(typeof plugin[data.title], 'function', `The instances expose a ${data.title} function`);
                 runner.destroy();
             })
             .on('destroy', ready);
@@ -145,98 +156,73 @@ define([
 
     QUnit.cases.init([{
         title: 'interactive',
-        config: {
+        options: {
             readOnly: false
         }
     }, {
         title: 'read only',
-        config: {
+        options: {
             readOnly: true
         }
-    }]).test('render / destroy ', function (data, assert) {
-        var ready = assert.async();
-        var config = _.merge({
-            serviceCallId: 'foo',
-            provider: 'qtiItemPreviewer',
-            providers: [{
-                'id': 'qtiItemPreviewer',
-                'module': 'taoQtiTestPreviewer/previewer/provider/item/item',
-                'bundle': 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                'category': 'previewer'
-            }],
-            plugins: [{
-                module: 'taoQtiTestPreviewer/previewer/plugins/navigation/submit/submit',
-                bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                category: 'navigation'
-            }]
-        }, data.config);
+    }]).test('render / destroy ', (data, assert) =>  {
+        const ready = assert.async();
         assert.expect(8);
+
+        const config = Object.assign({}, runnerConfig);
+        config.options = data.options;
+
         previewerFactory(config, $('#fixture-render'))
             .on('ready', function (runner) {
-                var areaBroker = runner.getAreaBroker();
-                var plugin = runner.getPlugin('submit');
+                const areaBroker = runner.getAreaBroker();
+                const plugin = runner.getPlugin('submit');
                 Promise.resolve()
                     .then(function () {
-                        var $container = areaBroker.getContainer();
-                        var $navigation = areaBroker.getNavigationArea();
-                        var $button = $navigation.find('[data-control="submit"]');
-                        var $closer = $navigation.find('.preview-console-closer');
-                        var $console = $container.find('.preview-console');
+                        const $container = areaBroker.getContainer();
+                        const $navigation = areaBroker.getNavigationArea();
+                        const $button = $navigation.find('[data-control="submit"]');
+                        const $closer = $navigation.find('.preview-console-closer');
+                        const $console = $container.find('.preview-console');
                         assert.equal($button.length, 1, 'The button has been inserted');
                         assert.equal($closer.length, 1, 'The console closer has been inserted');
                         assert.equal($console.length, 1, 'The console has been inserted');
                         assert.equal($button.hasClass('disabled'), true, 'The button has been rendered disabled');
-                        assert.equal(hider.isHidden($button), config.readOnly, 'The button state is aligned to the config');
+                        assert.equal(hider.isHidden($button), config.options.readOnly, 'The button state is aligned to the config');
                         return plugin.destroy();
                     })
                     .then(function () {
-                        var $container = areaBroker.getContainer();
-                        var $navigation = areaBroker.getNavigationArea();
-                        var $button = $navigation.find('[data-control="submit"]');
-                        var $closer = $navigation.find('.preview-console-closer');
-                        var $console = $container.find('.preview-console');
+                        const $container = areaBroker.getContainer();
+                        const $navigation = areaBroker.getNavigationArea();
+                        const $button = $navigation.find('[data-control="submit"]');
+                        const $closer = $navigation.find('.preview-console-closer');
+                        const $console = $container.find('.preview-console');
                         assert.equal($button.length, 0, 'The trigger button has been removed');
                         assert.equal($closer.length, 0, 'The console closer has been removed');
                         assert.equal($console.length, 0, 'The console has been removed');
                         runner.destroy();
                     })
                     .catch(function (err) {
-                        assert.ok(false, 'Error in init method: ' + err);
+                        assert.ok(false, `Error in init method: ${err.message}`);
                         runner.destroy();
                     });
             })
             .on('destroy', ready);
     });
 
-    QUnit.test('enable / disable', function (assert) {
-        var ready = assert.async();
-        var config = {
-            serviceCallId: 'foo',
-            provider: 'qtiItemPreviewer',
-            providers: [{
-                'id': 'qtiItemPreviewer',
-                'module': 'taoQtiTestPreviewer/previewer/provider/item/item',
-                'bundle': 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                'category': 'previewer'
-            }],
-            plugins: [{
-                module: 'taoQtiTestPreviewer/previewer/plugins/navigation/submit/submit',
-                bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                category: 'navigation'
-            }]
-        };
+    QUnit.test('enable / disable', assert =>  {
+        const ready = assert.async();
         assert.expect(11);
-        previewerFactory(config, $('#fixture-enable'))
+
+        previewerFactory(runnerConfig, $('#fixture-enable'))
             .on('ready', function (runner) {
-                var areaBroker = runner.getAreaBroker();
-                var plugin = runner.getPlugin('submit');
+                const areaBroker = runner.getAreaBroker();
+                const plugin = runner.getPlugin('submit');
                 Promise.resolve()
                     .then(function () {
-                        var $container = areaBroker.getContainer();
-                        var $navigation = areaBroker.getNavigationArea();
-                        var $button = $navigation.find('[data-control="submit"]');
-                        var $closer = $navigation.find('.preview-console-closer');
-                        var $console = $container.find('.preview-console');
+                        const $container = areaBroker.getContainer();
+                        const $navigation = areaBroker.getNavigationArea();
+                        const $button = $navigation.find('[data-control="submit"]');
+                        const $closer = $navigation.find('.preview-console-closer');
+                        const $console = $container.find('.preview-console');
                         assert.equal($button.length, 1, 'The button has been inserted');
                         assert.equal($closer.length, 1, 'The console closer has been inserted');
                         assert.equal($console.length, 1, 'The console has been inserted');
@@ -244,8 +230,8 @@ define([
                         return plugin.enable();
                     })
                     .then(function () {
-                        var $navigation = areaBroker.getNavigationArea();
-                        var $button = $navigation.find('[data-control="submit"]');
+                        const $navigation = areaBroker.getNavigationArea();
+                        const $button = $navigation.find('[data-control="submit"]');
                         assert.equal($button.hasClass('disabled'), false, 'The button has been enabled');
                         return new Promise(function (resolve) {
                             runner
@@ -254,8 +240,8 @@ define([
                         });
                     })
                     .then(function () {
-                        var $navigation = areaBroker.getNavigationArea();
-                        var $button = $navigation.find('[data-control="submit"]');
+                        const $navigation = areaBroker.getNavigationArea();
+                        const $button = $navigation.find('[data-control="submit"]');
                         assert.equal($button.hasClass('disabled'), true, 'The button has been disabled');
                         return new Promise(function (resolve) {
                             runner
@@ -264,58 +250,44 @@ define([
                         });
                     })
                     .then(function () {
-                        var $navigation = areaBroker.getNavigationArea();
-                        var $button = $navigation.find('[data-control="submit"]');
+                        const $navigation = areaBroker.getNavigationArea();
+                        const $button = $navigation.find('[data-control="submit"]');
                         assert.equal($button.hasClass('disabled'), false, 'The button has been enabled');
                         return plugin.disable();
                     })
                     .then(function () {
-                        var $navigation = areaBroker.getNavigationArea();
-                        var $button = $navigation.find('[data-control="submit"]');
+                        const $navigation = areaBroker.getNavigationArea();
+                        const $button = $navigation.find('[data-control="submit"]');
                         assert.equal($button.hasClass('disabled'), true, 'The button has been disabled');
                         return plugin.destroy();
                     })
                     .then(function () {
-                        var $container = areaBroker.getContainer();
-                        var $navigation = areaBroker.getNavigationArea();
-                        var $button = $navigation.find('[data-control="submit"]');
-                        var $closer = $navigation.find('.preview-console-closer');
-                        var $console = $container.find('.preview-console');
+                        const $container = areaBroker.getContainer();
+                        const $navigation = areaBroker.getNavigationArea();
+                        const $button = $navigation.find('[data-control="submit"]');
+                        const $closer = $navigation.find('.preview-console-closer');
+                        const $console = $container.find('.preview-console');
                         assert.equal($button.length, 0, 'The trigger button has been removed');
                         assert.equal($closer.length, 0, 'The console closer has been removed');
                         assert.equal($console.length, 0, 'The console has been removed');
                         runner.destroy();
                     })
                     .catch(function (err) {
-                        assert.ok(false, 'Error in init method: ' + err);
+                        assert.ok(false, `Error in init method: ${err.message}`);
                         runner.destroy();
                     });
             })
             .on('destroy', ready);
     });
 
-    QUnit.test('show / hide', function (assert) {
-        var ready = assert.async();
-        var config = {
-            serviceCallId: 'foo',
-            provider: 'qtiItemPreviewer',
-            providers: [{
-                'id': 'qtiItemPreviewer',
-                'module': 'taoQtiTestPreviewer/previewer/provider/item/item',
-                'bundle': 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                'category': 'previewer'
-            }],
-            plugins: [{
-                module: 'taoQtiTestPreviewer/previewer/plugins/navigation/submit/submit',
-                bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                category: 'navigation'
-            }]
-        };
+    QUnit.test('show / hide', assert =>  {
+        const ready = assert.async();
         assert.expect(17);
-        previewerFactory(config, $('#fixture-show'))
+
+        previewerFactory(runnerConfig, $('#fixture-show'))
             .on('ready', function (runner) {
-                var areaBroker = runner.getAreaBroker();
-                var plugin = runner.getPlugin('submit');
+                const areaBroker = runner.getAreaBroker();
+                const plugin = runner.getPlugin('submit');
                 Promise.resolve()
                     .then(function () {
                         return new Promise(function (resolve) {
@@ -325,11 +297,11 @@ define([
                         });
                     })
                     .then(function () {
-                        var $container = areaBroker.getContainer();
-                        var $navigation = areaBroker.getNavigationArea();
-                        var $button = $navigation.find('[data-control="submit"]');
-                        var $closer = $navigation.find('.preview-console-closer');
-                        var $console = $container.find('.preview-console');
+                        const $container = areaBroker.getContainer();
+                        const $navigation = areaBroker.getNavigationArea();
+                        const $button = $navigation.find('[data-control="submit"]');
+                        const $closer = $navigation.find('.preview-console-closer');
+                        const $console = $container.find('.preview-console');
                         assert.equal($closer.length, 1, 'The console closer has been inserted');
                         assert.equal($console.length, 1, 'The console has been inserted');
                         assert.equal($button.length, 1, 'The button has been inserted');
@@ -337,8 +309,8 @@ define([
                     })
                     .then(function () {
                         return new Promise(function (resolve) {
-                            var $navigation = areaBroker.getNavigationArea();
-                            var $button = $navigation.find('[data-control="submit"]');
+                            const $navigation = areaBroker.getNavigationArea();
+                            const $button = $navigation.find('[data-control="submit"]');
                             runner.after('scoreitem', function() {
                                 assert.ok('The score is submitted');
                                 resolve();
@@ -347,51 +319,51 @@ define([
                         });
                     })
                     .then(function () {
-                        var $container = areaBroker.getContainer();
-                        var $navigation = areaBroker.getNavigationArea();
-                        var $button = $navigation.find('[data-control="submit"]');
-                        var $closer = $navigation.find('.preview-console-closer');
-                        var $console = $container.find('.preview-console');
+                        const $container = areaBroker.getContainer();
+                        const $navigation = areaBroker.getNavigationArea();
+                        const $button = $navigation.find('[data-control="submit"]');
+                        const $closer = $navigation.find('.preview-console-closer');
+                        const $console = $container.find('.preview-console');
                         assert.ok(!hider.isHidden($button), 'The button is visible');
                         assert.ok(!hider.isHidden($closer), 'The console closer is visible');
                         assert.ok(!hider.isHidden($console), 'The console is visible');
                         return plugin.hide();
                     })
                     .then(function () {
-                        var $container = areaBroker.getContainer();
-                        var $navigation = areaBroker.getNavigationArea();
-                        var $button = $navigation.find('[data-control="submit"]');
-                        var $closer = $navigation.find('.preview-console-closer');
-                        var $console = $container.find('.preview-console');
+                        const $container = areaBroker.getContainer();
+                        const $navigation = areaBroker.getNavigationArea();
+                        const $button = $navigation.find('[data-control="submit"]');
+                        const $closer = $navigation.find('.preview-console-closer');
+                        const $console = $container.find('.preview-console');
                         assert.ok(hider.isHidden($button), 'The button has been hidden');
                         assert.ok(hider.isHidden($closer), 'The console closer has been hidden');
                         assert.ok(hider.isHidden($console), 'The console has been hidden');
                         return plugin.show();
                     })
                     .then(function () {
-                        var $container = areaBroker.getContainer();
-                        var $navigation = areaBroker.getNavigationArea();
-                        var $button = $navigation.find('[data-control="submit"]');
-                        var $closer = $navigation.find('.preview-console-closer');
-                        var $console = $container.find('.preview-console');
+                        const $container = areaBroker.getContainer();
+                        const $navigation = areaBroker.getNavigationArea();
+                        const $button = $navigation.find('[data-control="submit"]');
+                        const $closer = $navigation.find('.preview-console-closer');
+                        const $console = $container.find('.preview-console');
                         assert.ok(!hider.isHidden($button), 'The button is visible');
                         assert.ok(hider.isHidden($closer), 'The console closer is still hidden');
                         assert.ok(hider.isHidden($console), 'The console is still hidden');
                         return plugin.destroy();
                     })
                     .then(function () {
-                        var $container = areaBroker.getContainer();
-                        var $navigation = areaBroker.getNavigationArea();
-                        var $button = $navigation.find('[data-control="submit"]');
-                        var $closer = $navigation.find('.preview-console-closer');
-                        var $console = $container.find('.preview-console');
+                        const $container = areaBroker.getContainer();
+                        const $navigation = areaBroker.getNavigationArea();
+                        const $button = $navigation.find('[data-control="submit"]');
+                        const $closer = $navigation.find('.preview-console-closer');
+                        const $console = $container.find('.preview-console');
                         assert.equal($button.length, 0, 'The trigger button has been removed');
                         assert.equal($closer.length, 0, 'The console closer has been removed');
                         assert.equal($console.length, 0, 'The console has been removed');
                         runner.destroy();
                     })
                     .catch(function (err) {
-                        assert.ok(false, 'Error in init method: ' + err);
+                        assert.ok(false, `Error in init method: ${err.message}`);
                         runner.destroy();
                     });
             })
@@ -400,28 +372,13 @@ define([
 
     QUnit.module('behavior');
 
-    QUnit.test('submit', function (assert) {
-        var ready = assert.async();
-        var config = {
-            serviceCallId: 'foo',
-            provider: 'qtiItemPreviewer',
-            providers: [{
-                'id': 'qtiItemPreviewer',
-                'module': 'taoQtiTestPreviewer/previewer/provider/item/item',
-                'bundle': 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                'category': 'previewer'
-            }],
-            plugins: [{
-                module: 'taoQtiTestPreviewer/previewer/plugins/navigation/submit/submit',
-                bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                category: 'navigation'
-            }]
-        };
+    QUnit.test('submit', assert =>  {
+        const ready = assert.async();
         assert.expect(14);
-        previewerFactory(config, $('#fixture-show'))
+        previewerFactory(runnerConfig, $('#fixture-show'))
             .on('ready', function (runner) {
-                var areaBroker = runner.getAreaBroker();
-                var plugin = runner.getPlugin('submit');
+                const areaBroker = runner.getAreaBroker();
+                const plugin = runner.getPlugin('submit');
                 Promise.resolve()
                     .then(function () {
                         return new Promise(function (resolve) {
@@ -431,11 +388,11 @@ define([
                         });
                     })
                     .then(function () {
-                        var $container = areaBroker.getContainer();
-                        var $navigation = areaBroker.getNavigationArea();
-                        var $button = $navigation.find('[data-control="submit"]');
-                        var $closer = $navigation.find('.preview-console-closer');
-                        var $console = $container.find('.preview-console');
+                        const $container = areaBroker.getContainer();
+                        const $navigation = areaBroker.getNavigationArea();
+                        const $button = $navigation.find('[data-control="submit"]');
+                        const $closer = $navigation.find('.preview-console-closer');
+                        const $console = $container.find('.preview-console');
                         assert.equal($closer.length, 1, 'The console closer has been inserted');
                         assert.equal($console.length, 1, 'The console has been inserted');
                         assert.equal($button.length, 1, 'The button has been inserted');
@@ -443,8 +400,8 @@ define([
                     })
                     .then(function () {
                         return new Promise(function (resolve) {
-                            var $navigation = areaBroker.getNavigationArea();
-                            var $button = $navigation.find('[data-control="submit"]');
+                            const $navigation = areaBroker.getNavigationArea();
+                            const $button = $navigation.find('[data-control="submit"]');
                             runner.after('scoreitem', function() {
                                 assert.ok('The score is submitted');
                                 resolve();
@@ -453,40 +410,40 @@ define([
                         });
                     })
                     .then(function () {
-                        var $container = areaBroker.getContainer();
-                        var $navigation = areaBroker.getNavigationArea();
-                        var $button = $navigation.find('[data-control="submit"]');
-                        var $closer = $navigation.find('.preview-console-closer');
-                        var $console = $container.find('.preview-console');
+                        const $container = areaBroker.getContainer();
+                        const $navigation = areaBroker.getNavigationArea();
+                        const $button = $navigation.find('[data-control="submit"]');
+                        const $closer = $navigation.find('.preview-console-closer');
+                        const $console = $container.find('.preview-console');
                         assert.ok(!hider.isHidden($button), 'The button is visible');
                         assert.ok(!hider.isHidden($closer), 'The console closer is visible');
                         assert.ok(!hider.isHidden($console), 'The console is visible');
                         $closer.click();
                     })
                     .then(function () {
-                        var $container = areaBroker.getContainer();
-                        var $navigation = areaBroker.getNavigationArea();
-                        var $button = $navigation.find('[data-control="submit"]');
-                        var $closer = $navigation.find('.preview-console-closer');
-                        var $console = $container.find('.preview-console');
+                        const $container = areaBroker.getContainer();
+                        const $navigation = areaBroker.getNavigationArea();
+                        const $button = $navigation.find('[data-control="submit"]');
+                        const $closer = $navigation.find('.preview-console-closer');
+                        const $console = $container.find('.preview-console');
                         assert.ok(!hider.isHidden($button), 'The button is visible');
                         assert.ok(hider.isHidden($closer), 'The console closer is hidden');
                         assert.ok(hider.isHidden($console), 'The console is hidden');
                         return plugin.destroy();
                     })
                     .then(function () {
-                        var $container = areaBroker.getContainer();
-                        var $navigation = areaBroker.getNavigationArea();
-                        var $button = $navigation.find('[data-control="submit"]');
-                        var $closer = $navigation.find('.preview-console-closer');
-                        var $console = $container.find('.preview-console');
+                        const $container = areaBroker.getContainer();
+                        const $navigation = areaBroker.getNavigationArea();
+                        const $button = $navigation.find('[data-control="submit"]');
+                        const $closer = $navigation.find('.preview-console-closer');
+                        const $console = $container.find('.preview-console');
                         assert.equal($button.length, 0, 'The trigger button has been removed');
                         assert.equal($closer.length, 0, 'The console closer has been removed');
                         assert.equal($console.length, 0, 'The console has been removed');
                         runner.destroy();
                     })
                     .catch(function (err) {
-                        assert.ok(false, 'Error in init method: ' + err);
+                        assert.ok(false, `Error in init method: ${err.message}`);
                         runner.destroy();
                     });
             })
@@ -497,30 +454,14 @@ define([
 
     QUnit.module('Visual');
 
-    QUnit.test('Visual test', function (assert) {
-        var ready = assert.async();
-        var $container = $('#visual-test');
-        var serviceCallId = 'previewer';
-        var itemRef = 'item-1';
-        var config = {
-            serviceCallId: serviceCallId,
-            provider: 'qtiItemPreviewer',
-            providers: [{
-                'id': 'qtiItemPreviewer',
-                'module': 'taoQtiTestPreviewer/previewer/provider/item/item',
-                'bundle': 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                'category': 'previewer'
-            }],
-            plugins: [{
-                module: 'taoQtiTestPreviewer/previewer/plugins/navigation/submit/submit',
-                bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                category: 'navigation'
-            }]
-        };
+    QUnit.test('Visual test', assert =>  {
+        const ready = assert.async();
+        const $container = $('#visual-test');
+        const itemRef = 'item-1';
 
         assert.expect(1);
 
-        previewerFactory(config, $container)
+        previewerFactory(runnerConfig, $container)
             .on('error', function(err) {
                 assert.ok(false, 'An error has occurred');
                 assert.pushResult({
