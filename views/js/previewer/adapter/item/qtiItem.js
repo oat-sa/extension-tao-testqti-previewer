@@ -20,25 +20,15 @@
  */
 define([
     'lodash',
+    'context',
     'core/logger',
     'taoQtiTestPreviewer/previewer/runner',
     'ui/feedback',
     'css!taoQtiTestPreviewer/previewer/provider/item/css/item'
-], function (_, loggerFactory, previewerFactory, feedback) {
+], function (_, context, loggerFactory, previewerFactory, feedback) {
     'use strict';
 
     var logger = loggerFactory('taoQtiTest/previewer');
-
-    /**
-     * List of default providers.
-     * @type {Object[]}
-     */
-    var defaultProviders = [{
-        id: 'qtiItemPreviewer',
-        module: 'taoQtiTestPreviewer/previewer/provider/item/item',
-        bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-        category: 'previewer'
-    }];
 
     /**
      * List of required plugins that should be loaded in order to make the previewer work properly
@@ -79,17 +69,42 @@ define([
          * @param {String} [config.readOnly] - Do not allow to modify the previewed item.
          * @returns {Object}
          */
-        init: function init(uri, state, config) {
-            config = _.defaults(config || {}, {
-                provider: 'qtiItemPreviewer',
-                serviceCallId: 'previewer'
-            });
+        init(uri, state, config) {
 
-            // ensure required providers and plugins will be loaded
-            config.providers = defaultProviders.concat(config.providers || []);
-            config.plugins = defaultPlugins.concat(config.plugins || []);
+            var testRunnerConfig = {
+                testDefinition: 'test-container',
+                serviceCallId: 'previewer',
+                providers: {
+                    runner: {
+                        id: 'qtiItemPreviewer',
+                        module: 'taoQtiTestPreviewer/previewer/provider/item/item',
+                        bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+                        category: 'previewer'
+                    },
+                    "proxy": {
+                        "id": "qti",
+                        "module": "taoQtiTest/runner/proxy/qtiServiceProxy",
+                        "bundle": "taoQtiTest/loader/qtiTestRunner.min",
+                        "category": "online"
+                    },
+                    "communicator": {
+                        "id": "request",
+                        "module": "core/communicator/request",
+                        "bundle": "loader/vendor.min",
+                        "category": "request"
+                    },
+                    plugins : defaultPlugins,
+                },
+                options: {
+                    readOnly : config.readOnly,
+                    fullScreen : config.fullPage
+                }
+            };
 
-            return previewerFactory(config)
+            //extra context config
+            testRunnerConfig.loadFromBundle = !!context.bundle;
+
+            return previewerFactory(testRunnerConfig)
                 .on('error', function (err) {
                     if (!_.isUndefined(err.message)) {
                         feedback().error(err.message);

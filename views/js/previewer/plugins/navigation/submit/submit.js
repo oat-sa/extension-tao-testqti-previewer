@@ -69,7 +69,7 @@ define([
              */
             function isPluginAllowed() {
                 var config = testRunner.getConfig();
-                return !config.readOnly;
+                return !config.options.readOnly;
             }
 
             // display the console and its related controls, then auto scrolls to the last element
