@@ -42,22 +42,22 @@ define([
         serviceCallId : 'foo',
         providers : {
             runner: {
-                'id': 'qtiItemPreviewer',
-                'module': 'taoQtiTestPreviewer/previewer/provider/item/item',
-                'bundle': 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                'category': 'previewer'
+                id: 'qtiItemPreviewer',
+                module: 'taoQtiTestPreviewer/previewer/provider/item/item',
+                bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+                category: 'runner'
             },
             proxy: {
-                id: 'qti',
-                module: 'taoQtiTest/runner/proxy/qtiServiceProxy',
+                id: 'qtiItemPreviewProxy',
+                module: 'taoQtiTestPreviewer/previewer/proxy/item',
                 bundle: 'taoQtiTest/loader/qtiTestRunner.min',
-                category: 'online'
+                category: 'proxy'
             },
             communicator: {
                 id: 'request',
                 module: 'core/communicator/request',
                 bundle: 'loader/vendor.min',
-                category: 'request'
+                category: 'communicator'
             },
             plugins: [{
                 module: 'taoQtiTestPreviewer/previewer/plugins/navigation/submit/submit',
