@@ -34,19 +34,19 @@ define([
             id: 'qtiItemPreviewer',
             module: 'taoQtiTestPreviewer/previewer/provider/item/item',
             bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-            category: 'previewer'
+            category: 'runner'
         },
         proxy: {
-            id: 'qti',
-            module: 'taoQtiTest/runner/proxy/qtiServiceProxy',
-            bundle: 'taoQtiTest/loader/qtiTestRunner.min',
-            category: 'online'
+            id: 'qtiItemPreviewProxy',
+            module: 'taoQtiTestPreviewer/previewer/proxy/item',
+            bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+            category: 'proxy'
         },
         communicator: {
             id: 'request',
             module: 'core/communicator/request',
             bundle: 'loader/vendor.min',
-            category: 'request'
+            category: 'communicator'
         }
     };
 
