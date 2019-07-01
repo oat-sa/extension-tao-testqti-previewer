@@ -219,6 +219,8 @@ class Previewer extends ServiceModule
 
         try {
 
+            $this->validateCsrf();
+
             $displayFeedback = false;
 
             // @TODO implement the scoring
