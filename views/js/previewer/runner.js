@@ -49,7 +49,7 @@ define([
 
         return runnerComponentFactory(container || $(document.body), config, template || runnerTpl)
             .on('render', function() {
-                this.setState('fullpage', config.options.fullScreen);
+                this.setState('fullpage', config.options.fullPage);
                 this.setState('readonly', config.options.readOnly);
             })
             .on('ready', function(runner) {

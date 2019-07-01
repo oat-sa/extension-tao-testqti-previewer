@@ -64,14 +64,15 @@ define([
          * @param {String} uri - The URI of the item to load
          * @param {Object} state - The state of the item
          * @param {Object} [config] - Some config entries
-         * @param {String} [config.serviceCallId='previewer'] - The service call Id to send to the server
+         * @param {Object[]} [config.plugins] - Additional plugins to load
          * @param {String} [config.fullPage] - Force the previewer to occupy the full window.
          * @param {String} [config.readOnly] - Do not allow to modify the previewed item.
          * @returns {Object}
          */
-        init(uri, state, config) {
+        init(uri, state, config = {}) {
 
-            var testRunnerConfig = {
+            const plugins = Array.isArray(config.plugins) ? [...defaultPlugins, ...config.plugins] : defaultPlugins;
+            const testRunnerConfig = {
                 testDefinition: 'test-container',
                 serviceCallId: 'previewer',
                 providers: {
@@ -93,11 +94,11 @@ define([
                         "bundle": "loader/vendor.min",
                         "category": "request"
                     },
-                    plugins : defaultPlugins,
+                    plugins,
                 },
                 options: {
                     readOnly : config.readOnly,
-                    fullScreen : config.fullPage
+                    fullPage : config.fullPage
                 }
             };
 
