@@ -63,7 +63,7 @@ define([
     return {
 
         //provider name
-        name: 'qtiItemPreviewerProxy',
+        name: 'qtiItemPreviewer',
 
         /**
          * Initialize and load the area broker with a correct mapping
