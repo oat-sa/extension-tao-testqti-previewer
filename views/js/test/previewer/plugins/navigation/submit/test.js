@@ -22,7 +22,6 @@
 define([
     'jquery',
     'lodash',
-    'core/promise',
     'ui/hider',
     'taoQtiTestPreviewer/previewer/runner',
     'taoQtiTestPreviewer/previewer/plugins/navigation/submit/submit',
@@ -32,7 +31,6 @@ define([
 ], function (
     $,
     _,
-    Promise,
     hider,
     previewerFactory,
     pluginFactory,

@@ -221,7 +221,7 @@ define([
             })
             .on('ready', function(runner) {
                 assert.equal($container.children().length, 1, 'The previewer has been rendered');
-                setTimeout(() => runner.destroy(), 250);
+                runner.destroy();
             })
             .after('destroy', function() {
                 assert.equal($container.children().length, 0, 'The previewer has been destroyed');

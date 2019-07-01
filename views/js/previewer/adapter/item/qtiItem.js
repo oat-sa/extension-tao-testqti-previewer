@@ -82,17 +82,17 @@ define([
                         bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
                         category: 'previewer'
                     },
-                    "proxy": {
-                        "id": "qti",
-                        "module": "taoQtiTest/runner/proxy/qtiServiceProxy",
-                        "bundle": "taoQtiTest/loader/qtiTestRunner.min",
-                        "category": "online"
+                    proxy: {
+                        id: 'qtiItemPreviewerProxy',
+                        module: 'taoQtiTest/runner/proxy/qtiServiceProxy',
+                        bundle: 'taoQtiTest/loader/qtiTestRunner.min',
+                        category: 'online'
                     },
-                    "communicator": {
-                        "id": "request",
-                        "module": "core/communicator/request",
-                        "bundle": "loader/vendor.min",
-                        "category": "request"
+                    communicator: {
+                        id: 'request',
+                        module: 'core/communicator/request',
+                        bundle: 'loader/vendor.min',
+                        category: 'request'
                     },
                     plugins,
                 },

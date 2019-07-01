@@ -24,11 +24,9 @@
 define([
     'jquery',
     'lodash',
-    'context',
-    'core/promise',
     'taoTests/runner/runnerComponent',
     'tpl!taoQtiTestPreviewer/previewer/runner'
-], function ($, _, context, Promise, runnerComponentFactory, runnerTpl) {
+], function ($, _, runnerComponentFactory, runnerTpl) {
     'use strict';
 
     /**

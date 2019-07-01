@@ -57,15 +57,13 @@ define([
     //the asset strategies
     var assetManager = assetManagerFactory();
 
-    proxyFactory.registerProvider('qtiItemPreviewerProxy', proxyProvider);
-
     /**
      * A Test runner provider to be registered against the runner
      */
     return {
 
         //provider name
-        name: 'qtiItemPreviewer',
+        name: 'qtiItemPreviewerProxy',
 
         /**
          * Initialize and load the area broker with a correct mapping

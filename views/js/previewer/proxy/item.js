@@ -25,11 +25,10 @@ define([
     'jquery',
     'lodash',
     'i18n',
-    'core/promise',
     'core/promiseQueue',
     'core/request',
     'taoQtiTestPreviewer/previewer/config/item'
-], function($, _, __, Promise, promiseQueue,  coreRequest, configFactory) {
+], function($, _, __, promiseQueue,  coreRequest, configFactory) {
     'use strict';
 
     /**
@@ -39,7 +38,7 @@ define([
      */
     return {
 
-        name : 'item-preview',
+        name : 'qtiItemPreviewerProxy',
 
         /**
          * Installs the proxy

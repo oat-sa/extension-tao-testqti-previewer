@@ -21,7 +21,6 @@
  */
 define([
     'jquery',
-    'core/promise',
     'ui/hider',
     'taoQtiTestPreviewer/previewer/runner',
     'taoQtiTestPreviewer/previewer/plugins/controls/close',
@@ -30,7 +29,6 @@ define([
     'css!taoQtiTestPreviewer/previewer/provider/item/css/item'
 ], function (
     $,
-    Promise,
     hider,
     previewerFactory,
     pluginFactory,
