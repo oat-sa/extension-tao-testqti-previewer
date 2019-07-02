@@ -20,12 +20,10 @@
  */
 define([
     'lodash',
-    'context',
     'core/logger',
-    'taoQtiTestPreviewer/previewer/runner',
-    'ui/feedback',
-    'css!taoQtiTestPreviewer/previewer/provider/item/css/item'
-], function (_, context, loggerFactory, previewerFactory, feedback) {
+    'taoQtiTestPreviewer/previewer/component/qtiItem',
+    'ui/feedback'
+], function (_, loggerFactory, qtiItemPreviewerFactory, feedback) {
     'use strict';
 
     const logger = loggerFactory('taoQtiTest/previewer');
@@ -71,41 +69,8 @@ define([
          */
         init(uri, state, config = {}) {
 
-            const plugins = Array.isArray(config.plugins) ? [...defaultPlugins, ...config.plugins] : defaultPlugins;
-            const testRunnerConfig = {
-                testDefinition: 'test-container',
-                serviceCallId: 'previewer',
-                providers: {
-                    runner: {
-                        id: 'qtiItemPreviewer',
-                        module: 'taoQtiTestPreviewer/previewer/provider/item/item',
-                        bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                        category: 'runner'
-                    },
-                    proxy: {
-                        id: 'qtiItemPreviewerProxy',
-                        module: 'taoQtiTestPreviewer/previewer/proxy/item',
-                        bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                        category: 'proxy'
-                    },
-                    communicator: {
-                        id: 'request',
-                        module: 'core/communicator/request',
-                        bundle: 'loader/vendor.min',
-                        category: 'communicator'
-                    },
-                    plugins,
-                },
-                options: {
-                    readOnly : config.readOnly,
-                    fullPage : config.fullPage
-                }
-            };
-
-            //extra context config
-            testRunnerConfig.loadFromBundle = !!context.bundle;
-
-            return previewerFactory(window.document.body, testRunnerConfig)
+            config.plugins = Array.isArray(config.plugins) ? [...defaultPlugins, ...config.plugins] : defaultPlugins;
+            return qtiItemPreviewerFactory(window.document.body, config)
                 .on('error', function (err) {
                     if (!_.isUndefined(err.message)) {
                         feedback().error(err.message);
