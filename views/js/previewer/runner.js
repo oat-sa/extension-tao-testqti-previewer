@@ -45,9 +45,9 @@ define([
 
         return runnerComponentFactory(container, config, template || runnerTpl)
             .on('render', function() {
-                const options = this.getConfig().options;
-                this.setState('fullpage', options.fullPage);
-                this.setState('readonly', options.readOnly);
+                const {fullPage, readOnly} = this.getConfig().options;
+                this.setState('fullpage', fullPage);
+                this.setState('readonly', readOnly);
             })
             .on('ready', function(runner) {
                 runner.on('destroy', () => this.destroy() );

@@ -61,7 +61,7 @@ define([
                     bundle: 'loader/vendor.min',
                     category: 'communicator'
                 },
-                plugins: config.plugins || [],
+                plugins: config.plugins || []
             },
             options: {
                 readOnly: config.readOnly,
