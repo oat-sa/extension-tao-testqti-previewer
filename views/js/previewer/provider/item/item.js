@@ -25,13 +25,9 @@ define([
     'jquery',
     'lodash',
     'i18n',
-    'core/store',
-    'core/promise',
-    'core/cachedStore',
     'taoTests/runner/areaBroker',
     'taoTests/runner/testStore',
     'taoTests/runner/proxy',
-    'taoQtiTestPreviewer/previewer/proxy/item',
     'taoQtiTest/runner/ui/toolbox/toolbox',
     'taoQtiItem/runner/qtiItemRunner',
     'taoQtiTest/runner/config/assetManager',
@@ -40,13 +36,9 @@ define([
     $,
     _,
     __,
-    store,
-    Promise,
-    cachedStore,
     areaBrokerFactory,
     testStoreFactory,
     proxyFactory,
-    proxyProvider,
     toolboxFactory,
     qtiItemRunner,
     assetManagerFactory,
@@ -55,7 +47,7 @@ define([
     'use strict';
 
     //the asset strategies
-    var assetManager = assetManagerFactory();
+    const assetManager = assetManagerFactory();
 
     /**
      * A Test runner provider to be registered against the runner
@@ -69,8 +61,8 @@ define([
          * Initialize and load the area broker with a correct mapping
          * @returns {areaBroker}
          */
-        loadAreaBroker: function loadAreaBroker() {
-            var $layout = $(layoutTpl());
+        loadAreaBroker() {
+            const $layout = $(layoutTpl());
 
             return areaBrokerFactory($layout, {
                 contentWrapper: $('.content-wrapper', $layout),
@@ -89,26 +81,20 @@ define([
          * Initialize and load the test runner proxy
          * @returns {proxy}
          */
-        loadProxy: function loadProxy() {
-            var config = this.getConfig();
-            var proxyConfig = _.pick(config, [
-                'serviceCallId',
-                'bootstrap',
-                'timeout'
-            ]);
-
-            return proxyFactory(config.proxyProvider || 'qtiItemPreviewerProxy', proxyConfig);
+        loadProxy() {
+            const {proxyProvider, serviceCallId, bootstrap, timeout} = this.getConfig();
+            return proxyFactory(proxyProvider || 'qtiItemPreviewerProxy', {serviceCallId, bootstrap, timeout});
         },
 
         /**
          * Initialize and load the test store
          * @returns {testStore}
          */
-        loadTestStore : function loadTestStore(){
-            var config = this.getConfig();
+        loadTestStore() {
+            const config = this.getConfig();
 
             //the test run needs to be identified uniquely
-            var identifier = config.serviceCallId || 'test-' + Date.now();
+            const identifier = config.serviceCallId || `test-${Date.now()}`;
             return testStoreFactory(identifier);
         },
 
@@ -121,10 +107,9 @@ define([
          * @this {runner} the runner context, not the provider
          * @returns {Promise} to chain proxy.init
          */
-        init: function init() {
-            var self = this;
-            var dataHolder = this.getDataHolder();
-            var areaBroker = this.getAreaBroker();
+        init() {
+            const dataHolder = this.getDataHolder();
+            const areaBroker = this.getAreaBroker();
 
             areaBroker.setComponent('toolbox', toolboxFactory());
             areaBroker.getToolbox().init();
@@ -133,77 +118,76 @@ define([
              * Install behavior on events
              */
             this
-                .on('submititem', function () {
-                    var itemRunner = this.itemRunner;
-                    var itemState = itemRunner.getState();
-                    var itemResponses = itemRunner.getResponses();
+                .on('submititem', () => {
+                    const itemState = this.itemRunner.getState();
+                    const itemResponses = this.itemRunner.getResponses();
 
                     this.trigger('disabletools disablenav');
                     this.trigger('submitresponse', itemResponses, itemState);
 
                     return this.getProxy()
                         .submitItem(dataHolder.get('itemIdentifier'), itemState, itemResponses)
-                        .then(function submitSuccess(response) {
-                            self.trigger('scoreitem', response);
-                            self.trigger('enabletools enablenav resumeitem');
+                        .then(response => {
+                            this.trigger('scoreitem', response);
+                            this.trigger('enabletools enablenav resumeitem');
                         })
-                        .catch(function submitError(err) {
-                            self.trigger('enabletools enablenav');
+                        .catch(err => {
+                            this.trigger('enabletools enablenav');
 
                             //some server errors are valid, so we don't fail (prevent empty responses)
                             if (err.code === 200) {
-                                self.trigger('alert.submitError',
+                                this.trigger('alert.submitError',
                                     err.message || __('An error occurred during results submission. Please retry.'),
-                                    function () {
-                                        self.trigger('resumeitem');
-                                    }
+                                    () => this.trigger('resumeitem')
                                 );
                             }
                         });
                 })
-                .on('ready', function () {
-                    var itemIdentifier = dataHolder.get('itemIdentifier');
-                    var itemData = dataHolder.get('itemData');
+                .on('ready', () => {
+                    const itemIdentifier = dataHolder.get('itemIdentifier');
+                    const itemData = dataHolder.get('itemData');
 
                     if (itemIdentifier) {
                         if (itemData) {
-                            self.renderItem(itemIdentifier, itemData);
+                            this.renderItem(itemIdentifier, itemData);
                         } else {
-                            self.loadItem(itemIdentifier);
+                            this.loadItem(itemIdentifier);
                         }
                     }
                 })
-                .on('loaditem', function (itemRef, itemData) {
+                .on('loaditem', (itemRef, itemData) => {
                     dataHolder.set('itemIdentifier', itemRef);
                     dataHolder.set('itemData', itemData);
                 })
-                .on('renderitem', function () {
+                .on('renderitem', () => {
                     this.trigger('enabletools enablenav');
                 })
-                .on('resumeitem', function () {
+                .on('resumeitem', () => {
                     this.trigger('enableitem enablenav');
                 })
-                .on('disableitem', function () {
+                .on('disableitem', () => {
                     this.trigger('disabletools');
                 })
-                .on('enableitem', function () {
+                .on('enableitem', () => {
                     this.trigger('enabletools');
                 })
-                .on('error', function () {
+                .on('error', () => {
                     this.trigger('disabletools enablenav');
                 })
-                .on('finish leave', function () {
+                .on('finish leave', () => {
                     this.trigger('disablenav disabletools');
                     this.flush();
                 })
-                .on('flush', function () {
+                .on('flush', () => {
                     this.destroy();
                 });
 
-            return this.getProxy().init().then(function (data) {
-                dataHolder.set('itemIdentifier', data.itemIdentifier);
-                dataHolder.set('itemData', data.itemData);
-            });
+            return this.getProxy()
+                .init()
+                .then(data => {
+                    dataHolder.set('itemIdentifier', data.itemIdentifier);
+                    dataHolder.set('itemData', data.itemData);
+                });
         },
 
         /**
@@ -213,10 +197,9 @@ define([
          *
          * @this {runner} the runner context, not the provider
          */
-        render: function render() {
-
-            var config = this.getConfig();
-            var areaBroker = this.getAreaBroker();
+        render() {
+            const config = this.getConfig();
+            const areaBroker = this.getAreaBroker();
 
             config.renderTo.append(areaBroker.getContainer());
 
@@ -232,7 +215,7 @@ define([
          * @param {String} itemIdentifier - The identifier of the item to update
          * @returns {Promise} that calls in parallel the state and the item data
          */
-        loadItem: function loadItem(itemIdentifier) {
+        loadItem(itemIdentifier) {
             return this.getProxy().getItem(itemIdentifier);
         },
 
@@ -246,35 +229,32 @@ define([
          * @param {Object} itemData - The definition data of the item
          * @returns {Promise} resolves when the item is ready
          */
-        renderItem: function renderItem(itemIdentifier, itemData) {
-            var self = this;
+        renderItem(itemIdentifier, itemData) {
+            const areaBroker = this.getAreaBroker();
 
-            var changeState = function changeState() {
-                self.setItemState(itemIdentifier, 'changed', true);
+            const changeState = () => {
+                this.setItemState(itemIdentifier, 'changed', true);
             };
 
-            return new Promise(function (resolve, reject) {
+            return new Promise((resolve, reject) => {
                 assetManager.setData('baseUrl', itemData.baseUrl);
 
                 itemData.content = itemData.content || {};
 
-                self.itemRunner = qtiItemRunner(itemData.content.type, itemData.content.data, {
+                this.itemRunner = qtiItemRunner(itemData.content.type, itemData.content.data, {
                     assetManager: assetManager
                 })
-                    .on('error', function (err) {
-                        self.trigger('enablenav');
+                    .on('error', err => {
+                        this.trigger('enablenav');
                         reject(err);
                     })
-                    .on('init', function () {
-                        var itemContainer = self.getAreaBroker().getContentArea();
-                        var options = _.pick(itemData, ['state', 'portableElements']);
-                        this.render(itemContainer, options);
+                    .on('init', function onItemRunnerInit() {
+                        const {state, portableElements} = itemData;
+                        this.render(areaBroker.getContentArea(), {state, portableElements});
                     })
-                    .on('render', function () {
-
+                    .on('render', function onItemRunnerRender() {
                         this.on('responsechange', changeState);
                         this.on('statechange', changeState);
-
                         resolve();
                     })
                     .init();
@@ -289,20 +269,17 @@ define([
          * @this {runner} the runner context, not the provider
          * @returns {Promise} resolves when the item is cleared
          */
-        unloadItem: function unloadItem() {
-            var self = this;
+        unloadItem() {
+            this.trigger('beforeunloaditem disablenav disabletools');
 
-            self.trigger('beforeunloaditem disablenav disabletools');
-
-            return new Promise(function (resolve) {
-                if (self.itemRunner) {
-                    self.itemRunner
+            if (this.itemRunner) {
+                return new Promise(resolve => {
+                    this.itemRunner
                         .on('clear', resolve)
                         .clear();
-                    return;
-                }
-                resolve();
-            });
+                });
+            }
+            return Promise.resolve();
         },
 
         /**
@@ -312,8 +289,8 @@ define([
          *
          * @this {runner} the runner context, not the provider
          */
-        destroy: function destroy() {
-            var areaBroker = this.getAreaBroker();
+        destroy() {
+            const areaBroker = this.getAreaBroker();
 
             // prevent the item to be displayed while test runner is destroying
             if (this.itemRunner) {
