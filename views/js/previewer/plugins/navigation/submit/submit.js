@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2018 (original work) Open Assessment Technologies SA ;
+ * Copyright (c) 2018-2019 (original work) Open Assessment Technologies SA ;
  */
 
 /**
@@ -69,7 +69,7 @@ define([
              */
             function isPluginAllowed() {
                 var config = testRunner.getConfig();
-                return !config.readOnly;
+                return !config.options.readOnly;
             }
 
             // display the console and its related controls, then auto scrolls to the last element

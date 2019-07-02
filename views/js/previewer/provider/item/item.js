@@ -57,8 +57,6 @@ define([
     //the asset strategies
     var assetManager = assetManagerFactory();
 
-    proxyFactory.registerProvider('qtiItemPreviewerProxy', proxyProvider);
-
     /**
      * A Test runner provider to be registered against the runner
      */
