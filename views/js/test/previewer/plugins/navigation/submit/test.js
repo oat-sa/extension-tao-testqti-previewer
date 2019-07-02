@@ -173,7 +173,7 @@ define([
         expectedTitle: 'Foo',
         expectedText: 'Bar',
         options: {
-            readOnly: true,
+            readOnly: false,
             plugins: {
                 submit: {
                     submitTitle: 'Foo',
