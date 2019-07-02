@@ -99,7 +99,7 @@ define([
         const ready = assert.async();
         assert.expect(3);
 
-        previewerFactory(runnerConfig, $('#fixture-api'))
+        previewerFactory('#fixture-api', runnerConfig)
             .on('ready', function (runner) {
                 assert.equal(typeof pluginFactory, 'function', 'The module exposes a function');
                 assert.equal(typeof pluginFactory(runner), 'object', 'The factory produces an instance');
@@ -129,7 +129,7 @@ define([
         const ready = assert.async();
         assert.expect(1);
 
-        previewerFactory(runnerConfig, $('#fixture-api'))
+        previewerFactory('#fixture-api', runnerConfig)
             .on('ready', function (runner) {
                 const plugin = pluginFactory(runner);
                 assert.equal(typeof plugin[data.title], 'function', `The instances expose a ${data.title} function`);
@@ -157,7 +157,7 @@ define([
         const config = Object.assign({}, runnerConfig);
         config.options = data.options;
 
-        previewerFactory(config, $('#fixture-render'))
+        previewerFactory('#fixture-render', config)
             .on('ready', function (runner) {
                 const areaBroker = runner.getAreaBroker();
                 const plugin = runner.getPlugin('scale');
@@ -188,7 +188,7 @@ define([
         const ready = assert.async();
         assert.expect(7);
 
-        previewerFactory(runnerConfig, $('#fixture-enable'))
+        previewerFactory('#fixture-enable', runnerConfig)
             .on('ready', function (runner) {
                 const areaBroker = runner.getAreaBroker();
                 const plugin = runner.getPlugin('scale');
@@ -250,7 +250,7 @@ define([
         const ready = assert.async();
         assert.expect(10);
 
-        previewerFactory(runnerConfig, $('#fixture-show'))
+        previewerFactory('#fixture-show', runnerConfig)
             .on('ready', function (runner) {
                 const areaBroker = runner.getAreaBroker();
                 const plugin = runner.getPlugin('scale');
@@ -306,7 +306,7 @@ define([
         const ready = assert.async();
         assert.expect(32);
 
-        previewerFactory(runnerConfig, $('#fixture-show'))
+        previewerFactory('#fixture-scale', runnerConfig)
             .on('ready', function (runner) {
                 const areaBroker = runner.getAreaBroker();
                 const plugin = runner.getPlugin('scale');
@@ -449,7 +449,7 @@ define([
         const itemRef = 'item-1';
         assert.expect(1);
 
-        previewerFactory(runnerConfig, $container)
+        previewerFactory($container, runnerConfig)
             .on('error', function(err) {
                 assert.ok(false, 'An error has occurred');
                 assert.pushResult({

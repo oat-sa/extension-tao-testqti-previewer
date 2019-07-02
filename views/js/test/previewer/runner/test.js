@@ -69,8 +69,8 @@ define([
             options : {}
         };
 
-        const previewer1 = previewerFactory(config, $('#fixture-1'));
-        const previewer2 = previewerFactory(config, $('#fixture-2'));
+        const previewer1 = previewerFactory('#fixture-1', config);
+        const previewer2 = previewerFactory('#fixture-2', config);
 
         assert.expect(4);
         $.mockjax({
@@ -169,7 +169,7 @@ define([
 
         $.mockjax(data.mock);
 
-        previewerFactory(config, $container)
+        previewerFactory($container, config)
             .on('error', function(err) {
                 assert.ok(false, 'An error has occurred');
                 assert.pushResult({
@@ -210,7 +210,7 @@ define([
             }
         });
 
-        previewerFactory(config, $container)
+        previewerFactory($container, config)
             .on('error', function(err) {
                 assert.ok(false, 'An error has occurred');
                 assert.pushResult({
@@ -296,7 +296,7 @@ define([
             }
         });
 
-        previewerFactory(config, $container)
+        previewerFactory($container, config)
             .on('error', function(err) {
                 assert.ok(false, 'An error has occurred');
                 assert.pushResult({

@@ -28,13 +28,13 @@ define([
 ], function (_, context, loggerFactory, previewerFactory, feedback) {
     'use strict';
 
-    var logger = loggerFactory('taoQtiTest/previewer');
+    const logger = loggerFactory('taoQtiTest/previewer');
 
     /**
      * List of required plugins that should be loaded in order to make the previewer work properly
      * @type {Object[]}
      */
-    var defaultPlugins = [{
+    const defaultPlugins = [{
         module: 'taoQtiTestPreviewer/previewer/plugins/controls/close',
         bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
         category: 'controls'
@@ -105,7 +105,7 @@ define([
             //extra context config
             testRunnerConfig.loadFromBundle = !!context.bundle;
 
-            return previewerFactory(testRunnerConfig)
+            return previewerFactory(window.document.body, testRunnerConfig)
                 .on('error', function (err) {
                     if (!_.isUndefined(err.message)) {
                         feedback().error(err.message);
