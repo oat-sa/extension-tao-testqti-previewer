@@ -130,7 +130,9 @@ define([
     }]).test('render item ', (data, assert) =>  {
         const ready = assert.async();
         const $container = $('#fixture-render');
-        const config = {};
+        const config = {
+            itemUri: data.itemIdentifier
+        };
 
         assert.expect(1);
 
@@ -146,15 +148,10 @@ define([
                 ready();
             })
             .on('ready', function(runner) {
-                runner
-                    .after('renderitem', function() {
-                        assert.ok(true, 'The previewer has been rendered');
-                        ready();
-                    });
-
-                if (data.itemIdentifier) {
-                    runner.loadItem(data.itemIdentifier);
-                }
+                runner.after('renderitem', function() {
+                    assert.ok(true, 'The previewer has been rendered');
+                    ready();
+                });
             });
     });
 
@@ -196,8 +193,9 @@ define([
     QUnit.test('Visual test', function (assert) {
         const ready = assert.async();
         const $container = $('#visual-test');
-        const itemRef = 'item-1';
-        const config = {};
+        const config = {
+            itemUri: 'item-1'
+        };
 
         assert.expect(1);
 
@@ -244,12 +242,10 @@ define([
                 ready();
             })
             .on('ready', function(runner) {
-                runner
-                    .after('renderitem.runnerComponent', function() {
-                        assert.ok(true, 'The previewer has been rendered');
-                        ready();
-                    })
-                    .loadItem(itemRef);
+                runner.after('renderitem.runnerComponent', function() {
+                    assert.ok(true, 'The previewer has been rendered');
+                    ready();
+                });
             });
     });
 });

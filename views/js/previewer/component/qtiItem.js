@@ -29,12 +29,11 @@ define([
      * Builds a test runner to preview test item
      * @param {jQuery|HTMLElement|String} container - The container in which renders the component
      * @param {Object} [config] - The testRunner options
+     * @param {String} [config.itemUri] - The URI of the item to load
+     * @param {Object} [config.itemState] - The state of the item when relevant
      * @param {Object[]} [config.plugins] - Additional plugins to load
      * @param {String} [config.fullPage] - Force the previewer to occupy the full window.
      * @param {String} [config.readOnly] - Do not allow to modify the previewed item.
-     * @param {Boolean} [config.replace] - When the component is appended to its container, clears the place before
-     * @param {Number|String} [config.width] - The width in pixels, or 'auto' to use the container's width
-     * @param {Number|String} [config.height] - The height in pixels, or 'auto' to use the container's height
      * @param {Function} [template] - An optional template for the component
      * @returns {previewer}
      */
@@ -65,14 +64,22 @@ define([
                 plugins: config.plugins || [],
             },
             options: {
-                readOnly : config.readOnly,
-                fullPage : config.fullPage
+                readOnly: config.readOnly,
+                fullPage: config.fullPage
             }
         };
 
         //extra context config
         testRunnerConfig.loadFromBundle = !!context.bundle;
 
-        return previewerFactory(container, testRunnerConfig, template);
+        return previewerFactory(container, testRunnerConfig, template)
+            .on('ready', runner => {
+                if (config.itemState) {
+                    runner.on('renderitem', () => runner.itemRunner.setState(config.itemState));
+                }
+                if (config.itemUri) {
+                    return runner.loadItem(config.itemUri);
+                }
+            });
     };
 });

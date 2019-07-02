@@ -68,7 +68,8 @@ define([
          * @returns {Object}
          */
         init(uri, state, config = {}) {
-
+            config.itemUri = uri;
+            config.itemState = state;
             config.plugins = Array.isArray(config.plugins) ? [...defaultPlugins, ...config.plugins] : defaultPlugins;
             return qtiItemPreviewerFactory(window.document.body, config)
                 .on('error', function (err) {
@@ -77,15 +78,6 @@ define([
                     } else {
                         logger.error(err);
                     }
-                })
-                .on('ready', function (runner) {
-                    runner
-                        .on('renderitem', function () {
-                            if (state) {
-                                runner.itemRunner.setState(state);
-                            }
-                        })
-                        .loadItem(uri);
                 });
         }
     };
