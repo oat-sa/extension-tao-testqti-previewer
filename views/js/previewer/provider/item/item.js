@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2018 (original work) Open Assessment Technologies SA ;
+ * Copyright (c) 2018-2019 (original work) Open Assessment Technologies SA ;
  */
 
 /**
@@ -96,6 +96,23 @@ define([
             //the test run needs to be identified uniquely
             const identifier = config.serviceCallId || `test-${Date.now()}`;
             return testStoreFactory(identifier);
+        },
+
+        /**
+         * Installation of the provider, called during test runner init phase.
+         */
+        install() {
+            const {plugins} = this.getConfig().options;
+            if (plugins) {
+                _.forEach(this.getPlugins(), plugin => {
+                    if (_.isPlainObject(plugin) && _.isFunction(plugin.setConfig)) {
+                        const config = plugins[plugin.getName()];
+                        if (_.isPlainObject(config)) {
+                            plugin.setConfig(config);
+                        }
+                    }
+                });
+            }
         },
 
         /**
