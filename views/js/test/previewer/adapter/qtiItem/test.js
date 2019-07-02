@@ -64,7 +64,7 @@ define([
             readOnly: true
         };
 
-        function dislpayPreviewer(config) {
+        function displayPreviewer(config) {
             $.mockjax.clear();
 
             $.mockjax({
@@ -114,7 +114,7 @@ define([
 
         assert.expect(1);
 
-        dislpayPreviewer(configReadOnly)
+        displayPreviewer(configReadOnly)
             .before('ready', function(e, runner) {
                 runner.after('renderitem.runnerComponent', function() {
                     assert.ok(true, 'The previewer has been rendered');
@@ -124,12 +124,12 @@ define([
 
         $('#show-interactive').on('click', function(e) {
             e.preventDefault();
-            dislpayPreviewer(configInteractive);
+            displayPreviewer(configInteractive);
         });
 
         $('#show-readonly').on('click', function(e) {
             e.preventDefault();
-            dislpayPreviewer(configReadOnly);
+            displayPreviewer(configReadOnly);
         });
     });
 });
