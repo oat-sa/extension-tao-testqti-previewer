@@ -22,15 +22,14 @@
  * @author Jean-Sébastien Conan <jean-sebastien@taotesting.com>
  */
 define([
-    'jquery',
-    'lodash',
     'taoTests/runner/runnerComponent',
     'tpl!taoQtiTestPreviewer/previewer/runner'
-], function ($, _, runnerComponentFactory, runnerTpl) {
+], function (runnerComponentFactory, runnerTpl) {
     'use strict';
 
     /**
      * Builds a test runner to preview test item
+     * @param {jQuery|HTMLElement|String} container - The container in which renders the component
      * @param {Object}   config - The testRunner options
      * @param {String}  [config.provider] - The provider to use
      * @param {Object[]} [config.providers] - A collection of providers to load.
@@ -39,16 +38,16 @@ define([
      * @param {Number|String} [config.height] - The height in pixels, or 'auto' to use the container's height
      * @param {Boolean} [config.options.fullPage] - Force the previewer to occupy the full window.
      * @param {Booleanh} [config.options.readOnly] - Do not allow to modify the previewed item.
-     * @param {jQuery|HTMLElement|String} container - The container in which renders the component
      * @param {Function} [template] - An optional template for the component
      * @returns {previewer}
      */
-    return function previewerFactory(config = {}, container, template) {
+    return function previewerFactory(container, config = {}, template = null) {
 
-        return runnerComponentFactory(container || $(document.body), config, template || runnerTpl)
+        return runnerComponentFactory(container, config, template || runnerTpl)
             .on('render', function() {
-                this.setState('fullpage', config.options.fullPage);
-                this.setState('readonly', config.options.readOnly);
+                const {fullPage, readOnly} = this.getConfig().options;
+                this.setState('fullpage', fullPage);
+                this.setState('readonly', readOnly);
             })
             .on('ready', function(runner) {
                 runner.on('destroy', () => this.destroy() );

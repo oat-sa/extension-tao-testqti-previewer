@@ -95,7 +95,7 @@ define([
     QUnit.test('module', assert => {
         const ready = assert.async();
         assert.expect(3);
-        previewerFactory(runnerConfig, $('#fixture-api'))
+        previewerFactory('#fixture-api', runnerConfig)
             .on('ready', function (runner) {
                 assert.equal(typeof pluginFactory, 'function', 'The module exposes a function');
                 assert.equal(typeof pluginFactory(runner), 'object', 'The factory produces an instance');
@@ -125,7 +125,7 @@ define([
         const ready = assert.async();
         assert.expect(1);
 
-        previewerFactory(runnerConfig, $('#fixture-api'))
+        previewerFactory('#fixture-api', runnerConfig)
             .on('ready', function (runner) {
                 const plugin = pluginFactory(runner);
                 assert.equal(typeof plugin[data.title], 'function', `The instances expose a ${data.title} function`);
@@ -140,7 +140,7 @@ define([
         const ready = assert.async();
         assert.expect(3);
 
-        previewerFactory(runnerConfig, $('#fixture-render'))
+        previewerFactory('#fixture-render', runnerConfig)
             .on('ready', function (runner) {
                 const areaBroker = runner.getAreaBroker();
                 const plugin = runner.getPlugin('close');
@@ -170,7 +170,7 @@ define([
         const ready = assert.async();
         assert.expect(7);
 
-        previewerFactory(runnerConfig, $('#fixture-enable'))
+        previewerFactory('#fixture-enable', runnerConfig)
             .on('ready', function (runner) {
                 const areaBroker = runner.getAreaBroker();
                 const plugin = runner.getPlugin('close');
@@ -232,7 +232,7 @@ define([
         const ready = assert.async();
         assert.expect(4);
 
-        previewerFactory(runnerConfig, $('#fixture-show'))
+        previewerFactory('#fixture-show', runnerConfig)
             .on('ready', function (runner) {
                 const areaBroker = runner.getAreaBroker();
                 const plugin = runner.getPlugin('close');
@@ -275,7 +275,7 @@ define([
         const ready = assert.async();
         assert.expect(4);
 
-        previewerFactory(runnerConfig, $('#fixture-close'))
+        previewerFactory('#fixture-close', runnerConfig)
             .on('ready', function (runner) {
                 const areaBroker = runner.getAreaBroker();
                 const plugin = runner.getPlugin('close');
@@ -312,7 +312,7 @@ define([
         const itemRef = 'item-1';
         assert.expect(1);
 
-        previewerFactory(runnerConfig, $container)
+        previewerFactory($container, runnerConfig)
             .on('error', function(err) {
                 assert.ok(false, 'An error has occurred');
                 assert.pushResult({

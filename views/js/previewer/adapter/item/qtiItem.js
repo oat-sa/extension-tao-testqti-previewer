@@ -20,21 +20,19 @@
  */
 define([
     'lodash',
-    'context',
     'core/logger',
-    'taoQtiTestPreviewer/previewer/runner',
-    'ui/feedback',
-    'css!taoQtiTestPreviewer/previewer/provider/item/css/item'
-], function (_, context, loggerFactory, previewerFactory, feedback) {
+    'taoQtiTestPreviewer/previewer/component/qtiItem',
+    'ui/feedback'
+], function (_, loggerFactory, qtiItemPreviewerFactory, feedback) {
     'use strict';
 
-    var logger = loggerFactory('taoQtiTest/previewer');
+    const logger = loggerFactory('taoQtiTest/previewer');
 
     /**
      * List of required plugins that should be loaded in order to make the previewer work properly
      * @type {Object[]}
      */
-    var defaultPlugins = [{
+    const defaultPlugins = [{
         module: 'taoQtiTestPreviewer/previewer/plugins/controls/close',
         bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
         category: 'controls'
@@ -70,57 +68,16 @@ define([
          * @returns {Object}
          */
         init(uri, state, config = {}) {
-
-            const plugins = Array.isArray(config.plugins) ? [...defaultPlugins, ...config.plugins] : defaultPlugins;
-            const testRunnerConfig = {
-                testDefinition: 'test-container',
-                serviceCallId: 'previewer',
-                providers: {
-                    runner: {
-                        id: 'qtiItemPreviewer',
-                        module: 'taoQtiTestPreviewer/previewer/provider/item/item',
-                        bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                        category: 'runner'
-                    },
-                    proxy: {
-                        id: 'qtiItemPreviewerProxy',
-                        module: 'taoQtiTestPreviewer/previewer/proxy/item',
-                        bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                        category: 'proxy'
-                    },
-                    communicator: {
-                        id: 'request',
-                        module: 'core/communicator/request',
-                        bundle: 'loader/vendor.min',
-                        category: 'communicator'
-                    },
-                    plugins,
-                },
-                options: {
-                    readOnly : config.readOnly,
-                    fullPage : config.fullPage
-                }
-            };
-
-            //extra context config
-            testRunnerConfig.loadFromBundle = !!context.bundle;
-
-            return previewerFactory(testRunnerConfig)
+            config.itemUri = uri;
+            config.itemState = state;
+            config.plugins = Array.isArray(config.plugins) ? [...defaultPlugins, ...config.plugins] : defaultPlugins;
+            return qtiItemPreviewerFactory(window.document.body, config)
                 .on('error', function (err) {
                     if (!_.isUndefined(err.message)) {
                         feedback().error(err.message);
                     } else {
                         logger.error(err);
                     }
-                })
-                .on('ready', function (runner) {
-                    runner
-                        .on('renderitem', function () {
-                            if (state) {
-                                runner.itemRunner.setState(state);
-                            }
-                        })
-                        .loadItem(uri);
                 });
         }
     };
