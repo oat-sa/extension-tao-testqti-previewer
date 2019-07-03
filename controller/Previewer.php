@@ -14,7 +14,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2018 (original work) Open Assessment Technologies SA ;
+ * Copyright (c) 2018-2019 (original work) Open Assessment Technologies SA ;
  */
 
 namespace oat\taoQtiTestPreviewer\controller;
@@ -135,6 +135,7 @@ class Previewer extends ServiceModule
         $code = 200;
 
         try {
+            $this->validateCsrf();
 
             $serviceCallId = $this->getRequestParameter('serviceCallId');
 
@@ -160,6 +161,8 @@ class Previewer extends ServiceModule
         $code = 200;
 
         try {
+            $this->validateCsrf();
+
             $itemUri = $this->getRequestParameter('itemUri');
             $resultId = $this->getRequestParameter('resultId');
 
@@ -215,6 +218,8 @@ class Previewer extends ServiceModule
         $code = 200;
 
         try {
+
+            $this->validateCsrf();
 
             $displayFeedback = false;
 
