@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2018 (original work) Open Assessment Technologies SA ;
+ * Copyright (c) 2018-2019 (original work) Open Assessment Technologies SA ;
  */
 
 /**
@@ -25,12 +25,10 @@ define([
     'jquery',
     'lodash',
     'i18n',
-    'core/promise',
     'core/promiseQueue',
-    'core/communicator',
     'core/request',
     'taoQtiTestPreviewer/previewer/config/item'
-], function($, _, __, Promise, promiseQueue, communicatorFactory, coreRequest, configFactory) {
+], function($, _, __, promiseQueue,  coreRequest, configFactory) {
     'use strict';
 
     /**
@@ -39,6 +37,8 @@ define([
      * @type {Object}
      */
     return {
+
+        name : 'qtiItemPreviewerProxy',
 
         /**
          * Installs the proxy

@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2018 (original work) Open Assessment Technologies SA ;
+ * Copyright (c) 2018-2019 (original work) Open Assessment Technologies SA ;
  */
 
 /**
@@ -52,6 +52,15 @@ define([
 ) {
     'use strict';
 
+    /**
+     * Some default config for the plugin
+     * @type {Object}
+     */
+    const defaults = {
+        submitTitle: __('Submit and show the result'),
+        submitText: __('Submit')
+    };
+
     return pluginFactory({
 
         name: 'submit',
@@ -59,71 +68,71 @@ define([
         /**
          * Initialize the plugin (called during runner's init)
          */
-        init: function init() {
-            var self = this;
-            var testRunner = this.getTestRunner();
+        init() {
+            const testRunner = this.getTestRunner();
+            const pluginConfig = _.defaults(this.getConfig(), defaults);
 
             /**
              * Tells if the component is enabled
              * @returns {Boolean}
              */
-            function isPluginAllowed() {
-                var config = testRunner.getConfig();
-                return !config.readOnly;
-            }
+            const isPluginAllowed = () => {
+                const config = testRunner.getConfig();
+                return !config.options.readOnly;
+            };
 
             // display the console and its related controls, then auto scrolls to the last element
-            function showConsole() {
-                hider.show(self.controls.$console);
-                hider.show(self.controls.$consoleBody);
-                hider.show(self.controls.$consoleCloser);
-                autoscroll(self.controls.$consoleBody.children().last(), self.controls.$consoleBody);
-            }
+            const showConsole = () => {
+                hider.show(this.controls.$console);
+                hider.show(this.controls.$consoleBody);
+                hider.show(this.controls.$consoleCloser);
+                autoscroll(this.controls.$consoleBody.children().last(), this.controls.$consoleBody);
+            };
 
             // hide the console and its related controls
-            function hideConsole() {
-                hider.hide(self.controls.$console);
-                hider.hide(self.controls.$consoleCloser);
-            }
+            const hideConsole = () => {
+                hider.hide(this.controls.$console);
+                hider.hide(this.controls.$consoleCloser);
+            };
 
             // add a line to the console
-            function addConsoleLine(type, message) {
-                var data = {
+            const addConsoleLine = (type, message) => {
+                const data = {
                     time: strPad(moment().format('HH:mm:ss'), 12, ' '),
                     type: strPad(type || '', 18, ' '),
                     message: strPad(message || '', 18, ' ')
                 };
-                self.controls.$consoleBody.append($(consoleLineTpl(data)));
-            }
+                this.controls.$consoleBody.append($(consoleLineTpl(data)));
+            };
 
             // display responses in the console
-            function showResponses(type, responses) {
-                _.forEach(responses, function (response, identifier) {
-                    addConsoleLine(type, strPad(identifier + ': ', 15, ' ') + _.escape(pciResponse.prettyPrint(response)));
+            const showResponses = (type, responses) => {
+                _.forEach(responses, (response, identifier) => {
+                    addConsoleLine(type, strPad(`${identifier}: `, 15, ' ') + _.escape(pciResponse.prettyPrint(response)));
                 });
-            }
+            };
 
             this.controls = {
                 $button: $(buttonTpl({
                     control: 'submit',
-                    title: __('Submit and show the result'),
+                    title: pluginConfig.submitTitle,
                     icon: 'forward',
-                    text: __('Submit')
+                    text: pluginConfig.submitText
                 })),
                 $console: $(consoleTpl()),
                 $consoleCloser: $(consoleCloserTpl())
             };
             this.controls.$consoleBody = this.controls.$console.find('.preview-console-body');
 
-            this.controls.$button.on('click', function (e) {
+            this.controls.$button.on('click', e => {
                 e.preventDefault();
-                if (self.getState('enabled') !== false) {
-                    self.disable();
+                if (this.getState('enabled') !== false) {
+                    this.disable();
                     testRunner.trigger('submititem');
                 }
             });
 
-            this.controls.$consoleCloser.on('click', function (e) {
+            this.controls.$consoleCloser.on('click', e => {
                 e.preventDefault();
                 hideConsole();
             });
@@ -135,39 +144,38 @@ define([
             this.disable();
 
             testRunner
-                .on('render', function () {
+                .on('render', () => {
                     if (isPluginAllowed()) {
-                        self.show();
+                        this.show();
                     } else {
-                        self.hide();
+                        this.hide();
                     }
                 })
-                .on('submitresponse', function (responses) {
+                .on('submitresponse', responses => {
                     showResponses(__('Submitted data'), responses);
                     showConsole();
                 })
-                .on('scoreitem', function (responses) {
+                .on('scoreitem', responses => {
                     if (responses.itemSession) {
                         showResponses(__('Output data'), responses.itemSession);
                         showConsole();
                     }
                 })
-                .on('enablenav', function () {
-                    self.enable();
+                .on('enablenav', () => {
+                    this.enable();
                 })
-                .on('disablenav', function () {
-                    self.disable();
+                .on('disablenav', () => {
+                    this.disable();
                 });
         },
 
         /**
          * Called during the runner's render phase
          */
-        render: function render() {
-
+        render() {
             //attach the element to the navigation area
-            var $container = this.getAreaBroker().getContainer();
-            var $navigation = this.getAreaBroker().getNavigationArea();
+            const $container = this.getAreaBroker().getContainer();
+            const $navigation = this.getAreaBroker().getNavigationArea();
             $navigation.append(this.controls.$button);
             $navigation.append(this.controls.$consoleCloser);
             $container.append(this.controls.$console);
@@ -176,38 +184,40 @@ define([
         /**
          * Called during the runner's destroy phase
          */
-        destroy: function destroy() {
-            _.forEach(this.controls, function ($el) {
-                $el.remove();
-            });
+        destroy() {
+            _.forEach(this.controls, $el => $el.remove());
             this.controls = null;
         },
 
         /**
          * Enable the button
          */
-        enable: function enable() {
-            this.controls.$button.removeProp('disabled').removeClass('disabled');
+        enable() {
+            this.controls.$button
+                .removeProp('disabled')
+                .removeClass('disabled');
         },
 
         /**
          * Disable the button
          */
-        disable: function disable() {
-            this.controls.$button.prop('disabled', true).addClass('disabled');
+        disable() {
+            this.controls.$button
+                .prop('disabled', true)
+                .addClass('disabled');
         },
 
         /**
          * Show the button
          */
-        show: function show() {
+        show() {
             hider.show(this.controls.$button);
         },
 
         /**
          * Hide the button
          */
-        hide: function hide() {
+        hide() {
             _.forEach(this.controls, hider.hide);
         }
     });

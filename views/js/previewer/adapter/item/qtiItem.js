@@ -21,30 +21,18 @@
 define([
     'lodash',
     'core/logger',
-    'taoQtiTestPreviewer/previewer/runner',
-    'ui/feedback',
-    'css!taoQtiTestPreviewer/previewer/provider/item/css/item'
-], function (_, loggerFactory, previewerFactory, feedback) {
+    'taoQtiTestPreviewer/previewer/component/qtiItem',
+    'ui/feedback'
+], function (_, loggerFactory, qtiItemPreviewerFactory, feedback) {
     'use strict';
 
-    var logger = loggerFactory('taoQtiTest/previewer');
-
-    /**
-     * List of default providers.
-     * @type {Object[]}
-     */
-    var defaultProviders = [{
-        id: 'qtiItemPreviewer',
-        module: 'taoQtiTestPreviewer/previewer/provider/item/item',
-        bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-        category: 'previewer'
-    }];
+    const logger = loggerFactory('taoQtiTest/previewer');
 
     /**
      * List of required plugins that should be loaded in order to make the previewer work properly
      * @type {Object[]}
      */
-    var defaultPlugins = [{
+    const defaultPlugins = [{
         module: 'taoQtiTestPreviewer/previewer/plugins/controls/close',
         bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
         category: 'controls'
@@ -74,37 +62,22 @@ define([
          * @param {String} uri - The URI of the item to load
          * @param {Object} state - The state of the item
          * @param {Object} [config] - Some config entries
-         * @param {String} [config.serviceCallId='previewer'] - The service call Id to send to the server
+         * @param {Object[]} [config.plugins] - Additional plugins to load
          * @param {String} [config.fullPage] - Force the previewer to occupy the full window.
          * @param {String} [config.readOnly] - Do not allow to modify the previewed item.
          * @returns {Object}
          */
-        init: function init(uri, state, config) {
-            config = _.defaults(config || {}, {
-                provider: 'qtiItemPreviewer',
-                serviceCallId: 'previewer'
-            });
-
-            // ensure required providers and plugins will be loaded
-            config.providers = defaultProviders.concat(config.providers || []);
-            config.plugins = defaultPlugins.concat(config.plugins || []);
-
-            return previewerFactory(config)
+        init(uri, state, config = {}) {
+            config.itemUri = uri;
+            config.itemState = state;
+            config.plugins = Array.isArray(config.plugins) ? [...defaultPlugins, ...config.plugins] : defaultPlugins;
+            return qtiItemPreviewerFactory(window.document.body, config)
                 .on('error', function (err) {
                     if (!_.isUndefined(err.message)) {
                         feedback().error(err.message);
                     } else {
                         logger.error(err);
                     }
-                })
-                .on('ready', function (runner) {
-                    runner
-                        .on('renderitem', function () {
-                            if (state) {
-                                runner.itemRunner.setState(state);
-                            }
-                        })
-                        .loadItem(uri);
                 });
         }
     };
