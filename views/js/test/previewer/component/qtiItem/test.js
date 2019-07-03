@@ -24,8 +24,7 @@ define([
     'lodash',
     'taoQtiTestPreviewer/previewer/component/qtiItem',
     'json!taoQtiItem/test/samples/json/space-shuttle.json',
-    'lib/jquery.mockjax/jquery.mockjax',
-    'css!taoQtiTestPreviewer/previewer/provider/item/css/item'
+    'lib/jquery.mockjax/jquery.mockjax'
 ], function($, _, qtiItemPreviewerFactory, itemData) {
     'use strict';
 

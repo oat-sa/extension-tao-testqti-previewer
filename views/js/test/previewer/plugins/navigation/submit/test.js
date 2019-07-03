@@ -22,6 +22,7 @@
 define([
     'jquery',
     'lodash',
+    'i18n',
     'ui/hider',
     'taoQtiTestPreviewer/previewer/runner',
     'taoQtiTestPreviewer/previewer/plugins/navigation/submit/submit',
@@ -31,6 +32,7 @@ define([
 ], function (
     $,
     _,
+    __,
     hider,
     previewerFactory,
     pluginFactory,
@@ -154,17 +156,34 @@ define([
 
     QUnit.cases.init([{
         title: 'interactive',
+        expectedTitle: __('Submit and show the result'),
+        expectedText: __('Submit'),
         options: {
             readOnly: false
         }
     }, {
         title: 'read only',
+        expectedTitle: __('Submit and show the result'),
+        expectedText: __('Submit'),
         options: {
             readOnly: true
         }
+    }, {
+        title: 'custom',
+        expectedTitle: 'Foo',
+        expectedText: 'Bar',
+        options: {
+            readOnly: false,
+            plugins: {
+                submit: {
+                    submitTitle: 'Foo',
+                    submitText: 'Bar',
+                }
+            }
+        }
     }]).test('render / destroy ', (data, assert) =>  {
         const ready = assert.async();
-        assert.expect(8);
+        assert.expect(10);
 
         const config = Object.assign({}, runnerConfig);
         config.options = data.options;
@@ -183,6 +202,8 @@ define([
                         assert.equal($button.length, 1, 'The button has been inserted');
                         assert.equal($closer.length, 1, 'The console closer has been inserted');
                         assert.equal($console.length, 1, 'The console has been inserted');
+                        assert.equal($button.attr('title').trim(), data.expectedTitle, 'The button has the expected title');
+                        assert.equal($button.text().trim(), data.expectedText, 'The button has the expected text');
                         assert.equal($button.hasClass('disabled'), true, 'The button has been rendered disabled');
                         assert.equal(hider.isHidden($button), config.options.readOnly, 'The button state is aligned to the config');
                         return plugin.destroy();

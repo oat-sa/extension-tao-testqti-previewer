@@ -32,6 +32,7 @@ define([
      * @param {String} [config.itemUri] - The URI of the item to load
      * @param {Object} [config.itemState] - The state of the item when relevant
      * @param {Object[]} [config.plugins] - Additional plugins to load
+     * @param {Object[]} [config.pluginsOptions] - Options for the plugins
      * @param {String} [config.fullPage] - Force the previewer to occupy the full window.
      * @param {String} [config.readOnly] - Do not allow to modify the previewed item.
      * @param {Function} [template] - An optional template for the component
@@ -65,7 +66,8 @@ define([
             },
             options: {
                 readOnly: config.readOnly,
-                fullPage: config.fullPage
+                fullPage: config.fullPage,
+                plugins: config.pluginsOptions
             }
         };
 
