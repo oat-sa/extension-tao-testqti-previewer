@@ -21,7 +21,6 @@
  */
 define([
     'jquery',
-    'core/promise',
     'ui/hider',
     'taoQtiTestPreviewer/previewer/runner',
     'taoQtiTestPreviewer/previewer/plugins/controls/close',
@@ -30,13 +29,42 @@ define([
     'css!taoQtiTestPreviewer/previewer/provider/item/css/item'
 ], function (
     $,
-    Promise,
     hider,
     previewerFactory,
     pluginFactory,
     itemData
 ) {
     'use strict';
+
+    const runnerConfig = {
+        serviceCallId : 'foo',
+        providers : {
+            runner: {
+                id: 'qtiItemPreviewer',
+                module: 'taoQtiTestPreviewer/previewer/provider/item/item',
+                bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+                category: 'runner'
+            },
+            proxy: {
+                id: 'qtiItemPreviewProxy',
+                module: 'taoQtiTestPreviewer/previewer/proxy/item',
+                bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+                category: 'proxy'
+            },
+            communicator: {
+                id: 'request',
+                module: 'core/communicator/request',
+                bundle: 'loader/vendor.min',
+                category: 'communicator'
+            },
+            plugins: [{
+                module: 'taoQtiTestPreviewer/previewer/plugins/controls/close',
+                bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+                category: 'controls'
+            }]
+        },
+        options : {}
+    };
 
     // Prevent the AJAX mocks to pollute the logs
     $.mockjaxSettings.logger = null;
@@ -64,20 +92,10 @@ define([
 
     QUnit.module('API');
 
-    QUnit.test('module', function (assert) {
-        var ready = assert.async();
-        var config = {
-            serviceCallId: 'foo',
-            provider: 'qtiItemPreviewer',
-            providers: [{
-                'id': 'qtiItemPreviewer',
-                'module': 'taoQtiTestPreviewer/previewer/provider/item/item',
-                'bundle': 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                'category': 'previewer'
-            }]
-        };
+    QUnit.test('module', assert => {
+        const ready = assert.async();
         assert.expect(3);
-        previewerFactory(config, $('#fixture-api'))
+        previewerFactory('#fixture-api', runnerConfig)
             .on('ready', function (runner) {
                 assert.equal(typeof pluginFactory, 'function', 'The module exposes a function');
                 assert.equal(typeof pluginFactory(runner), 'object', 'The factory produces an instance');
@@ -103,23 +121,14 @@ define([
         {title: 'hide'},
         {title: 'enable'},
         {title: 'disable'}
-    ]).test('plugin API ', function (data, assert) {
-        var ready = assert.async();
-        var config = {
-            serviceCallId: 'foo',
-            provider: 'qtiItemPreviewer',
-            providers: [{
-                'id': 'qtiItemPreviewer',
-                'module': 'taoQtiTestPreviewer/previewer/provider/item/item',
-                'bundle': 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                'category': 'previewer'
-            }]
-        };
+    ]).test('plugin API ', (data, assert) => {
+        const ready = assert.async();
         assert.expect(1);
-        previewerFactory(config, $('#fixture-api'))
+
+        previewerFactory('#fixture-api', runnerConfig)
             .on('ready', function (runner) {
-                var plugin = pluginFactory(runner);
-                assert.equal(typeof plugin[data.title], 'function', 'The instances expose a "' + data.title + '" function');
+                const plugin = pluginFactory(runner);
+                assert.equal(typeof plugin[data.title], 'function', `The instances expose a ${data.title} function`);
                 runner.destroy();
             })
             .on('destroy', ready);
@@ -127,83 +136,55 @@ define([
 
     QUnit.module('UI');
 
-    QUnit.test('render / destroy', function (assert) {
-        var ready = assert.async();
-        var config = {
-            serviceCallId: 'foo',
-            provider: 'qtiItemPreviewer',
-            providers: [{
-                'id': 'qtiItemPreviewer',
-                'module': 'taoQtiTestPreviewer/previewer/provider/item/item',
-                'bundle': 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                'category': 'previewer'
-            }],
-            plugins: [{
-                module: 'taoQtiTestPreviewer/previewer/plugins/controls/close',
-                bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                category: 'controls'
-            }]
-        };
+    QUnit.test('render / destroy', assert => {
+        const ready = assert.async();
         assert.expect(3);
-        previewerFactory(config, $('#fixture-render'))
+
+        previewerFactory('#fixture-render', runnerConfig)
             .on('ready', function (runner) {
-                var areaBroker = runner.getAreaBroker();
-                var plugin = runner.getPlugin('close');
+                const areaBroker = runner.getAreaBroker();
+                const plugin = runner.getPlugin('close');
                 Promise.resolve()
                     .then(function () {
-                        var $container = areaBroker.getArea('context');
-                        var $button = $container.find('[data-control="close"]');
+                        const $container = areaBroker.getArea('context');
+                        const $button = $container.find('[data-control="close"]');
                         assert.equal($button.length, 1, 'The button has been inserted');
                         assert.equal($button.hasClass('disabled'), true, 'The button has been rendered disabled');
                         return plugin.destroy();
                     })
                     .then(function () {
-                        var $container = areaBroker.getArea('context');
-                        var $button = $container.find('[data-control="close"]');
+                        const $container = areaBroker.getArea('context');
+                        const $button = $container.find('[data-control="close"]');
                         assert.equal($button.length, 0, 'The trigger button has been removed');
                         runner.destroy();
                     })
                     .catch(function (err) {
-                        assert.ok(false, 'Error in init method: ' + err);
+                        assert.ok(false, `Error in init method: ${err.message}`);
                         runner.destroy();
                     });
             })
             .on('destroy', ready);
     });
 
-    QUnit.test('enable / disable', function (assert) {
-        var ready = assert.async();
-        var config = {
-            serviceCallId: 'foo',
-            provider: 'qtiItemPreviewer',
-            providers: [{
-                'id': 'qtiItemPreviewer',
-                'module': 'taoQtiTestPreviewer/previewer/provider/item/item',
-                'bundle': 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                'category': 'previewer'
-            }],
-            plugins: [{
-                module: 'taoQtiTestPreviewer/previewer/plugins/controls/close',
-                bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                category: 'controls'
-            }]
-        };
+    QUnit.test('enable / disable', assert => {
+        const ready = assert.async();
         assert.expect(7);
-        previewerFactory(config, $('#fixture-enable'))
+
+        previewerFactory('#fixture-enable', runnerConfig)
             .on('ready', function (runner) {
-                var areaBroker = runner.getAreaBroker();
-                var plugin = runner.getPlugin('close');
+                const areaBroker = runner.getAreaBroker();
+                const plugin = runner.getPlugin('close');
                 Promise.resolve()
                     .then(function () {
-                        var $container = areaBroker.getArea('context');
-                        var $button = $container.find('[data-control="close"]');
+                        const $container = areaBroker.getArea('context');
+                        const $button = $container.find('[data-control="close"]');
                         assert.equal($button.length, 1, 'The button has been inserted');
                         assert.equal($button.hasClass('disabled'), true, 'The button has been rendered disabled');
                         return plugin.enable();
                     })
                     .then(function () {
-                        var $container = areaBroker.getArea('context');
-                        var $button = $container.find('[data-control="close"]');
+                        const $container = areaBroker.getArea('context');
+                        const $button = $container.find('[data-control="close"]');
                         assert.equal($button.hasClass('disabled'), false, 'The button has been enabled');
                         return new Promise(function (resolve) {
                             runner
@@ -212,8 +193,8 @@ define([
                         });
                     })
                     .then(function () {
-                        var $container = areaBroker.getArea('context');
-                        var $button = $container.find('[data-control="close"]');
+                        const $container = areaBroker.getArea('context');
+                        const $button = $container.find('[data-control="close"]');
                         assert.equal($button.hasClass('disabled'), true, 'The button has been disabled');
                         return new Promise(function (resolve) {
                             runner
@@ -222,80 +203,66 @@ define([
                         });
                     })
                     .then(function () {
-                        var $container = areaBroker.getArea('context');
-                        var $button = $container.find('[data-control="close"]');
+                        const $container = areaBroker.getArea('context');
+                        const $button = $container.find('[data-control="close"]');
                         assert.equal($button.hasClass('disabled'), false, 'The button has been enabled');
                         return plugin.disable();
                     })
                     .then(function () {
-                        var $container = areaBroker.getArea('context');
-                        var $button = $container.find('[data-control="close"]');
+                        const $container = areaBroker.getArea('context');
+                        const $button = $container.find('[data-control="close"]');
                         assert.equal($button.hasClass('disabled'), true, 'The button has been disabled');
                         return plugin.destroy();
                     })
                     .then(function () {
-                        var $container = areaBroker.getArea('context');
-                        var $button = $container.find('[data-control="close"]');
+                        const $container = areaBroker.getArea('context');
+                        const $button = $container.find('[data-control="close"]');
                         assert.equal($button.length, 0, 'The trigger button has been removed');
                         runner.destroy();
                     })
                     .catch(function (err) {
-                        assert.ok(false, 'Error in init method: ' + err);
+                        assert.ok(false, `Error in init method: ${err.message}`);
                         runner.destroy();
                     });
             })
             .on('destroy', ready);
     });
 
-    QUnit.test('show / hide', function (assert) {
-        var ready = assert.async();
-        var config = {
-            serviceCallId: 'foo',
-            provider: 'qtiItemPreviewer',
-            providers: [{
-                'id': 'qtiItemPreviewer',
-                'module': 'taoQtiTestPreviewer/previewer/provider/item/item',
-                'bundle': 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                'category': 'previewer'
-            }],
-            plugins: [{
-                module: 'taoQtiTestPreviewer/previewer/plugins/controls/close',
-                bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                category: 'controls'
-            }]
-        };
+    QUnit.test('show / hide', assert => {
+        const ready = assert.async();
         assert.expect(4);
-        previewerFactory(config, $('#fixture-show'))
+
+        previewerFactory('#fixture-show', runnerConfig)
             .on('ready', function (runner) {
-                var areaBroker = runner.getAreaBroker();
-                var plugin = runner.getPlugin('close');
+                const areaBroker = runner.getAreaBroker();
+                const plugin = runner.getPlugin('close');
                 Promise.resolve()
                     .then(function () {
-                        var $container = areaBroker.getArea('context');
-                        var $button = $container.find('[data-control="close"]');
+                        const $container = areaBroker.getArea('context');
+                        const $button = $container.find('[data-control="close"]');
                         assert.equal($button.length, 1, 'The button has been inserted');
                         return plugin.hide();
                     })
                     .then(function () {
-                        var $container = areaBroker.getArea('context');
-                        var $button = $container.find('[data-control="close"]');
+                        const $container = areaBroker.getArea('context');
+                        const $button = $container.find('[data-control="close"]');
                         assert.ok(hider.isHidden($button), 'The button has been hidden');
                         return plugin.show();
                     })
                     .then(function () {
-                        var $container = areaBroker.getArea('context');
-                        var $button = $container.find('[data-control="close"]');
+                        const $container = areaBroker.getArea('context');
+                        const $button = $container.find('[data-control="close"]');
                         assert.ok(!hider.isHidden($button), 'The button is visible');
                         return plugin.destroy();
                     })
                     .then(function () {
-                        var $container = areaBroker.getArea('context');
-                        var $button = $container.find('[data-control="close"]');
+                        const $container = areaBroker.getArea('context');
+                        const $button = $container.find('[data-control="close"]');
                         assert.equal($button.length, 0, 'The trigger button has been removed');
                         runner.destroy();
                     })
                     .catch(function (err) {
-                        assert.ok(false, 'Error in init method: ' + err);
+                        assert.ok(false, `Error in init method: ${err.message}`);
                         runner.destroy();
                     });
             })
@@ -304,39 +271,25 @@ define([
 
     QUnit.module('behavior');
 
-    QUnit.test('close', function (assert) {
-        var ready = assert.async();
-        var config = {
-            serviceCallId: 'foo',
-            provider: 'qtiItemPreviewer',
-            providers: [{
-                'id': 'qtiItemPreviewer',
-                'module': 'taoQtiTestPreviewer/previewer/provider/item/item',
-                'bundle': 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                'category': 'previewer'
-            }],
-            plugins: [{
-                module: 'taoQtiTestPreviewer/previewer/plugins/controls/close',
-                bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                category: 'controls'
-            }]
-        };
+    QUnit.test('close', assert => {
+        const ready = assert.async();
         assert.expect(4);
-        previewerFactory(config, $('#fixture-close'))
+
+        previewerFactory('#fixture-close', runnerConfig)
             .on('ready', function (runner) {
-                var areaBroker = runner.getAreaBroker();
-                var plugin = runner.getPlugin('close');
+                const areaBroker = runner.getAreaBroker();
+                const plugin = runner.getPlugin('close');
                 Promise.resolve()
                     .then(function () {
-                        var $container = areaBroker.getArea('context');
-                        var $button = $container.find('[data-control="close"]');
+                        const $container = areaBroker.getArea('context');
+                        const $button = $container.find('[data-control="close"]');
                         assert.equal($button.length, 1, 'The button has been inserted');
                         assert.equal($button.hasClass('disabled'), true, 'The button has been rendered disabled');
                         return plugin.enable();
                     })
                     .then(function () {
-                        var $container = areaBroker.getArea('context');
-                        var $button = $container.find('[data-control="close"]');
+                        const $container = areaBroker.getArea('context');
+                        const $button = $container.find('[data-control="close"]');
                         assert.equal($button.hasClass('disabled'), false, 'The button has been enabled');
                         runner.on('finish', function() {
                             assert.ok(true, 'The close action finish the test');
@@ -344,7 +297,7 @@ define([
                         $button.click();
                     })
                     .catch(function (err) {
-                        assert.ok(false, 'Error in init method: ' + err);
+                        assert.ok(false, `Error in init method: ${err.message}`);
                         runner.destroy();
                     });
             })
@@ -354,29 +307,12 @@ define([
     QUnit.module('Visual');
 
     QUnit.test('Visual test', function (assert) {
-        var ready = assert.async();
-        var $container = $('#visual-test');
-        var serviceCallId = 'previewer';
-        var itemRef = 'item-1';
-        var config = {
-            serviceCallId: serviceCallId,
-            provider: 'qtiItemPreviewer',
-            providers: [{
-                'id': 'qtiItemPreviewer',
-                'module': 'taoQtiTestPreviewer/previewer/provider/item/item',
-                'bundle': 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                'category': 'previewer'
-            }],
-            plugins: [{
-                module: 'taoQtiTestPreviewer/previewer/plugins/controls/close',
-                bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                category: 'controls'
-            }]
-        };
-
+        const ready = assert.async();
+        const $container = $('#visual-test');
+        const itemRef = 'item-1';
         assert.expect(1);
 
-        previewerFactory(config, $container)
+        previewerFactory($container, runnerConfig)
             .on('error', function(err) {
                 assert.ok(false, 'An error has occurred');
                 assert.pushResult({
