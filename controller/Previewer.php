@@ -19,10 +19,27 @@
 
 namespace oat\taoQtiTestPreviewer\controller;
 
+use common_Exception;
+use common_Logger;
+use core_kernel_classes_Resource;
 use oat\tao\model\routing\AnnotationReader\security;
+use oat\taoQtiItem\helpers\QtiFile;
 use oat\taoQtiTestPreviewer\models\ItemPreviewer;
 use oat\taoResultServer\models\classes\ResultServerService;
+use OutOfBoundsException;
+use OutOfRangeException;
+use qtism\common\datatypes\files\FileSystemFileManager;
+use qtism\data\storage\StorageException;
+use qtism\data\storage\xml\XmlDocument;
+use qtism\runtime\common\State;
+use qtism\runtime\tests\AssessmentItemSession;
+use qtism\runtime\tests\AssessmentItemSessionException;
+use qtism\runtime\tests\SessionManager;
 use tao_actions_ServiceModule as ServiceModule;
+use taoQtiCommon_helpers_PciStateOutput;
+use taoQtiCommon_helpers_PciVariableFiller;
+use taoQtiCommon_helpers_ResultTransmissionException;
+use taoQtiCommon_helpers_Utils;
 use taoQtiTest_helpers_TestRunnerUtils as TestRunnerUtils;
 use oat\taoItems\model\pack\ItemPack;
 use oat\taoItems\model\pack\Packer;
@@ -229,29 +246,11 @@ class Previewer extends ServiceModule
         $code = 200;
 
         try {
-
             $this->validateCsrf();
 
-            $displayFeedback = false;
+            $itemUri = $this->getRequestParameter('itemUri');
 
-            // @TODO implement the scoring
-            $response = [
-                'success' => true,
-                'displayFeedbacks' => $displayFeedback,
-                'itemSession' => [
-                    'SCORE' => [
-                        'base' => [
-                            'float' => 0
-                        ]
-                    ]
-                ]
-            ];
-
-            if ($displayFeedback == true) {
-                $response['feedbacks'] = [];
-                $response['itemSession'] = [];
-            }
-
+            $response = $this->processResponses($itemUri);
 
         } catch (\Exception $e) {
             $response = $this->getErrorResponse($e);
@@ -259,5 +258,99 @@ class Previewer extends ServiceModule
         }
 
         $this->returnJson($response, $code);
+    }
+
+    /**
+     * Item's ResponseProcessing.
+     * 
+     * @param $itemUri
+     * @throws \common_exception_Error
+     * @throws \qtism\common\datatypes\files\FileManagerException
+     * @throws common_Exception
+     */
+    protected function processResponses($itemUri){
+
+        if (empty($itemUri)) {
+            throw new common_Exception('missing required itemUri');
+        }
+
+        $item = new core_kernel_classes_Resource($itemUri);
+        
+        $jsonPayload = taoQtiCommon_helpers_Utils::readJsonPayload();
+
+        try {
+            $qtiXmlFileContent = QtiFile::getQtiFileContent($item);
+            $qtiXmlDoc = new XmlDocument();
+            $qtiXmlDoc->loadFromString($qtiXmlFileContent);
+        }
+        catch(StorageException $e) {
+            $msg = "An error occurred while loading QTI-XML file at expected location '${qtiXmlFilePath}'.";
+            common_Logger::e(($e->getPrevious() !== null) ? $e->getPrevious()->getMessage() : $e->getMessage());
+            throw new \RuntimeException($msg, 0, $e);
+        }
+
+        $itemSession = new AssessmentItemSession($qtiXmlDoc->getDocumentComponent(), new SessionManager());
+        $itemSession->beginItemSession();
+
+        $variables = array();
+        $filler = new taoQtiCommon_helpers_PciVariableFiller($qtiXmlDoc->getDocumentComponent());
+
+        // Convert client-side data as QtiSm Runtime Variables.
+        foreach ($jsonPayload as $id => $response) {
+
+            try {
+                $var  = $filler->fill($id, $response);
+                // Do not take into account QTI Files at preview time.
+                // Simply delete the created file.
+                if (taoQtiCommon_helpers_Utils::isQtiFile($var, false) === true) {
+                    $fileManager = new FileSystemFileManager();
+                    $fileManager->delete($var->getValue());
+                }
+                else {
+                    $variables[] = $var;
+                }
+            }
+            catch (OutOfRangeException $e) {
+                // A variable value could not be converted, ignore it.
+                // Developer's note: QTI Pairs with a single identifier (missing second identifier of the pair) are transmitted as an array of length 1,
+                // this might cause problem. Such "broken" pairs are simply ignored.
+                common_Logger::d("Client-side value for variable '${id}' is ignored due to data malformation.");
+            }
+            catch (OutOfBoundsException $e) {
+                // No such identifier found in item.
+                common_Logger::d("The variable with identifier '${id}' is not declared in the item definition.");
+            }
+        }
+
+        try {
+            $itemSession->beginAttempt();
+            $itemSession->endAttempt(new State($variables));
+
+            // Return the item session state to the client-side.
+            return [
+                'success' => true,
+                'displayFeedback' => true,
+                'itemSession' => self::buildOutcomeResponse($itemSession)
+            ];
+        }
+        catch(AssessmentItemSessionException $e) {
+            $msg = "An error occurred while processing the responses.";
+            throw new \RuntimeException($msg, 0, $e);
+        }
+        catch(taoQtiCommon_helpers_ResultTransmissionException $e) {
+            $msg = "An error occurred while transmitting a result to the target Result Server.";
+            throw new \RuntimeException($msg, 0, $e);
+        }
+    }
+
+    protected function buildOutcomeResponse(AssessmentItemSession $itemSession) {
+        $stateOutput = new taoQtiCommon_helpers_PciStateOutput();
+
+        foreach ($itemSession->getOutcomeVariables(false) as $var) {
+            $stateOutput->addVariable($var);
+        }
+
+        $output = $stateOutput->getOutput();
+        return $output;
     }
 }
