@@ -22,7 +22,6 @@
 define([
     'jquery',
     'lodash',
-    'core/promise',
     'ui/hider',
     'taoQtiTestPreviewer/previewer/runner',
     'taoQtiTestPreviewer/previewer/plugins/tools/scale/scale',
@@ -32,13 +31,43 @@ define([
 ], function (
     $,
     _,
-    Promise,
     hider,
     previewerFactory,
     pluginFactory,
     itemData
 ) {
     'use strict';
+
+    const runnerConfig = {
+        serviceCallId : 'foo',
+        providers : {
+            runner: {
+                id: 'qtiItemPreviewer',
+                module: 'taoQtiTestPreviewer/previewer/provider/item/item',
+                bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+                category: 'runner'
+            },
+            proxy: {
+                id: 'qtiItemPreviewProxy',
+                module: 'taoQtiTestPreviewer/previewer/proxy/item',
+                bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+                category: 'proxy'
+            },
+            communicator: {
+                id: 'request',
+                module: 'core/communicator/request',
+                bundle: 'loader/vendor.min',
+                category: 'communicator'
+            },
+            plugins: [{
+                module: 'taoQtiTestPreviewer/previewer/plugins/tools/scale/scale',
+                bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+                category: 'tools'
+            }]
+        },
+        options : {}
+    };
+
 
     // Prevent the AJAX mocks to pollute the logs
     $.mockjaxSettings.logger = null;
@@ -66,20 +95,11 @@ define([
 
     QUnit.module('API');
 
-    QUnit.test('module', function (assert) {
-        var ready = assert.async();
-        var config = {
-            serviceCallId: 'foo',
-            provider: 'qtiItemPreviewer',
-            providers: [{
-                'id': 'qtiItemPreviewer',
-                'module': 'taoQtiTestPreviewer/previewer/provider/item/item',
-                'bundle': 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                'category': 'previewer'
-            }]
-        };
+    QUnit.test('module', assert => {
+        const ready = assert.async();
         assert.expect(3);
-        previewerFactory(config, $('#fixture-api'))
+
+        previewerFactory('#fixture-api', runnerConfig)
             .on('ready', function (runner) {
                 assert.equal(typeof pluginFactory, 'function', 'The module exposes a function');
                 assert.equal(typeof pluginFactory(runner), 'object', 'The factory produces an instance');
@@ -106,22 +126,13 @@ define([
         {title: 'enable'},
         {title: 'disable'}
     ]).test('plugin API ', function (data, assert) {
-        var ready = assert.async();
-        var config = {
-            serviceCallId: 'foo',
-            provider: 'qtiItemPreviewer',
-            providers: [{
-                'id': 'qtiItemPreviewer',
-                'module': 'taoQtiTestPreviewer/previewer/provider/item/item',
-                'bundle': 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                'category': 'previewer'
-            }]
-        };
+        const ready = assert.async();
         assert.expect(1);
-        previewerFactory(config, $('#fixture-api'))
+
+        previewerFactory('#fixture-api', runnerConfig)
             .on('ready', function (runner) {
-                var plugin = pluginFactory(runner);
-                assert.equal(typeof plugin[data.title], 'function', 'The instances expose a "' + data.title + '" function');
+                const plugin = pluginFactory(runner);
+                assert.equal(typeof plugin[data.title], 'function', `The instances expose a ${data.title} function`);
                 runner.destroy();
             })
             .on('destroy', ready);
@@ -131,92 +142,67 @@ define([
 
     QUnit.cases.init([{
         title: 'interactive',
-        config: {
+        options: {
             readOnly: false
         }
     }, {
         title: 'read only',
-        config: {
+        options: {
             readOnly: true
         }
-    }]).test('render / destroy ', function (data, assert) {
-        var ready = assert.async();
-        var config = _.merge({
-            serviceCallId: 'foo',
-            provider: 'qtiItemPreviewer',
-            providers: [{
-                'id': 'qtiItemPreviewer',
-                'module': 'taoQtiTestPreviewer/previewer/provider/item/item',
-                'bundle': 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                'category': 'previewer'
-            }],
-            plugins: [{
-                module: 'taoQtiTestPreviewer/previewer/plugins/tools/scale/scale',
-                bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                category: 'navigation'
-            }]
-        }, data.config);
+    }]).test('render / destroy ', (data, assert) => {
+        const ready = assert.async();
         assert.expect(4);
-        previewerFactory(config, $('#fixture-render'))
+
+        const config = Object.assign({}, runnerConfig);
+        config.options = data.options;
+
+        previewerFactory('#fixture-render', config)
             .on('ready', function (runner) {
-                var areaBroker = runner.getAreaBroker();
-                var plugin = runner.getPlugin('scale');
+                const areaBroker = runner.getAreaBroker();
+                const plugin = runner.getPlugin('scale');
                 Promise.resolve()
                     .then(function () {
-                        var $container = areaBroker.getHeaderArea();
-                        var $devicesSelector = $container.find('.devices-selector');
+                        const $container = areaBroker.getHeaderArea();
+                        const $devicesSelector = $container.find('.devices-selector');
                         assert.equal($devicesSelector.length, 1, 'The devices selector has been inserted');
                         assert.equal($devicesSelector.hasClass('disabled'), true, 'The button has been rendered disabled');
-                        assert.equal(hider.isHidden($devicesSelector), config.readOnly, 'The button state is aligned to the config');
+                        assert.equal(hider.isHidden($devicesSelector), data.options.readOnly, 'The button state is aligned to the config');
                         return plugin.destroy();
                     })
                     .then(function () {
-                        var $container = areaBroker.getHeaderArea();
-                        var $devicesSelector = $container.find('.devices-selector');
+                        const $container = areaBroker.getHeaderArea();
+                        const $devicesSelector = $container.find('.devices-selector');
                         assert.equal($devicesSelector.length, 0, 'The trigger button has been removed');
                         runner.destroy();
                     })
                     .catch(function (err) {
-                        assert.ok(false, 'Error in init method: ' + err);
+                        assert.ok(false, `Error in init method: ${err.message}`);
                         runner.destroy();
                     });
             })
             .on('destroy', ready);
     });
 
-    QUnit.test('enable / disable', function (assert) {
-        var ready = assert.async();
-        var config = {
-            serviceCallId: 'foo',
-            provider: 'qtiItemPreviewer',
-            providers: [{
-                'id': 'qtiItemPreviewer',
-                'module': 'taoQtiTestPreviewer/previewer/provider/item/item',
-                'bundle': 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                'category': 'previewer'
-            }],
-            plugins: [{
-                module: 'taoQtiTestPreviewer/previewer/plugins/tools/scale/scale',
-                bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                category: 'navigation'
-            }]
-        };
+    QUnit.test('enable / disable', assert => {
+        const ready = assert.async();
         assert.expect(7);
-        previewerFactory(config, $('#fixture-enable'))
+
+        previewerFactory('#fixture-enable', runnerConfig)
             .on('ready', function (runner) {
-                var areaBroker = runner.getAreaBroker();
-                var plugin = runner.getPlugin('scale');
+                const areaBroker = runner.getAreaBroker();
+                const plugin = runner.getPlugin('scale');
                 Promise.resolve()
                     .then(function () {
-                        var $container = areaBroker.getHeaderArea();
-                        var $devicesSelector = $container.find('.devices-selector');
+                        const $container = areaBroker.getHeaderArea();
+                        const $devicesSelector = $container.find('.devices-selector');
                         assert.equal($devicesSelector.length, 1, 'The devices selector has been inserted');
                         assert.equal($devicesSelector.hasClass('disabled'), true, 'The devices selector has been rendered disabled');
                         return plugin.enable();
                     })
                     .then(function () {
-                        var $container = areaBroker.getHeaderArea();
-                        var $devicesSelector = $container.find('.devices-selector');
+                        const $container = areaBroker.getHeaderArea();
+                        const $devicesSelector = $container.find('.devices-selector');
                         assert.equal($devicesSelector.hasClass('disabled'), false, 'The devices selector has been enabled');
                         return new Promise(function (resolve) {
                             runner
@@ -225,8 +211,8 @@ define([
                         });
                     })
                     .then(function () {
-                        var $container = areaBroker.getHeaderArea();
-                        var $devicesSelector = $container.find('.devices-selector');
+                        const $container = areaBroker.getHeaderArea();
+                        const $devicesSelector = $container.find('.devices-selector');
                         assert.equal($devicesSelector.hasClass('disabled'), true, 'The devices selector has been disabled');
                         return new Promise(function (resolve) {
                             runner
@@ -235,53 +221,39 @@ define([
                         });
                     })
                     .then(function () {
-                        var $container = areaBroker.getHeaderArea();
-                        var $devicesSelector = $container.find('.devices-selector');
+                        const $container = areaBroker.getHeaderArea();
+                        const $devicesSelector = $container.find('.devices-selector');
                         assert.equal($devicesSelector.hasClass('disabled'), false, 'The devices selector has been enabled');
                         return plugin.disable();
                     })
                     .then(function () {
-                        var $container = areaBroker.getHeaderArea();
-                        var $devicesSelector = $container.find('.devices-selector');
+                        const $container = areaBroker.getHeaderArea();
+                        const $devicesSelector = $container.find('.devices-selector');
                         assert.equal($devicesSelector.hasClass('disabled'), true, 'The devices selector has been disabled');
                         return plugin.destroy();
                     })
                     .then(function () {
-                        var $container = areaBroker.getHeaderArea();
-                        var $devicesSelector = $container.find('.devices-selector');
+                        const $container = areaBroker.getHeaderArea();
+                        const $devicesSelector = $container.find('.devices-selector');
                         assert.equal($devicesSelector.length, 0, 'The trigger button has been removed');
                         runner.destroy();
                     })
                     .catch(function (err) {
-                        assert.ok(false, 'Error in init method: ' + err);
+                        assert.ok(false, `Error in init method: ${err.message}`);
                         runner.destroy();
                     });
             })
             .on('destroy', ready);
     });
 
-    QUnit.test('show / hide', function (assert) {
-        var ready = assert.async();
-        var config = {
-            serviceCallId: 'foo',
-            provider: 'qtiItemPreviewer',
-            providers: [{
-                'id': 'qtiItemPreviewer',
-                'module': 'taoQtiTestPreviewer/previewer/provider/item/item',
-                'bundle': 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                'category': 'previewer'
-            }],
-            plugins: [{
-                module: 'taoQtiTestPreviewer/previewer/plugins/tools/scale/scale',
-                bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                category: 'navigation'
-            }]
-        };
+    QUnit.test('show / hide', assert => {
+        const ready = assert.async();
         assert.expect(10);
-        previewerFactory(config, $('#fixture-show'))
+
+        previewerFactory('#fixture-show', runnerConfig)
             .on('ready', function (runner) {
-                var areaBroker = runner.getAreaBroker();
-                var plugin = runner.getPlugin('scale');
+                const areaBroker = runner.getAreaBroker();
+                const plugin = runner.getPlugin('scale');
                 Promise.resolve()
                     .then(function () {
                         return new Promise(function (resolve) {
@@ -291,37 +263,37 @@ define([
                         });
                     })
                     .then(function () {
-                        var $container = areaBroker.getHeaderArea();
-                        var $devicesSelector = $container.find('.devices-selector');
+                        const $container = areaBroker.getHeaderArea();
+                        const $devicesSelector = $container.find('.devices-selector');
                         assert.equal($devicesSelector.length, 1, 'The devices selector has been inserted');
                         assert.equal($devicesSelector.hasClass('disabled'), false, 'The devices selector is enabled');
                         assert.ok(!hider.isHidden($devicesSelector), 'The devices selector is visible');
                         return plugin.hide();
                     })
                     .then(function () {
-                        var $container = areaBroker.getHeaderArea();
-                        var $devicesSelector = $container.find('.devices-selector');
+                        const $container = areaBroker.getHeaderArea();
+                        const $devicesSelector = $container.find('.devices-selector');
                         assert.equal($devicesSelector.length, 1, 'The devices selector has been inserted');
                         assert.equal($devicesSelector.hasClass('disabled'), false, 'The devices selector is enabled');
                         assert.ok(hider.isHidden($devicesSelector), 'The devices selector is hidden');
                         return plugin.show();
                     })
                     .then(function () {
-                        var $container = areaBroker.getHeaderArea();
-                        var $devicesSelector = $container.find('.devices-selector');
+                        const $container = areaBroker.getHeaderArea();
+                        const $devicesSelector = $container.find('.devices-selector');
                         assert.equal($devicesSelector.length, 1, 'The devices selector has been inserted');
                         assert.equal($devicesSelector.hasClass('disabled'), false, 'The devices selector is enabled');
                         assert.ok(!hider.isHidden($devicesSelector), 'The devices selector is visible');
                         return plugin.destroy();
                     })
                     .then(function () {
-                        var $container = areaBroker.getHeaderArea();
-                        var $devicesSelector = $container.find('.devices-selector');
+                        const $container = areaBroker.getHeaderArea();
+                        const $devicesSelector = $container.find('.devices-selector');
                         assert.equal($devicesSelector.length, 0, 'The trigger button has been removed');
                         runner.destroy();
                     })
                     .catch(function (err) {
-                        assert.ok(false, 'Error in init method: ' + err);
+                        assert.ok(false, `Error in init method: ${err.message}`);
                         runner.destroy();
                     });
             })
@@ -330,28 +302,14 @@ define([
 
     QUnit.module('behavior');
 
-    QUnit.test('scale', function (assert) {
-        var ready = assert.async();
-        var config = {
-            serviceCallId: 'foo',
-            provider: 'qtiItemPreviewer',
-            providers: [{
-                'id': 'qtiItemPreviewer',
-                'module': 'taoQtiTestPreviewer/previewer/provider/item/item',
-                'bundle': 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                'category': 'previewer'
-            }],
-            plugins: [{
-                module: 'taoQtiTestPreviewer/previewer/plugins/tools/scale/scale',
-                bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                category: 'navigation'
-            }]
-        };
+    QUnit.test('scale', assert => {
+        const ready = assert.async();
         assert.expect(32);
-        previewerFactory(config, $('#fixture-show'))
+
+        previewerFactory('#fixture-scale', runnerConfig)
             .on('ready', function (runner) {
-                var areaBroker = runner.getAreaBroker();
-                var plugin = runner.getPlugin('scale');
+                const areaBroker = runner.getAreaBroker();
+                const plugin = runner.getPlugin('scale');
                 Promise.resolve()
                     .then(function () {
                         return new Promise(function (resolve) {
@@ -361,8 +319,8 @@ define([
                         });
                     })
                     .then(function () {
-                        var $container = areaBroker.getHeaderArea();
-                        var $devicesSelector = $container.find('.devices-selector');
+                        const $container = areaBroker.getHeaderArea();
+                        const $devicesSelector = $container.find('.devices-selector');
                         assert.equal($devicesSelector.length, 1, 'The devices selector has been inserted');
                         assert.equal($devicesSelector.hasClass('disabled'), false, 'The devices selector is enabled');
                         assert.ok(!hider.isHidden($devicesSelector), 'The devices selector is visible');
@@ -370,8 +328,8 @@ define([
                     .then(function () {
                         runner.off('.testselector');
                         return new Promise(function(resolve) {
-                            var $container = areaBroker.getHeaderArea();
-                            var $devicesSelector = $container.find('.devices-selector');
+                            const $container = areaBroker.getHeaderArea();
+                            const $devicesSelector = $container.find('.devices-selector');
                             runner
                                 .on('resizeitem.testselector', function(size, orientation, type) {
                                     assert.equal(type, 'desktop', 'Device type has been changed');
@@ -387,8 +345,8 @@ define([
                     .then(function () {
                         runner.off('.testselector');
                         return new Promise(function(resolve) {
-                            var $container = areaBroker.getHeaderArea();
-                            var $devicesSelector = $container.find('.devices-selector');
+                            const $container = areaBroker.getHeaderArea();
+                            const $devicesSelector = $container.find('.devices-selector');
                             runner
                                 .on('resizeitem.testselector', function(size, orientation, type) {
                                     assert.equal(type, 'standard', 'Device type has been changed');
@@ -402,8 +360,8 @@ define([
                     .then(function () {
                         runner.off('.testselector');
                         return new Promise(function(resolve) {
-                            var $container = areaBroker.getHeaderArea();
-                            var $devicesSelector = $container.find('.devices-selector');
+                            const $container = areaBroker.getHeaderArea();
+                            const $devicesSelector = $container.find('.devices-selector');
                             runner
                                 .on('resizeitem.testselector', function(size, orientation, type) {
                                     assert.equal(type, 'mobile', 'Device type has been changed');
@@ -419,8 +377,8 @@ define([
                     .then(function () {
                         runner.off('.testselector');
                         return new Promise(function(resolve) {
-                            var $container = areaBroker.getHeaderArea();
-                            var $devicesSelector = $container.find('.devices-selector');
+                            const $container = areaBroker.getHeaderArea();
+                            const $devicesSelector = $container.find('.devices-selector');
                             runner
                                 .on('resizeitem.testselector', function(size, orientation, type) {
                                     assert.equal(type, 'mobile', 'Device type is still the same');
@@ -436,8 +394,8 @@ define([
                     .then(function () {
                         runner.off('.testselector');
                         return new Promise(function(resolve) {
-                            var $container = areaBroker.getHeaderArea();
-                            var $devicesSelector = $container.find('.devices-selector');
+                            const $container = areaBroker.getHeaderArea();
+                            const $devicesSelector = $container.find('.devices-selector');
                             runner
                                 .on('resizeitem.testselector', function(size, orientation, type) {
                                     assert.equal(type, 'mobile', 'Device type is still the same');
@@ -470,13 +428,13 @@ define([
                         return plugin.destroy();
                     })
                     .then(function () {
-                        var $container = areaBroker.getHeaderArea();
-                        var $devicesSelector = $container.find('.devices-selector');
+                        const $container = areaBroker.getHeaderArea();
+                        const $devicesSelector = $container.find('.devices-selector');
                         assert.equal($devicesSelector.length, 0, 'The trigger button has been removed');
                         runner.destroy();
                     })
                     .catch(function (err) {
-                        assert.ok(false, 'Error in init method: ' + err);
+                        assert.ok(false, `Error in init method: ${err.message}`);
                         runner.destroy();
                     });
             })
@@ -485,30 +443,13 @@ define([
 
     QUnit.module('Visual');
 
-    QUnit.test('Visual test', function (assert) {
-        var ready = assert.async();
-        var $container = $('#visual-test');
-        var serviceCallId = 'previewer';
-        var itemRef = 'item-1';
-        var config = {
-            serviceCallId: serviceCallId,
-            provider: 'qtiItemPreviewer',
-            providers: [{
-                'id': 'qtiItemPreviewer',
-                'module': 'taoQtiTestPreviewer/previewer/provider/item/item',
-                'bundle': 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                'category': 'previewer'
-            }],
-            plugins: [{
-                module: 'taoQtiTestPreviewer/previewer/plugins/tools/scale/scale',
-                bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                category: 'controls'
-            }]
-        };
-
+    QUnit.test('Visual test', assert => {
+        const ready = assert.async();
+        const $container = $('#visual-test');
+        const itemRef = 'item-1';
         assert.expect(1);
 
-        previewerFactory(config, $container)
+        previewerFactory($container, runnerConfig)
             .on('error', function(err) {
                 assert.ok(false, 'An error has occurred');
                 assert.pushResult({

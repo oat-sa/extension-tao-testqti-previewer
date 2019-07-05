@@ -55,7 +55,7 @@ define([
              */
             function isPluginAllowed() {
                 var config = testRunner.getConfig();
-                return !config.readOnly;
+                return !config.options.readOnly;
             }
 
             // generate unique id for global events

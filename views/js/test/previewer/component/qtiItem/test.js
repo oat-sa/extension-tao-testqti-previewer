@@ -22,33 +22,11 @@
 define([
     'jquery',
     'lodash',
-    'taoQtiTestPreviewer/previewer/runner',
+    'taoQtiTestPreviewer/previewer/component/qtiItem',
     'json!taoQtiItem/test/samples/json/space-shuttle.json',
-    'lib/jquery.mockjax/jquery.mockjax',
-    'css!taoQtiTestPreviewer/previewer/provider/item/css/item'
-], function($, _, previewerFactory, itemData) {
+    'lib/jquery.mockjax/jquery.mockjax'
+], function($, _, qtiItemPreviewerFactory, itemData) {
     'use strict';
-
-    const providers = {
-        runner : {
-            id: 'qtiItemPreviewer',
-            module: 'taoQtiTestPreviewer/previewer/provider/item/item',
-            bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-            category: 'runner'
-        },
-        proxy: {
-            id: 'qtiItemPreviewProxy',
-            module: 'taoQtiTestPreviewer/previewer/proxy/item',
-            bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-            category: 'proxy'
-        },
-        communicator: {
-            id: 'request',
-            module: 'core/communicator/request',
-            bundle: 'loader/vendor.min',
-            category: 'communicator'
-        }
-    };
 
     QUnit.module('API');
 
@@ -63,14 +41,10 @@ define([
 
     QUnit.test('module', assert =>  {
         const ready = assert.async();
-        const config = {
-            serviceCallId: 'foo',
-            providers,
-            options : {}
-        };
+        const config = {};
 
-        const previewer1 = previewerFactory('#fixture-1', config);
-        const previewer2 = previewerFactory('#fixture-2', config);
+        const previewer1 = qtiItemPreviewerFactory('#fixture-api', config);
+        const previewer2 = qtiItemPreviewerFactory('#fixture-api', config);
 
         assert.expect(4);
         $.mockjax({
@@ -79,7 +53,7 @@ define([
                 success: true
             }
         });
-        assert.equal(typeof previewerFactory, 'function', 'The previewer module exposes a function');
+        assert.equal(typeof qtiItemPreviewerFactory, 'function', 'The previewer module exposes a function');
         assert.equal(typeof previewer1, 'object', 'The previewer factory returns an object');
         assert.equal(typeof previewer2, 'object', 'The previewer factory returns an object');
         assert.notEqual(previewer1, previewer2, 'The previewer factory returns a different instance on each call');
@@ -97,7 +71,6 @@ define([
 
     QUnit.cases.init([{
         title: 'itemData in init',
-        fixture: '#fixture-item-1',
         mock: {
             url: '/init*',
             responseText: {
@@ -115,7 +88,6 @@ define([
         }
     }, {
         title: 'itemRef in init',
-        fixture: '#fixture-item-2',
         mock: [{
             url: '/init*',
             responseText: {
@@ -136,7 +108,6 @@ define([
         }]
     }, {
         title: 'manual load',
-        fixture: '#fixture-item-3',
         itemIdentifier: 'item-3',
         mock: [{
             url: '/init*',
@@ -157,19 +128,16 @@ define([
         }]
     }]).test('render item ', (data, assert) =>  {
         const ready = assert.async();
-        const $container = $(data.fixture);
-        const serviceCallId = 'previewer';
+        const $container = $('#fixture-render');
         const config = {
-            serviceCallId: serviceCallId,
-            providers,
-            options : {}
+            itemUri: data.itemIdentifier
         };
 
         assert.expect(1);
 
         $.mockjax(data.mock);
 
-        previewerFactory($container, config)
+        qtiItemPreviewerFactory($container, config)
             .on('error', function(err) {
                 assert.ok(false, 'An error has occurred');
                 assert.pushResult({
@@ -179,27 +147,17 @@ define([
                 ready();
             })
             .on('ready', function(runner) {
-                runner
-                    .after('renderitem', function() {
-                        assert.ok(true, 'The previewer has been rendered');
-                        ready();
-                    });
-
-                if (data.itemIdentifier) {
-                    runner.loadItem(data.itemIdentifier);
-                }
+                runner.after('renderitem', function() {
+                    assert.ok(true, 'The previewer has been rendered');
+                    ready();
+                });
             });
     });
 
     QUnit.test('destroy', assert =>  {
         const ready = assert.async();
         const $container = $('#fixture-destroy');
-        const serviceCallId = 'previewer';
-        const config = {
-            serviceCallId,
-            providers,
-            options : {}
-        };
+        const config = {};
 
         assert.expect(2);
 
@@ -210,7 +168,7 @@ define([
             }
         });
 
-        previewerFactory($container, config)
+        qtiItemPreviewerFactory($container, config)
             .on('error', function(err) {
                 assert.ok(false, 'An error has occurred');
                 assert.pushResult({
@@ -234,31 +192,8 @@ define([
     QUnit.test('Visual test', function (assert) {
         const ready = assert.async();
         const $container = $('#visual-test');
-        const serviceCallId = 'previewer';
-        const itemRef = 'item-1';
         const config = {
-            serviceCallId: serviceCallId,
-            providers: {
-                runner : providers.runner,
-                plugins: [{
-                    module: 'taoQtiTestPreviewer/previewer/plugins/controls/close',
-                    bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                    category: 'controls'
-                },{
-                    module: 'taoQtiTestPreviewer/previewer/plugins/navigation/submit/submit',
-                    bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                    category: 'navigation'
-                }, {
-                    module: 'taoQtiTest/runner/plugins/tools/itemThemeSwitcher/itemThemeSwitcher',
-                    bundle: 'taoQtiTest/loader/testPlugins.min',
-                    category: 'tools'
-                }, {
-                    module: 'taoQtiTestPreviewer/previewer/plugins/tools/scale/scale',
-                    bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                    category: 'tools'
-                }]
-            },
-            options : {}
+            itemUri: 'item-1'
         };
 
         assert.expect(1);
@@ -296,7 +231,7 @@ define([
             }
         });
 
-        previewerFactory($container, config)
+        qtiItemPreviewerFactory($container, config)
             .on('error', function(err) {
                 assert.ok(false, 'An error has occurred');
                 assert.pushResult({
@@ -306,12 +241,10 @@ define([
                 ready();
             })
             .on('ready', function(runner) {
-                runner
-                    .after('renderitem.runnerComponent', function() {
-                        assert.ok(true, 'The previewer has been rendered');
-                        ready();
-                    })
-                    .loadItem(itemRef);
+                runner.after('renderitem.runnerComponent', function() {
+                    assert.ok(true, 'The previewer has been rendered');
+                    ready();
+                });
             });
     });
 });
