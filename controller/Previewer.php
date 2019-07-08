@@ -21,8 +21,10 @@ namespace oat\taoQtiTestPreviewer\controller;
 
 use common_Exception;
 use common_Logger;
-use core_kernel_classes_Resource;
+use oat\generis\model\OntologyAwareTrait;
+use oat\tao\model\media\sourceStrategy\HttpSource;
 use oat\tao\model\routing\AnnotationReader\security;
+use oat\taoItems\model\media\ItemMediaResolver;
 use oat\taoQtiItem\helpers\QtiFile;
 use oat\taoQtiTestPreviewer\models\ItemPreviewer;
 use oat\taoResultServer\models\classes\ResultServerService;
@@ -43,6 +45,7 @@ use taoQtiCommon_helpers_Utils;
 use taoQtiTest_helpers_TestRunnerUtils as TestRunnerUtils;
 use oat\taoItems\model\pack\ItemPack;
 use oat\taoItems\model\pack\Packer;
+use oat\generis\model\GenerisRdf;
 
 /**
  * Class taoQtiTest_actions_Runner
@@ -51,6 +54,8 @@ use oat\taoItems\model\pack\Packer;
  */
 class Previewer extends ServiceModule
 {
+    use OntologyAwareTrait;
+    
     /**
      * taoQtiTest_actions_Runner constructor.
      * @security("hide")
@@ -140,8 +145,8 @@ class Previewer extends ServiceModule
         /** @var \taoResultServer_models_classes_ReadableResultStorage $implementation */
         $implementation = $resultServerService->getResultStorage($deliveryUri);
 
-        $testTaker = new \core_kernel_users_GenerisUser(new \core_kernel_classes_Resource($implementation->getTestTaker($resultId)));
-        $lang = $testTaker->getPropertyValues(\oat\generis\model\GenerisRdf::PROPERTY_USER_DEFLG);
+        $testTaker = new \core_kernel_users_GenerisUser($this->getResource($implementation->getTestTaker($resultId)));
+        $lang = $testTaker->getPropertyValues(GenerisRdf::PROPERTY_USER_DEFLG);
 
         return empty($lang) ? DEFAULT_LANG : (string) current($lang);
     }
@@ -201,7 +206,7 @@ class Previewer extends ServiceModule
                 }
 
                 $itemDefinition = $this->getRequestParameter('itemDefinition');
-                $delivery = new \core_kernel_classes_Resource($this->getRequestParameter('deliveryUri'));
+                $delivery = $this->getResource($this->getRequestParameter('deliveryUri'));
 
                 $itemPreviewer = new ItemPreviewer();
                 $itemPreviewer->setServiceLocator($this->getServiceLocator());
@@ -214,16 +219,15 @@ class Previewer extends ServiceModule
                 $response['baseUrl'] = $itemPreviewer->getBaseUrl();
 
             } else if ($itemUri) {
-                $packer = new Packer(
-                    new \core_kernel_classes_Resource($itemUri),
-                    \common_session_SessionManager::getSession()->getDataLanguage()
-                );
+                $item = $this->getResource($itemUri);
+                $lang = $this->getSession()->getDataLanguage();
+                $packer = new Packer($item, $lang);
                 $packer->setServiceLocator($this->getServiceLocator());
 
                 /** @var ItemPack $itemPack */
                 $itemPack = $packer->pack();
                 $response['content'] = $itemPack->JsonSerialize();
-                $response['baseUrl'] = '';
+                $response['baseUrl'] = _url('asset', null, null, ['uri' => $itemUri, 'path' => '/']);
 
             } else {
                 throw new \common_exception_BadRequest('Either itemUri or resultId needs to be provided.');
@@ -236,6 +240,30 @@ class Previewer extends ServiceModule
         }
 
         $this->returnJson($response, $code);
+    }
+
+    /**
+     * Gets access to an asset
+     * @throws \common_exception_Error
+     * @throws \tao_models_classes_FileNotFoundException
+     * @throws common_Exception
+     */
+    public function asset()
+    {
+        $itemUri = $this->getRequestParameter('uri');
+        $path = rawurldecode($this->getRequestParameter('path'));
+        
+        $item = $this->getResource($itemUri);
+        $lang = $this->getSession()->getDataLanguage();
+        $resolver = new ItemMediaResolver($item, $lang);
+        
+        $asset = $resolver->resolve($path);
+        if ($asset->getMediaSource() instanceof HttpSource) {
+            throw new common_Exception('Only tao files available for rendering through item preview');
+        }
+        $info = $asset->getMediaSource()->getFileInfo($asset->getMediaIdentifier());
+        $stream = $asset->getMediaSource()->getFileStream($asset->getMediaIdentifier());
+        \tao_helpers_Http::returnStream($stream, $info['mime']);
     }
 
     /**
@@ -274,7 +302,7 @@ class Previewer extends ServiceModule
             throw new common_Exception('missing required itemUri');
         }
 
-        $item = new core_kernel_classes_Resource($itemUri);
+        $item = $this->getResource($itemUri);
         
         $jsonPayload = taoQtiCommon_helpers_Utils::readJsonPayload();
 
