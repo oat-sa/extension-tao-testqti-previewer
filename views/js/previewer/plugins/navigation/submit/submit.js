@@ -58,7 +58,8 @@ define([
      */
     const defaults = {
         submitTitle: __('Submit and show the result'),
-        submitText: __('Submit')
+        submitText: __('Submit'),
+        submitIcon: 'forward'
     };
 
     return pluginFactory({
@@ -116,7 +117,7 @@ define([
                 $button: $(buttonTpl({
                     control: 'submit',
                     title: pluginConfig.submitTitle,
-                    icon: 'forward',
+                    icon: pluginConfig.submitIcon,
                     text: pluginConfig.submitText
                 })),
                 $console: $(consoleTpl()),
