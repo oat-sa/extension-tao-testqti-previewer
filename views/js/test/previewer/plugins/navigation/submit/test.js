@@ -158,6 +158,7 @@ define([
         title: 'interactive',
         expectedTitle: __('Submit and show the result'),
         expectedText: __('Submit'),
+        expectedIcon: 'forward',
         options: {
             readOnly: false
         }
@@ -165,6 +166,7 @@ define([
         title: 'read only',
         expectedTitle: __('Submit and show the result'),
         expectedText: __('Submit'),
+        expectedIcon: 'forward',
         options: {
             readOnly: true
         }
@@ -172,18 +174,20 @@ define([
         title: 'custom',
         expectedTitle: 'Foo',
         expectedText: 'Bar',
+        expectedIcon: 'globe',
         options: {
             readOnly: false,
             plugins: {
                 submit: {
                     submitTitle: 'Foo',
                     submitText: 'Bar',
+                    submitIcon: 'globe'
                 }
             }
         }
     }]).test('render / destroy ', (data, assert) =>  {
         const ready = assert.async();
-        assert.expect(10);
+        assert.expect(11);
 
         const config = Object.assign({}, runnerConfig);
         config.options = data.options;
@@ -204,6 +208,7 @@ define([
                         assert.equal($console.length, 1, 'The console has been inserted');
                         assert.equal($button.attr('title').trim(), data.expectedTitle, 'The button has the expected title');
                         assert.equal($button.text().trim(), data.expectedText, 'The button has the expected text');
+                        assert.equal($button.find(`.icon-${data.expectedIcon}`).length, 1, 'The button has the expected icon');
                         assert.equal($button.hasClass('disabled'), true, 'The button has been rendered disabled');
                         assert.equal(hider.isHidden($button), config.options.readOnly, 'The button state is aligned to the config');
                         return plugin.destroy();
