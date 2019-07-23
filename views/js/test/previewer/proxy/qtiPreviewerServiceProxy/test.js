@@ -25,7 +25,7 @@ define([
     'util/url',
     'core/communicator',
     'taoTests/runner/proxy',
-    'taoQtiTestPreviewer/previewer/proxy/item',
+    'taoQtiTestPreviewer/previewer/proxy/qtiPreviewerServiceProxy',
     'lib/jquery.mockjax/jquery.mockjax'
 ], function($, _, urlUtil, communicatorFactory, proxyFactory, itemProxy) {
     'use strict';
@@ -44,7 +44,7 @@ define([
     QUnit.test('module', function(assert) {
         assert.expect(7);
         assert.equal(typeof itemProxy, 'object', 'The itemProxy module exposes an object');
-        assert.equal(itemProxy.name, 'qtiItemPreviewerProxy', 'The factory has the expected name');
+        assert.equal(itemProxy.name, 'qtiPreviewerServiceProxy', 'The factory has the expected name');
         assert.equal(typeof proxyFactory, 'function', 'The proxyFactory module exposes a function');
         assert.equal(typeof proxyFactory.registerProvider, 'function', 'The proxyFactory module exposes a registerProvider method');
         assert.equal(typeof proxyFactory.getProvider, 'function', 'The proxyFactory module exposes a getProvider method');
