@@ -22,13 +22,11 @@
  * @author Jean-Sébastien Conan <jean-sebastien@taotesting.com>
  */
 define([
-    'jquery',
     'lodash',
-    'i18n',
     'core/promiseQueue',
     'core/request',
     'taoQtiTestPreviewer/previewer/config/qtiPreviewerServiceConfig'
-], function ($, _, __, promiseQueue, coreRequest, configFactory) {
+], function (_, promiseQueue, coreRequest, configFactory) {
     'use strict';
 
     /**
