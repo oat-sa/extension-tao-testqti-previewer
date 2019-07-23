@@ -35,8 +35,8 @@ define([
     'use strict';
 
     const runnerConfig = {
-        serviceCallId : 'foo',
-        providers : {
+        serviceCallId: 'foo',
+        providers: {
             runner: {
                 id: 'qtiItemPreviewer',
                 module: 'taoQtiTestPreviewer/previewer/provider/item/item',
@@ -61,7 +61,7 @@ define([
                 category: 'controls'
             }]
         },
-        options : {}
+        options: {}
     };
 
     // Prevent the AJAX mocks to pollute the logs
@@ -69,13 +69,13 @@ define([
     $.mockjaxSettings.responseTime = 1;
 
     // Restore AJAX method after each test
-    QUnit.testDone(function() {
+    QUnit.testDone(function () {
         $.mockjax.clear();
     });
 
     QUnit.module('API');
 
-    QUnit.test('module', assert =>  {
+    QUnit.test('module', assert => {
         const ready = assert.async();
         assert.expect(3);
 
@@ -90,7 +90,7 @@ define([
         assert.equal(itemPreviewerProvider.name, 'qtiItemPreviewer', 'The provider has the expected name');
 
         previewerFactory('#fixture-api', runnerConfig)
-            .on('ready',  runner => {
+            .on('ready', runner => {
                 assert.ok(true, 'The provider works with the runner');
                 runner.destroy();
             })
@@ -108,13 +108,13 @@ define([
         {title: 'renderItem'},
         {title: 'unloadItem'},
         {title: 'destroy'}
-    ]).test('provider API ', (data, assert) =>  {
+    ]).test('provider API ', (data, assert) => {
         assert.equal(typeof itemPreviewerProvider[data.title], 'function', `The provider expose a ${data.title} function`);
     });
 
     QUnit.module('UI');
 
-    QUnit.test('render / destroy ', assert =>  {
+    QUnit.test('render / destroy ', assert => {
         const ready = assert.async();
         assert.expect(12);
 
@@ -160,7 +160,7 @@ define([
 
     QUnit.module('behavior');
 
-    QUnit.test('install', assert =>  {
+    QUnit.test('install', assert => {
         const ready = assert.async();
         assert.expect(2);
         const config = Object.assign({}, runnerConfig);
@@ -189,7 +189,7 @@ define([
             .on('destroy', ready);
     });
 
-    QUnit.test('init', assert =>  {
+    QUnit.test('init', assert => {
         const ready = assert.async();
         assert.expect(11);
         const config = Object.assign({}, runnerConfig);
@@ -385,7 +385,7 @@ define([
                 state: {}
             }
         }]
-    }]).test('render item ', (data, assert) =>  {
+    }]).test('render item ', (data, assert) => {
         const ready = assert.async();
         const $container = $('#fixture-item');
         const serviceCallId = 'previewer';
@@ -397,7 +397,7 @@ define([
         $.mockjax(data.mock);
 
         previewerFactory($container, config)
-            .on('error', function(err) {
+            .on('error', function (err) {
                 assert.ok(false, 'An error has occurred');
                 assert.pushResult({
                     result: false,
@@ -405,13 +405,13 @@ define([
                 });
                 ready();
             })
-            .on('ready', function(runner) {
+            .on('ready', function (runner) {
                 Promise
                     .resolve()
                     .then(() => new Promise(resolve => {
                         runner
                             .off('.test')
-                            .after('renderitem.test', function() {
+                            .after('renderitem.test', function () {
                                 assert.ok(true, 'The previewer has been rendered');
                                 resolve();
                             });
@@ -459,9 +459,205 @@ define([
             .on('destroy', ready);
     });
 
+    QUnit.test('submit success', assert => {
+        const ready = assert.async();
+        assert.expect(10);
+        $.mockjax({
+            url: '/init*',
+            responseText: {
+                success: true
+            }
+        });
+        $.mockjax({
+            url: '/getItem*',
+            responseText: {
+                success: true,
+                content: {
+                    type: 'qti',
+                    data: itemData
+                },
+                baseUrl: '',
+                state: {}
+            }
+        });
+        $.mockjax({
+            url: '/submitItem*',
+            responseText: {
+                success: true,
+                displayFeedbacks: false,
+                itemSession: {
+                    SCORE: {
+                        base: {
+                            float: 0
+                        }
+                    }
+                }
+            }
+        });
+        previewerFactory('#fixture-submit', runnerConfig)
+            .on('ready', function (runner) {
+                Promise.resolve()
+                    .then(() => new Promise(resolve => {
+                        runner
+                            .off('.test')
+                            .after('renderitem.test', function () {
+                                assert.ok(true, 'The previewer has been rendered');
+                                resolve();
+                            });
+                    }))
+                    .then(() => {
+                        runner.off('.test');
+                        const promises = Promise.all([
+                            new Promise(resolve => {
+                                runner.on('disabletools.test', () => {
+                                    assert.ok(true, 'Event disabletools has been triggered');
+                                    resolve();
+                                });
+                            }),
+                            new Promise(resolve => {
+                                runner.on('disablenav.test', () => {
+                                    assert.ok(true, 'Event enablenav has been triggered');
+                                    resolve();
+                                });
+                            }),
+                            new Promise(resolve => {
+                                runner.on('submitresponse.test', () => {
+                                    assert.ok(true, 'Event submitresponse has been triggered');
+                                    resolve();
+                                });
+                            }),
+                            new Promise(resolve => {
+                                runner.on('enabletools.test', () => {
+                                    assert.ok(true, 'Event enabletools has been triggered');
+                                    resolve();
+                                });
+                            }),
+                            new Promise(resolve => {
+                                runner.on('enablenav.test', () => {
+                                    assert.ok(true, 'Event enablenav has been triggered');
+                                    resolve();
+                                });
+                            }),
+                            new Promise(resolve => {
+                                runner.on('resumeitem.test', () => {
+                                    assert.ok(true, 'Event resumeitem has been triggered');
+                                    resolve();
+                                });
+                            }),
+                            new Promise(resolve => {
+                                runner.on('scoreitem.test', () => {
+                                    assert.ok(true, 'Event scoreitem has been triggered');
+                                    resolve();
+                                });
+                            })
+                        ]);
+                        runner.trigger('submititem');
+                        return promises;
+                    })
+                    .catch(err => {
+                        assert.ok(false, err);
+                    })
+                    .then(() => runner.destroy());
+
+                runner.loadItem('foo');
+            })
+            .on('destroy', ready);
+    });
+
+    QUnit.test('submit failure', assert => {
+        const ready = assert.async();
+        assert.expect(6);
+        $.mockjax({
+            url: '/init*',
+            responseText: {
+                success: true
+            }
+        });
+        $.mockjax({
+            url: '/getItem*',
+            responseText: {
+                success: true,
+                content: {
+                    type: 'qti',
+                    data: itemData
+                },
+                baseUrl: '',
+                state: {}
+            }
+        });
+        $.mockjax({
+            url: '/submitItem*',
+            responseText: {
+                success: false
+            }
+        });
+        previewerFactory('#fixture-submit', runnerConfig)
+            .on('ready', function (runner) {
+                Promise.resolve()
+                    .then(() => new Promise(resolve => {
+                        runner
+                            .off('.test')
+                            .after('renderitem.test', function () {
+                                assert.ok(true, 'The previewer has been rendered');
+                                resolve();
+                            });
+                    }))
+                    .then(() => {
+                        runner.off('.test');
+                        const promises = Promise.all([
+                            new Promise(resolve => {
+                                runner.on('disabletools.test', () => {
+                                    assert.ok(true, 'Event disabletools has been triggered');
+                                    resolve();
+                                });
+                            }),
+                            new Promise(resolve => {
+                                runner.on('disablenav.test', () => {
+                                    assert.ok(true, 'Event enablenav has been triggered');
+                                    resolve();
+                                });
+                            }),
+                            new Promise(resolve => {
+                                runner.on('submitresponse.test', () => {
+                                    assert.ok(true, 'Event submitresponse has been triggered');
+                                    resolve();
+                                });
+                            }),
+                            new Promise(resolve => {
+                                runner.on('enabletools.test', () => {
+                                    assert.ok(true, 'Event enabletools has been triggered');
+                                    resolve();
+                                });
+                            }),
+                            new Promise(resolve => {
+                                runner.on('enablenav.test', () => {
+                                    assert.ok(true, 'Event enablenav has been triggered');
+                                    resolve();
+                                });
+                            })
+                        ]);
+                        runner.on('resumeitem.test', () => {
+                            assert.ok(false, 'Event resumeitem should not be triggered');
+                        });
+                        runner.on('scoreitem.test', () => {
+                            assert.ok(false, 'Event scoreitem should not be triggered');
+                        });
+                        runner.trigger('submititem');
+                        return promises;
+                    })
+                    .catch(err => {
+                        assert.ok(false, err);
+                    })
+                    .then(() => runner.destroy());
+
+                runner.loadItem('foo');
+            })
+            .on('destroy', ready);
+    });
+
     QUnit.module('Visual');
 
-    QUnit.test('Visual test', assert =>  {
+    QUnit.test('Visual test', assert => {
         const ready = assert.async();
         const $container = $('#visual-test');
         const itemRef = 'item-1';
@@ -488,7 +684,7 @@ define([
         });
 
         previewerFactory($container, runnerConfig)
-            .on('error', function(err) {
+            .on('error', function (err) {
                 assert.ok(false, 'An error has occurred');
                 assert.pushResult({
                     result: false,
@@ -496,9 +692,9 @@ define([
                 });
                 ready();
             })
-            .on('ready', function(runner) {
+            .on('ready', function (runner) {
                 runner
-                    .after('renderitem.runnerComponent', function() {
+                    .after('renderitem.runnerComponent', function () {
                         assert.ok(true, 'The previewer has been rendered');
                         ready();
                     })
