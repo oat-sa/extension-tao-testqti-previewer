@@ -23,36 +23,25 @@
  */
 define([
     'jquery',
-    'lodash',
     'i18n',
     'taoTests/runner/areaBroker',
-    'taoTests/runner/testStore',
     'taoTests/runner/proxy',
-    'taoQtiTest/runner/ui/toolbox/toolbox',
-    'taoQtiItem/runner/qtiItemRunner',
-    'taoQtiTest/runner/config/assetManager',
+    'taoQtiTestPreviewer/previewer/provider/qtiPreviewer',
     'tpl!taoQtiTestPreviewer/previewer/provider/item/tpl/item'
 ], function (
     $,
-    _,
     __,
     areaBrokerFactory,
-    testStoreFactory,
     proxyFactory,
-    toolboxFactory,
-    qtiItemRunner,
-    assetManagerFactory,
+    qtiPreviewerProvider,
     layoutTpl
 ) {
     'use strict';
 
-    //the asset strategies
-    const assetManager = assetManagerFactory();
-
     /**
      * A Test runner provider to be registered against the runner
      */
-    return {
+    return Object.assign({}, qtiPreviewerProvider, {
 
         //provider name
         name: 'qtiItemPreviewer',
@@ -87,35 +76,6 @@ define([
         },
 
         /**
-         * Initialize and load the test store
-         * @returns {testStore}
-         */
-        loadTestStore() {
-            const config = this.getConfig();
-
-            //the test run needs to be identified uniquely
-            const identifier = config.serviceCallId || `test-${Date.now()}`;
-            return testStoreFactory(identifier);
-        },
-
-        /**
-         * Installation of the provider, called during test runner init phase.
-         */
-        install() {
-            const {plugins} = this.getConfig().options;
-            if (plugins) {
-                _.forEach(this.getPlugins(), plugin => {
-                    if (_.isPlainObject(plugin) && _.isFunction(plugin.setConfig)) {
-                        const config = plugins[plugin.getName()];
-                        if (_.isPlainObject(config)) {
-                            plugin.setConfig(config);
-                        }
-                    }
-                });
-            }
-        },
-
-        /**
          * Initialization of the provider, called during test runner init phase.
          *
          * We install behaviors during this phase (ie. even handlers)
@@ -125,206 +85,33 @@ define([
          * @returns {Promise} to chain proxy.init
          */
         init() {
-            const dataHolder = this.getDataHolder();
-            const areaBroker = this.getAreaBroker();
+            this.on('submititem', () => {
+                const itemState = this.itemRunner.getState();
+                const itemResponses = this.itemRunner.getResponses();
 
-            areaBroker.setComponent('toolbox', toolboxFactory());
-            areaBroker.getToolbox().init();
+                this.trigger('disabletools disablenav');
+                this.trigger('submitresponse', itemResponses, itemState);
 
-            /*
-             * Install behavior on events
-             */
-            this
-                .on('submititem', () => {
-                    const itemState = this.itemRunner.getState();
-                    const itemResponses = this.itemRunner.getResponses();
+                return this.getProxy()
+                    .submitItem(this.getDataHolder().get('itemIdentifier'), itemState, itemResponses)
+                    .then(response => {
+                        this.trigger('scoreitem', response);
+                        this.trigger('enabletools enablenav resumeitem');
+                    })
+                    .catch(err => {
+                        this.trigger('enabletools enablenav');
 
-                    this.trigger('disabletools disablenav');
-                    this.trigger('submitresponse', itemResponses, itemState);
-
-                    return this.getProxy()
-                        .submitItem(dataHolder.get('itemIdentifier'), itemState, itemResponses)
-                        .then(response => {
-                            this.trigger('scoreitem', response);
-                            this.trigger('enabletools enablenav resumeitem');
-                        })
-                        .catch(err => {
-                            this.trigger('enabletools enablenav');
-
-                            //some server errors are valid, so we don't fail (prevent empty responses)
-                            if (err.code === 200) {
-                                this.trigger('alert.submitError',
-                                    err.message || __('An error occurred during results submission. Please retry.'),
-                                    () => this.trigger('resumeitem')
-                                );
-                            }
-                        });
-                })
-                .on('ready', () => {
-                    const itemIdentifier = dataHolder.get('itemIdentifier');
-                    const itemData = dataHolder.get('itemData');
-
-                    if (itemIdentifier) {
-                        if (itemData) {
-                            this.renderItem(itemIdentifier, itemData);
-                        } else {
-                            this.loadItem(itemIdentifier);
+                        //some server errors are valid, so we don't fail (prevent empty responses)
+                        if (err.code === 200) {
+                            this.trigger('alert.submitError',
+                                err.message || __('An error occurred during results submission. Please retry.'),
+                                () => this.trigger('resumeitem')
+                            );
                         }
-                    }
-                })
-                .on('loaditem', (itemRef, itemData) => {
-                    dataHolder.set('itemIdentifier', itemRef);
-                    dataHolder.set('itemData', itemData);
-                })
-                .on('renderitem', () => {
-                    this.trigger('enabletools enablenav');
-                })
-                .on('resumeitem', () => {
-                    this.trigger('enableitem enablenav');
-                })
-                .on('disableitem', () => {
-                    this.trigger('disabletools');
-                })
-                .on('enableitem', () => {
-                    this.trigger('enabletools');
-                })
-                .on('error', () => {
-                    this.trigger('disabletools enablenav');
-                })
-                .on('finish leave', () => {
-                    this.trigger('disablenav disabletools');
-                    this.flush();
-                })
-                .on('flush', () => {
-                    this.destroy();
-                });
-
-            return this.getProxy()
-                .init()
-                .then(data => {
-                    dataHolder.set('itemIdentifier', data.itemIdentifier);
-                    dataHolder.set('itemData', data.itemData);
-                });
-        },
-
-        /**
-         * Rendering phase of the test runner
-         *
-         * Attach the test runner to the DOM
-         *
-         * @this {runner} the runner context, not the provider
-         */
-        render() {
-            const config = this.getConfig();
-            const areaBroker = this.getAreaBroker();
-
-            config.renderTo.append(areaBroker.getContainer());
-
-            areaBroker.getToolbox().render(areaBroker.getToolboxArea());
-        },
-
-        /**
-         * LoadItem phase of the test runner
-         *
-         * We call the proxy in order to get the item data
-         *
-         * @this {runner} the runner context, not the provider
-         * @param {String} itemIdentifier - The identifier of the item to update
-         * @returns {Promise} that calls in parallel the state and the item data
-         */
-        loadItem(itemIdentifier) {
-            return this.getProxy().getItem(itemIdentifier);
-        },
-
-        /**
-         * RenderItem phase of the test runner
-         *
-         * Here we initialize the item runner and wrap it's call to the test runner
-         *
-         * @this {runner} the runner context, not the provider
-         * @param {String} itemIdentifier - The identifier of the item to update
-         * @param {Object} itemData - The definition data of the item
-         * @returns {Promise} resolves when the item is ready
-         */
-        renderItem(itemIdentifier, itemData) {
-            const areaBroker = this.getAreaBroker();
-
-            const changeState = () => {
-                this.setItemState(itemIdentifier, 'changed', true);
-            };
-
-            return new Promise((resolve, reject) => {
-                itemData.content = itemData.content || {};
-                assetManager.setData('baseUrl', itemData.baseUrl);
-                assetManager.setData('itemIdentifier', itemIdentifier);
-                assetManager.setData('assets', itemData.content.assets);
-
-                this.itemRunner = qtiItemRunner(itemData.content.type, itemData.content.data, {
-                    assetManager: assetManager
-                })
-                    .on('warning', err => this.trigger('warning', err))
-                    .on('error', err => {
-                        this.trigger('enablenav');
-                        reject(err);
-                    })
-                    .on('init', function onItemRunnerInit() {
-                        const {state, portableElements} = itemData;
-                        this.render(areaBroker.getContentArea(), {state, portableElements});
-                    })
-                    .on('render', function onItemRunnerRender() {
-                        this.on('responsechange', changeState);
-                        this.on('statechange', changeState);
-                        resolve();
-                    })
-                    .init();
+                    });
             });
-        },
 
-        /**
-         * UnloadItem phase of the test runner
-         *
-         * Item clean up
-         *
-         * @this {runner} the runner context, not the provider
-         * @returns {Promise} resolves when the item is cleared
-         */
-        unloadItem() {
-            this.trigger('beforeunloaditem disablenav disabletools');
-
-            if (this.itemRunner) {
-                return new Promise(resolve => {
-                    this.itemRunner
-                        .on('clear', resolve)
-                        .clear();
-                });
-            }
-            return Promise.resolve();
-        },
-
-        /**
-         * Destroy phase of the test runner
-         *
-         * Clean up
-         *
-         * @this {runner} the runner context, not the provider
-         */
-        destroy() {
-            const areaBroker = this.getAreaBroker();
-
-            // prevent the item to be displayed while test runner is destroying
-            if (this.itemRunner) {
-                this.itemRunner.clear();
-            }
-            this.itemRunner = null;
-
-            if (areaBroker) {
-                areaBroker.getToolbox().destroy();
-            }
-
-            // we remove the store(s) only if the finish step was reached
-            if (this.getState('finish')) {
-                return this.getTestStore().remove();
-            }
+            return qtiPreviewerProvider.init.call(this);
         }
-    };
+    });
 });
