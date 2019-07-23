@@ -399,7 +399,7 @@ define([
     QUnit.test('submit', assert =>  {
         const ready = assert.async();
         assert.expect(14);
-        previewerFactory('#fixture-show', runnerConfig)
+        previewerFactory('#fixture-submit', runnerConfig)
             .on('ready', function (runner) {
                 const areaBroker = runner.getAreaBroker();
                 const plugin = runner.getPlugin('submit');
@@ -473,8 +473,6 @@ define([
             })
             .on('destroy', ready);
     });
-
-
 
     QUnit.module('Visual');
 
