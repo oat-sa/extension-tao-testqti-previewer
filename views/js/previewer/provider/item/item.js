@@ -254,13 +254,15 @@ define([
             };
 
             return new Promise((resolve, reject) => {
-                assetManager.setData('baseUrl', itemData.baseUrl);
-
                 itemData.content = itemData.content || {};
+                assetManager.setData('baseUrl', itemData.baseUrl);
+                assetManager.setData('itemIdentifier', itemIdentifier);
+                assetManager.setData('assets', itemData.content.assets);
 
                 this.itemRunner = qtiItemRunner(itemData.content.type, itemData.content.data, {
                     assetManager: assetManager
                 })
+                    .on('warning', err => this.trigger('warning', err))
                     .on('error', err => {
                         this.trigger('enablenav');
                         reject(err);
@@ -317,6 +319,11 @@ define([
 
             if (areaBroker) {
                 areaBroker.getToolbox().destroy();
+            }
+
+            // we remove the store(s) only if the finish step was reached
+            if (this.getState('finish')) {
+                return this.getTestStore().remove();
             }
         }
     };
