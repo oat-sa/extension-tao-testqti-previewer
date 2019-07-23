@@ -13,11 +13,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2018 (original work) Open Assessment Technologies SA ;
+ * Copyright (c) 2018-2019 (original work) Open Assessment Technologies SA ;
  */
 
 /**
- * Config manager for the proxy of the QTI item previewer
+ * Config manager for the services proxy of the QTI previewer
  *
  * @author Jean-Sébastien Conan <jean-sebastien@taotesting.com>
  */
@@ -25,7 +25,7 @@ define([
     'lodash',
     'util/url',
     'util/config'
-], function(_, urlUtil, configHelper) {
+], function (_, urlUtil, configHelper) {
     'use strict';
 
     /**
@@ -33,10 +33,10 @@ define([
      * @type {Object}
      * @private
      */
-    var _defaults = {
-        bootstrap : {
-            serviceController : 'Previewer',
-            serviceExtension : 'taoQtiTestPreviewer'
+    const _defaults = {
+        bootstrap: {
+            serviceController: 'Previewer',
+            serviceExtension: 'taoQtiTestPreviewer'
         }
     };
 
@@ -45,10 +45,10 @@ define([
      * @type {Object}
      * @private
      */
-    var _entries = {
-        serviceCallId : true,
-        bootstrap : false,
-        timeout : false
+    const _entries = {
+        serviceCallId: true,
+        bootstrap: false,
+        timeout: false
     };
 
     /**
@@ -61,14 +61,14 @@ define([
      */
     return function itemPreviewerConfigFactory(config) {
         // protected storage
-        var storage = configHelper.from(config, _entries, _defaults);
-        var undef;
+        const storage = configHelper.from(config, _entries, _defaults);
 
         // convert some values from seconds to milliseconds
         if (storage.timeout) {
             storage.timeout *= 1000;
         } else {
-            storage.timeout = undef;
+            /* eslint-disable-next-line */
+            storage.timeout = undefined;
         }
 
         // returns only a proxy storage object : no direct access to data is provided
@@ -78,18 +78,18 @@ define([
              * @param {String|Object} [itemIdentifier]
              * @returns {Object}
              */
-            getParameters: function getParameters(itemIdentifier) {
-                var type = typeof itemIdentifier;
-                var parameters = {
-                    serviceCallId : this.getServiceCallId()
+            getParameters(itemIdentifier) {
+                const type = typeof itemIdentifier;
+                const parameters = {
+                    serviceCallId: this.getServiceCallId()
                 };
 
                 if (type === 'string') {
                     // simple item identifier
                     parameters.itemUri = itemIdentifier;
-                    // structured item identifier (a list of parameters)
                 } else if (type === 'object' && _.isPlainObject(itemIdentifier)) {
-                    _.merge(parameters, itemIdentifier);
+                    // structured item identifier (a list of parameters)
+                    Object.assign(parameters, itemIdentifier);
                 } else if (type !== 'undefined') {
                     throw new TypeError('Wrong parameter type provided for itemIdentifier: ' + type + '. Only string or plain object are allowed!');
                 }
@@ -101,7 +101,7 @@ define([
              * Gets the URI of the service call
              * @returns {String}
              */
-            getServiceCallId : function getServiceCallId() {
+            getServiceCallId() {
                 return storage.serviceCallId;
             },
 
@@ -109,7 +109,7 @@ define([
              * Gets the name of the service controller
              * @returns {String}
              */
-            getServiceController : function getServiceController() {
+            getServiceController() {
                 return storage.bootstrap.serviceController || _defaults.bootstrap.serviceController;
             },
 
@@ -117,7 +117,7 @@ define([
              * Gets the name of the extension containing the service controller
              * @returns {String}
              */
-            getServiceExtension : function getServiceExtension() {
+            getServiceExtension() {
                 return storage.bootstrap.serviceExtension || _defaults.bootstrap.serviceExtension;
             },
 
@@ -126,7 +126,7 @@ define([
              * @param {String} action - the name of the action to request
              * @returns {String} - Returns the URL
              */
-            getTestActionUrl : function getTestActionUrl(action) {
+            getTestActionUrl(action) {
                 return urlUtil.route(action, this.getServiceController(), this.getServiceExtension(), this.getParameters());
             },
 
@@ -136,7 +136,7 @@ define([
              * @param {String} action - the name of the action to request
              * @returns {String} - Returns the URL
              */
-            getItemActionUrl : function getItemActionUrl(itemIdentifier, action) {
+            getItemActionUrl(itemIdentifier, action) {
                 return urlUtil.route(action, this.getServiceController(), this.getServiceExtension(), this.getParameters(itemIdentifier));
             },
 
@@ -144,7 +144,7 @@ define([
              * Gets the request timeout
              * @returns {Number}
              */
-            getTimeout : function getTimeout() {
+            getTimeout() {
                 return storage.timeout;
             }
         };

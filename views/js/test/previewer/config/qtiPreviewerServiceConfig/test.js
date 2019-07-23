@@ -23,7 +23,7 @@ define([
 
     'lodash',
     'util/url',
-    'taoQtiTestPreviewer/previewer/config/item'
+    'taoQtiTestPreviewer/previewer/config/qtiPreviewerServiceConfig'
 ], function(_, urlUtil, itemConfig) {
     'use strict';
 

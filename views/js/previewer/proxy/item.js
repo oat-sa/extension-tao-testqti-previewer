@@ -27,7 +27,7 @@ define([
     'i18n',
     'core/promiseQueue',
     'core/request',
-    'taoQtiTestPreviewer/previewer/config/item'
+    'taoQtiTestPreviewer/previewer/config/qtiPreviewerServiceConfig'
 ], function($, _, __, promiseQueue,  coreRequest, configFactory) {
     'use strict';
 
