@@ -25,8 +25,9 @@ define([
     'lodash',
     'core/promiseQueue',
     'core/request',
+    'core/communicator',
     'taoQtiTestPreviewer/previewer/config/qtiPreviewerServiceConfig'
-], function (_, promiseQueue, coreRequest, configFactory) {
+], function (_, promiseQueue, coreRequest, communicatorFactory, configFactory) {
     'use strict';
 
     /**
@@ -112,8 +113,6 @@ define([
         /**
          * Initializes the proxy
          * @param {Object} config - The config provided to the proxy factory
-         * @param {String} config.testDefinition - The URI of the test
-         * @param {String} config.testCompilation - The URI of the compiled delivery
          * @param {String} config.serviceCallId - The URI of the service call
          * @param {Object} [params] - Some optional parameters to join to the call
          * @returns {Promise} - Returns a promise. The proxy will be fully initialized on resolve.
@@ -187,6 +186,18 @@ define([
         submitItem(itemIdentifier, itemState, itemResponse, params) {
             const body = Object.assign({itemState, itemResponse}, params || {});
             return this.request(this.configStorage.getItemActionUrl(itemIdentifier, 'submitItem'), body);
+        },
+
+        /**
+         * Builds the communication channel
+         * @returns {communicator|null} the communication channel
+         */
+        loadCommunicator() {
+            const config = this.configStorage.getCommunicationConfig();
+            if (config.enabled) {
+                communicatorFactory(config.type, config.params);
+            }
+            return null;
         }
     };
 });

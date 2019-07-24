@@ -63,7 +63,8 @@ define([
             {title: 'callTestAction'},
             {title: 'getItem'},
             {title: 'submitItem'},
-            {title: 'callItemAction'}
+            {title: 'callItemAction'},
+            {title: 'loadCommunicator'}
         ])
         .test('proxy API ', function(data, assert) {
             assert.expect(1);

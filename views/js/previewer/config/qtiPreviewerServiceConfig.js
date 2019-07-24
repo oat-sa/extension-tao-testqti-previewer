@@ -146,6 +146,38 @@ define([
              */
             getTimeout() {
                 return storage.timeout;
+            },
+
+            /**
+             * Gets the config for the communication channel
+             * @returns {Object}
+             */
+            getCommunicationConfig() {
+                const communication = storage.bootstrap.communication || {};
+                const extension = communication.extension || this.getServiceExtension();
+                const controller = communication.controller || this.getServiceController();
+                const action = communication.action || 'message';
+                const syncActions = communication.syncActions || [];
+                const serviceCallId = this.getServiceCallId();
+                const service = communication.service || urlUtil.route(action, controller, extension, {serviceCallId});
+                const params = Object.assign({}, communication.params || {}, {service});
+
+                // convert some values from seconds to milliseconds
+                if (params.timeout) {
+                    params.timeout *= 1000;
+                } else {
+                    params.timeout = storage.timeout;
+                }
+                if (params.interval) {
+                    params.interval *= 1000;
+                }
+
+                return {
+                    enabled: communication.enabled,
+                    type: communication.type,
+                    params,
+                    syncActions
+                };
             }
         };
     };
