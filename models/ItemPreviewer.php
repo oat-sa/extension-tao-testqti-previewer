@@ -177,7 +177,13 @@ class ItemPreviewer implements ServiceLocatorAwareInterface
             throw new common_exception_NotFound('File variableElements.json should exist');
         }
 
-        return json_decode($variableElements->read(), true);
+        $variablesData = json_decode($variableElements->read(), true);
+
+        $variablesData = array_filter($variablesData, static function ($key) {
+            return false === strpos($key, 'response_templatesdriven_');
+        }, ARRAY_FILTER_USE_KEY);
+
+        return $variablesData;
     }
 
     /**
