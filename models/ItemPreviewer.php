@@ -179,8 +179,9 @@ class ItemPreviewer implements ServiceLocatorAwareInterface
 
         $variablesData = json_decode($variableElements->read(), true);
 
-        $variablesData = array_filter($variablesData, static function ($key) {
-            return false === strpos($key, 'response_templatesdriven_');
+        // make sure the variables data are compliant to QTI definition
+        $variablesData = array_filter($variablesData, static function ($key) use ($variablesData) {
+            return array_key_exists('qtiClass', $variablesData[$key]) && array_key_exists('serial', $variablesData[$key]);
         }, ARRAY_FILTER_USE_KEY);
 
         return $variablesData;
