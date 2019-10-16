@@ -19,6 +19,8 @@
 
 namespace oat\taoQtiTestPreviewer\models;
 
+use common_exception_InconsistentData;
+use common_exception_NotFound;
 use oat\taoDelivery\model\RuntimeService;
 use oat\taoItems\model\pack\ItemPack;
 use oat\taoItems\model\pack\Packer;
@@ -115,6 +117,16 @@ class ItemPreviewer implements ServiceLocatorAwareInterface
         return $this;
     }
 
+    private function validateProperties()
+    {
+        if (empty($this->userLanguage)
+            || empty($this->itemDefinition)
+            || empty($this->delivery)
+        ) {
+            throw new \LogicException('UserLanguage, ItemDefiniton and Delivery are mandatory for loading of compiled item data');
+        }
+    }
+
     /**
      * @return array
      *
@@ -125,9 +137,7 @@ class ItemPreviewer implements ServiceLocatorAwareInterface
      */
     public function loadCompiledItemData()
     {
-        if (empty($this->userLanguage) || empty($this->itemDefinition) || empty($this->delivery)) {
-            throw new \LogicException('UserLanguage, ItemDefiniton and Delivery are mandatory for loading of compiled item data');
-        }
+        $this->validateProperties();
 
         $jsonFile = $this->getItemPrivateDir()->getFile($this->userLanguage . DIRECTORY_SEPARATOR . QtiJsonItemCompiler::ITEM_FILE_NAME);
         $xmlFile = $this->getItemPrivateDir()->getFile($this->userLanguage . DIRECTORY_SEPARATOR . Service::QTI_ITEM_FILE);
@@ -146,10 +156,30 @@ class ItemPreviewer implements ServiceLocatorAwareInterface
 
             $itemData = $itemPack->JsonSerialize();
         } else {
-            throw new \common_exception_NotFound('Either item.json or qti.xml should exist');
+            throw new common_exception_NotFound('Either item.json or qti.xml should exist');
         }
 
         return $itemData;
+    }
+
+    /**
+     * @return mixed
+     * @throws common_exception_InconsistentData
+     * @throws common_exception_NotFound
+     */
+    public function loadCompiledItemVariables()
+    {
+        $this->validateProperties();
+
+        $variableElements = $this->getItemPrivateDir()->getFile($this->userLanguage . DIRECTORY_SEPARATOR . QtiJsonItemCompiler::VAR_ELT_FILE_NAME);
+
+        if (!$variableElements->exists()) {
+            throw new common_exception_NotFound('File variableElements.json should exist');
+        }
+
+        $variablesData = json_decode($variableElements->read(), true);
+
+        return $variablesData;
     }
 
     /**
