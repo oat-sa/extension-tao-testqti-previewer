@@ -26,9 +26,7 @@ use oat\tao\model\routing\AnnotationReader\security;
 use oat\taoItems\model\media\ItemMediaResolver;
 use oat\taoQtiTestPreviewer\models\ItemPreviewer;
 use oat\taoResultServer\models\classes\ResultServerService;
-use qtism\runtime\tests\AssessmentItemSession;
 use tao_actions_ServiceModule as ServiceModule;
-use taoQtiCommon_helpers_PciStateOutput;
 use taoQtiTest_helpers_TestRunnerUtils as TestRunnerUtils;
 use oat\taoItems\model\pack\ItemPack;
 use oat\taoItems\model\pack\Packer;
@@ -234,6 +232,7 @@ class Previewer extends ServiceModule
      * @throws \common_exception_Error
      * @throws \tao_models_classes_FileNotFoundException
      * @throws common_Exception
+     * @throws \Exception
      */
     public function asset()
     {
