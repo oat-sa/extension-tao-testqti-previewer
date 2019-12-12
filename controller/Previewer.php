@@ -19,7 +19,15 @@
 
 namespace oat\taoQtiTestPreviewer\controller;
 
-use common_Exception;
+use common_Exception as CommonException;
+use common_exception_BadRequest as BadRequestException;
+use common_exception_MissingParameter as MissingParameterException;
+use common_exception_NoImplementation as NoImplementationException;
+use common_exception_NotImplemented as NotImplementedException;
+use common_exception_Unauthorized as UnauthorizedException;
+use common_exception_UserReadableException as UserReadableException;
+use core_kernel_users_GenerisUser as GenerisUser;
+use Exception;
 use oat\generis\model\OntologyAwareTrait;
 use oat\tao\model\media\sourceStrategy\HttpSource;
 use oat\tao\model\routing\AnnotationReader\security;
@@ -27,10 +35,13 @@ use oat\taoItems\model\media\ItemMediaResolver;
 use oat\taoQtiTestPreviewer\models\ItemPreviewer;
 use oat\taoResultServer\models\classes\ResultServerService;
 use tao_actions_ServiceModule as ServiceModule;
+use tao_helpers_Http as HttpHelper;
+use tao_models_classes_FileNotFoundException as FileNotFoundException;
 use taoQtiTest_helpers_TestRunnerUtils as TestRunnerUtils;
 use oat\taoItems\model\pack\ItemPack;
 use oat\taoItems\model\pack\Packer;
 use oat\generis\model\GenerisRdf;
+use taoResultServer_models_classes_ReadableResultStorage as ReadableResultStorage;
 
 /**
  * Class taoQtiTest_actions_Runner
@@ -40,7 +51,7 @@ use oat\generis\model\GenerisRdf;
 class Previewer extends ServiceModule
 {
     use OntologyAwareTrait;
-    
+
     /**
      * taoQtiTest_actions_Runner constructor.
      * @security("hide")
@@ -53,8 +64,7 @@ class Previewer extends ServiceModule
 
     /**
      * Gets an error response object
-     * @param Exception [$e] Optional exception from which extract the error context
-     * @param array $prevResponse Response before catch
+     * @param Exception $e Optional exception from which extract the error context
      * @return array
      */
     protected function getErrorResponse($e = null)
@@ -64,26 +74,26 @@ class Previewer extends ServiceModule
             'type' => 'error',
         ];
 
-        if ($e) {
-            if ($e instanceof \Exception) {
-                $response['type'] = 'exception';
-                $response['code'] = $e->getCode();
-            }
-
-            if ($e instanceof \common_exception_UserReadableException) {
-                $response['message'] = $e->getUserMessage();
-            } else {
-                $response['message'] = __('An error occurred!');
-            }
-
+        if ($e !== null) {
             switch (true) {
-                case $e instanceof \tao_models_classes_FileNotFoundException:
+                case $e instanceof FileNotFoundException:
                     $response['type'] = 'FileNotFound';
                     $response['message'] = __('File not found');
                     break;
 
-                case $e instanceof \common_exception_Unauthorized:
+                case $e instanceof UnauthorizedException:
                     $response['code'] = 403;
+                    break;
+                case $e instanceof Exception:
+                    $response['type'] = 'exception';
+                    $response['code'] = $e->getCode();
+                    $response['message'] = $e->getMessage();
+                    break;
+                case $e instanceof UserReadableException:
+                    $response['message'] = $e->getUserMessage();
+                    break;
+                default:
+                    $response['message'] = __('An error occurred!');
                     break;
             }
         }
@@ -99,18 +109,20 @@ class Previewer extends ServiceModule
     protected function getErrorCode($e = null)
     {
         $code = 200;
-        if ($e) {
-            $code = 500;
-
+        if ($e !== null) {
             switch (true) {
-                case $e instanceof \common_exception_NotImplemented:
-                case $e instanceof \common_exception_NoImplementation:
-                case $e instanceof \common_exception_Unauthorized:
+                case $e instanceof NotImplementedException:
+                case $e instanceof NoImplementationException:
+                case $e instanceof UnauthorizedException:
                     $code = 403;
                     break;
 
-                case $e instanceof \tao_models_classes_FileNotFoundException:
+                case $e instanceof FileNotFoundException:
                     $code = 404;
+                    break;
+
+                default:
+                    $code = 500;
                     break;
             }
         }
@@ -127,10 +139,11 @@ class Previewer extends ServiceModule
     {
         /** @var ResultServerService $resultServerService */
         $resultServerService = $this->getServiceLocator()->get(ResultServerService::SERVICE_ID);
-        /** @var \taoResultServer_models_classes_ReadableResultStorage $implementation */
-        $implementation = $resultServerService->getResultStorage($deliveryUri);
 
-        $testTaker = new \core_kernel_users_GenerisUser($this->getResource($implementation->getTestTaker($resultId)));
+        /** @var ReadableResultStorage $resultStorage */
+        $resultStorage = $resultServerService->getResultStorage($deliveryUri);
+
+        $testTaker = new GenerisUser($this->getResource($resultStorage->getTestTaker($resultId)));
         $lang = $testTaker->getPropertyValues(GenerisRdf::PROPERTY_USER_DEFLG);
 
         return empty($lang) ? DEFAULT_LANG : (string) current($lang);
@@ -146,15 +159,15 @@ class Previewer extends ServiceModule
         try {
             $this->validateCsrf();
 
-            $serviceCallId = $this->getRequestParameter('serviceCallId');
+            $requestParams = $this->getPsrRequest()->getQueryParams();
+            $serviceCallId = $requestParams['serviceCallId'];
 
             $response = [
-                'success' => $serviceCallId == 'previewer',
+                'success' => $serviceCallId === 'previewer',
                 'itemIdentifier' => null,
                 'itemData' => null
             ];
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $response = $this->getErrorResponse($e);
             $code = $this->getErrorCode($e);
         }
@@ -172,27 +185,30 @@ class Previewer extends ServiceModule
         try {
             $this->validateCsrf();
 
-            $itemUri = $this->getRequestParameter('itemUri');
-            $resultId = $this->getRequestParameter('resultId');
+            $requestParams = $this->getPsrRequest()->getQueryParams();
+
+            $itemUri = $requestParams['itemUri'] ?? '';
+            $resultId = $requestParams['resultId'] ?? '';
 
             $response = [
                 'baseUrl' => '',
                 'content' => [],
             ];
 
-            // previewing a result
-            if ($resultId) {
-                if (!$this->hasRequestParameter('itemDefinition')) {
-                    throw new \common_exception_MissingParameter('itemDefinition', $this->getRequestURI());
+            // Previewing a result.
+            if ($resultId !== '') {
+                if (!isset($requestParams['itemDefinition'])) {
+                    throw new MissingParameterException('itemDefinition', $this->getRequestURI());
                 }
 
-                if (!$this->hasRequestParameter('deliveryUri')) {
-                    throw new \common_exception_MissingParameter('deliveryUri', $this->getRequestURI());
+                if (!isset($requestParams['deliveryUri'])) {
+                    throw new MissingParameterException('deliveryUri', $this->getRequestURI());
                 }
 
-                $itemDefinition = $this->getRequestParameter('itemDefinition');
-                $delivery = $this->getResource($this->getRequestParameter('deliveryUri'));
+                $itemDefinition = $requestParams['itemDefinition'];
+                $delivery = $this->getResource($requestParams['deliveryUri']);
 
+                /** @var ItemPreviewer $itemPreviewer */
                 $itemPreviewer = $this->getServiceLocator()->get(ItemPreviewer::class);
                 $itemPreviewer->setServiceLocator($this->getServiceLocator());
 
@@ -202,8 +218,7 @@ class Previewer extends ServiceModule
                     ->loadCompiledItemData();
 
                 $response['baseUrl'] = $itemPreviewer->getBaseUrl();
-
-            } else if ($itemUri) {
+            } elseif ($itemUri) {
                 $item = $this->getResource($itemUri);
                 $lang = $this->getSession()->getDataLanguage();
                 $packer = new Packer($item, $lang);
@@ -213,13 +228,12 @@ class Previewer extends ServiceModule
                 $itemPack = $packer->pack();
                 $response['content'] = $itemPack->JsonSerialize();
                 $response['baseUrl'] = _url('asset', null, null, ['uri' => $itemUri, 'path' => '/']);
-
             } else {
-                throw new \common_exception_BadRequest('Either itemUri or resultId needs to be provided.');
+                throw new BadRequestException('Either itemUri or resultId needs to be provided.');
             }
 
             $response['success'] = true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $response = $this->getErrorResponse($e);
             $code = $this->getErrorCode($e);
         }
@@ -230,26 +244,27 @@ class Previewer extends ServiceModule
     /**
      * Gets access to an asset
      * @throws \common_exception_Error
-     * @throws \tao_models_classes_FileNotFoundException
-     * @throws common_Exception
-     * @throws \Exception
+     * @throws FileNotFoundException
+     * @throws CommonException
+     * @throws Exception
      */
     public function asset()
     {
-        $itemUri = $this->getRequestParameter('uri');
-        $path = rawurldecode($this->getRequestParameter('path'));
-        
+        $requestParams = $this->getPsrRequest()->getQueryParams();
+        $itemUri = $requestParams['uri'];
+        $path = rawurldecode($requestParams['path']);
+
         $item = $this->getResource($itemUri);
         $lang = $this->getSession()->getDataLanguage();
         $resolver = new ItemMediaResolver($item, $lang);
-        
+
         $asset = $resolver->resolve($path);
         if ($asset->getMediaSource() instanceof HttpSource) {
-            throw new common_Exception('Only tao files available for rendering through item preview');
+            throw new CommonException('Only tao files available for rendering through item preview');
         }
         $info = $asset->getMediaSource()->getFileInfo($asset->getMediaIdentifier());
         $stream = $asset->getMediaSource()->getFileStream($asset->getMediaIdentifier());
-        \tao_helpers_Http::returnStream($stream, $info['mime']);
+        HttpHelper::returnStream($stream, $info['mime']);
     }
 
     /**
@@ -261,10 +276,11 @@ class Previewer extends ServiceModule
 
         try {
             $this->validateCsrf();
-            $itemUri = $this->getPsrRequest()->getQueryParams('itemUri');
+            $requestParams = $this->getPsrRequest()->getQueryParams();
+            $itemUri = $requestParams['itemUri'];
             $jsonPayload = $this->getPayload();
             $response = $this->getItemPreviewer()->processResponses($itemUri, $jsonPayload);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $response = $this->getErrorResponse($e);
             $code = $this->getErrorCode($e);
         }

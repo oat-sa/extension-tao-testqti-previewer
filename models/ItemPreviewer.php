@@ -201,18 +201,19 @@ class ItemPreviewer extends ConfigurableService
     /**
      * Item's ResponseProcessing.
      *
-     * @param string[] $itemUri
+     * @param string $itemUri
      * @param array $jsonPayload
      * @return array
      * @throws FileManagerException
      * @throws common_Exception
      */
-    public function processResponses($itemUri, $jsonPayload){
+    public function processResponses($itemUri, $jsonPayload)
+    {
         if (empty($itemUri)) {
-            throw new common_Exception('missing required itemUri');
+            throw new common_Exception('Missing required itemUri');
         }
 
-        $item = $this->getResource($itemUri['itemUri']);
+        $item = $this->getResource($itemUri);
         $qtiXmlDoc = $this->getQtiXmlDoc($item);
         $filler = $this->getVariableFiller($qtiXmlDoc);
         $qtiSmService = $this->getQtiSmService();
@@ -273,8 +274,7 @@ class ItemPreviewer extends ConfigurableService
             $qtiXmlFileContent = QtiFile::getQtiFileContent($item);
             $qtiXmlDoc = new XmlDocument();
             $qtiXmlDoc->loadFromString($qtiXmlFileContent);
-        }
-        catch(StorageException $e) {
+        } catch (StorageException $e) {
             $msg = "An error occurred while loading QTI-XML file at expected location '${qtiXmlFilePath}'.";
             $this->logError(($e->getPrevious() !== null) ? $e->getPrevious()->getMessage() : $e->getMessage());
             throw new RuntimeException($msg, 0, $e);
@@ -370,7 +370,7 @@ class ItemPreviewer extends ConfigurableService
             }
         }
 
-        if (!$deliveryPrivateDir){
+        if (!$deliveryPrivateDir) {
             throw new \common_exception_InconsistentData('Could not determine private dir of delivery');
         }
 
