@@ -14,16 +14,20 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2018 (original work) Open Assessment Technologies SA ;
+ * Copyright (c) 2018-2019 (original work) Open Assessment Technologies SA ;
  */
 
 namespace oat\taoQtiTestPreviewer\models;
 
-use common_Exception;
-use common_exception_InconsistentData;
-use common_exception_NotFound;
+use common_Exception as CommonException;
+use common_exception_Error as ErrorException;
+use common_exception_InconsistentData as InconsistentDataException;
+use common_exception_NotFound as NotFoundException;
+use core_kernel_classes_Resource as Resource;
+use LogicException;
 use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
+use oat\taoDelivery\model\container\delivery\AbstractContainer;
 use oat\taoDelivery\model\RuntimeService;
 use oat\taoItems\model\pack\ItemPack;
 use oat\taoItems\model\pack\Packer;
@@ -35,7 +39,11 @@ use qtism\common\datatypes\files\FileManagerException;
 use qtism\data\storage\StorageException;
 use qtism\data\storage\xml\XmlDocument;
 use \RuntimeException;
-use taoQtiCommon_helpers_PciVariableFiller;
+use tao_models_classes_service_FileStorage as FileStorage;
+use tao_models_classes_service_StorageDirectory as StorageDirectory;
+use taoQtiCommon_helpers_PciVariableFiller as PciVariableFiller;
+use taoQtiTest_models_classes_QtiTestCompiler as QtiTestCompiler;
+use taoQtiTest_models_classes_QtiTestService as QtiTestService;
 
 class ItemPreviewer extends ConfigurableService
 {
@@ -52,12 +60,12 @@ class ItemPreviewer extends ConfigurableService
     private $itemDefinition;
 
     /**
-     * @var \core_kernel_classes_Resource
+     * @var Resource
      */
     private $delivery;
 
     /**
-     * @var \tao_models_classes_service_FileStorage
+     * @var FileStorage
      */
     private $fileStorage;
 
@@ -67,12 +75,12 @@ class ItemPreviewer extends ConfigurableService
     private $itemUri;
 
     /**
-     * @var \tao_models_classes_service_StorageDirectory
+     * @var StorageDirectory
      */
     private $itemPublicDir;
 
     /**
-     * @var \tao_models_classes_service_StorageDirectory
+     * @var StorageDirectory
      */
     private $itemPrivateDir;
 
@@ -83,7 +91,7 @@ class ItemPreviewer extends ConfigurableService
 
     public function __construct()
     {
-        $this->fileStorage = \tao_models_classes_service_FileStorage::singleton();
+        $this->fileStorage = FileStorage::singleton();
     }
 
     /**
@@ -109,14 +117,14 @@ class ItemPreviewer extends ConfigurableService
     }
 
     /**
-     * @param \core_kernel_classes_Resource $delivery
+     * @param Resource $delivery
      * @return ItemPreviewer
-     * @throws \common_exception_NotFound
+     * @throws NotFoundException
      */
     public function setDelivery($delivery)
     {
         if (!$delivery->exists()) {
-            throw new \common_exception_NotFound('Delivery "'. $delivery->getUri() .'" not found');
+            throw new NotFoundException('Delivery "'. $delivery->getUri() .'" not found');
         }
 
         $this->delivery = $delivery;
@@ -124,30 +132,39 @@ class ItemPreviewer extends ConfigurableService
         return $this;
     }
 
+    /**
+     * @throws LogicException
+     */
     private function validateProperties()
     {
         if (empty($this->userLanguage)
             || empty($this->itemDefinition)
             || empty($this->delivery)
         ) {
-            throw new \LogicException('UserLanguage, ItemDefiniton and Delivery are mandatory for loading of compiled item data');
+            throw new LogicException(
+                'UserLanguage, ItemDefiniton and Delivery are mandatory for loading of compiled item data'
+            );
         }
     }
 
     /**
      * @return array
      *
-     * @throws \common_Exception
-     * @throws \common_exception_Error
-     * @throws \common_exception_InconsistentData
-     * @throws \common_exception_NotFound
+     * @throws CommonException
+     * @throws ErrorException
+     * @throws InconsistentDataException
+     * @throws NotFoundException
      */
     public function loadCompiledItemData()
     {
         $this->validateProperties();
 
-        $jsonFile = $this->getItemPrivateDir()->getFile($this->userLanguage . DIRECTORY_SEPARATOR . QtiJsonItemCompiler::ITEM_FILE_NAME);
-        $xmlFile = $this->getItemPrivateDir()->getFile($this->userLanguage . DIRECTORY_SEPARATOR . Service::QTI_ITEM_FILE);
+        $jsonFile = $this->getItemPrivateDir()->getFile(
+            $this->userLanguage . DIRECTORY_SEPARATOR . QtiJsonItemCompiler::ITEM_FILE_NAME
+        );
+        $xmlFile = $this->getItemPrivateDir()->getFile(
+            $this->userLanguage . DIRECTORY_SEPARATOR . Service::QTI_ITEM_FILE
+        );
 
         if ($jsonFile->exists()) {
             // new test runner is used
@@ -155,7 +172,7 @@ class ItemPreviewer extends ConfigurableService
         } elseif ($xmlFile->exists()) {
             // old test runner is used
             /** @var Packer $packer */
-            $packer = (new Packer(new \core_kernel_classes_Resource($this->getItemUri()), $this->userLanguage))
+            $packer = (new Packer(new Resource($this->getItemUri()), $this->userLanguage))
                 ->setServiceLocator($this->getServiceLocator());
 
             /** @var ItemPack $itemPack */
@@ -163,7 +180,7 @@ class ItemPreviewer extends ConfigurableService
 
             $itemData = $itemPack->JsonSerialize();
         } else {
-            throw new common_exception_NotFound('Either item.json or qti.xml should exist');
+            throw new NotFoundException('Either item.json or qti.xml should exist');
         }
 
         return $itemData;
@@ -171,8 +188,8 @@ class ItemPreviewer extends ConfigurableService
 
     /**
      * @return mixed
-     * @throws common_exception_InconsistentData
-     * @throws common_exception_NotFound
+     * @throws InconsistentDataException
+     * @throws NotFoundException
      */
     public function loadCompiledItemVariables()
     {
@@ -181,7 +198,7 @@ class ItemPreviewer extends ConfigurableService
         $variableElements = $this->getItemPrivateDir()->getFile($this->userLanguage . DIRECTORY_SEPARATOR . QtiJsonItemCompiler::VAR_ELT_FILE_NAME);
 
         if (!$variableElements->exists()) {
-            throw new common_exception_NotFound('File variableElements.json should exist');
+            throw new NotFoundException('File variableElements.json should exist');
         }
 
         return json_decode($variableElements->read(), true);
@@ -189,9 +206,8 @@ class ItemPreviewer extends ConfigurableService
 
     /**
      * @return string
-     * @throws \common_Exception
-     * @throws \common_exception_Error
-     * @throws \common_exception_InconsistentData
+     * @throws CommonException
+     * @throws InconsistentDataException
      */
     public function getBaseUrl()
     {
@@ -205,12 +221,12 @@ class ItemPreviewer extends ConfigurableService
      * @param array $jsonPayload
      * @return array
      * @throws FileManagerException
-     * @throws common_Exception
+     * @throws CommonException
      */
     public function processResponses($itemUri, $jsonPayload)
     {
         if (empty($itemUri)) {
-            throw new common_Exception('Missing required itemUri');
+            throw new CommonException('Missing required itemUri');
         }
 
         $item = $this->getResource($itemUri);
@@ -239,12 +255,12 @@ class ItemPreviewer extends ConfigurableService
 
     /**
      * @param XmlDocument $qtiXmlDoc
-     * @return taoQtiCommon_helpers_PciVariableFiller
+     * @return PciVariableFiller
      */
     private function getVariableFiller($qtiXmlDoc)
     {
         $docComponent = $qtiXmlDoc->getDocumentComponent();
-        return new taoQtiCommon_helpers_PciVariableFiller($docComponent);
+        return new PciVariableFiller($docComponent);
     }
 
     /**
@@ -264,9 +280,9 @@ class ItemPreviewer extends ConfigurableService
     }
 
     /**
-     * @param \core_kernel_classes_Resource $item
+     * @param Resource $item
      * @return XmlDocument
-     * @throws common_Exception
+     * @throws CommonException
      */
     private function getQtiXmlDoc($item)
     {
@@ -275,21 +291,20 @@ class ItemPreviewer extends ConfigurableService
             $qtiXmlDoc = new XmlDocument();
             $qtiXmlDoc->loadFromString($qtiXmlFileContent);
         } catch (StorageException $e) {
-            $msg = "An error occurred while loading QTI-XML file at expected location '${qtiXmlFilePath}'.";
             $this->logError(($e->getPrevious() !== null) ? $e->getPrevious()->getMessage() : $e->getMessage());
-            throw new RuntimeException($msg, 0, $e);
+            throw new RuntimeException('An error occurred while loading QTI-XML file', 0, $e);
         }
 
         return $qtiXmlDoc;
     }
 
     /**
-     * @return \tao_models_classes_service_StorageDirectory
-     * @throws \common_exception_InconsistentData
+     * @return StorageDirectory
+     * @throws InconsistentDataException
      */
     private function getItemPublicDir()
     {
-        if (is_null($this->itemPublicDir)) {
+        if ($this->itemPublicDir === null) {
             $this->itemPublicDir = $this->fileStorage->getDirectoryById($this->getItemPublicHref());
         }
 
@@ -297,12 +312,12 @@ class ItemPreviewer extends ConfigurableService
     }
 
     /**
-     * @return \tao_models_classes_service_StorageDirectory
-     * @throws \common_exception_InconsistentData
+     * @return StorageDirectory
+     * @throws InconsistentDataException
      */
     private function getItemPrivateDir()
     {
-        if (is_null($this->itemPrivateDir)) {
+        if ($this->itemPrivateDir === null) {
             $this->itemPrivateDir = $this->fileStorage->getDirectoryById($this->getItemPrivateHref());
         }
 
@@ -311,7 +326,7 @@ class ItemPreviewer extends ConfigurableService
 
     /**
      * @return string
-     * @throws \common_exception_InconsistentData
+     * @throws InconsistentDataException
      */
     public function getItemUri()
     {
@@ -324,7 +339,7 @@ class ItemPreviewer extends ConfigurableService
 
     /**
      * @return string
-     * @throws \common_exception_InconsistentData
+     * @throws InconsistentDataException
      */
     private function getItemPublicHref()
     {
@@ -337,7 +352,7 @@ class ItemPreviewer extends ConfigurableService
 
     /**
      * @return string
-     * @throws \common_exception_InconsistentData
+     * @throws InconsistentDataException
      */
     private function getItemPrivateHref()
     {
@@ -348,10 +363,13 @@ class ItemPreviewer extends ConfigurableService
         return $this->itemHrefs[2];
     }
 
+    /**
+     * @throws InconsistentDataException
+     */
     private function loadItemHrefs()
     {
         $runtimeService = $this->getServiceLocator()->get(RuntimeService::SERVICE_ID);
-        /** @var \oat\taoDelivery\model\container\delivery\AbstractContainer $deliveryContainer */
+        /** @var AbstractContainer $deliveryContainer */
         $deliveryContainer = $runtimeService->getDeliveryContainer($this->delivery->getUri());
 
         $deliveryPrivateDir = null;
@@ -363,7 +381,7 @@ class ItemPreviewer extends ConfigurableService
             $inParams = $deliveryContainer->getRuntimeParams()['in'];
 
             foreach ($inParams as $param) {
-                if ($param['def'] == \taoQtiTest_models_classes_QtiTestService::INSTANCE_FORMAL_PARAM_TEST_COMPILATION) {
+                if ($param['def'] === QtiTestService::INSTANCE_FORMAL_PARAM_TEST_COMPILATION) {
                     $deliveryPrivateDir = explode('|', $param['const'])[0];
                     break;
                 }
@@ -371,17 +389,17 @@ class ItemPreviewer extends ConfigurableService
         }
 
         if (!$deliveryPrivateDir) {
-            throw new \common_exception_InconsistentData('Could not determine private dir of delivery');
+            throw new InconsistentDataException('Could not determine private dir of delivery');
         }
 
         $deliveryPrivateStorageDir = $this->fileStorage->getDirectoryById($deliveryPrivateDir);
 
-        $itemHrefIndexPath = \taoQtiTest_models_classes_QtiTestCompiler::buildHrefIndexPath($this->itemDefinition);
+        $itemHrefIndexPath = QtiTestCompiler::buildHrefIndexPath($this->itemDefinition);
 
         $itemHrefs = explode('|', $deliveryPrivateStorageDir->getFile($itemHrefIndexPath)->read());
 
         if (count($itemHrefs) < 3) {
-            throw new \common_exception_InconsistentData('The itemRef is not formatted correctly');
+            throw new InconsistentDataException('The itemRef is not formatted correctly');
         }
 
         $this->itemHrefs = $itemHrefs;
