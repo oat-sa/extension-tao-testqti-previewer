@@ -195,7 +195,7 @@ define([
          */
         enable() {
             this.controls.$button
-                .removeProp('disabled')
+                .prop('disabled', false)
                 .removeClass('disabled');
         },
 
