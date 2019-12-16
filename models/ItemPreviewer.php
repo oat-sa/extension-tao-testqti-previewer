@@ -89,6 +89,9 @@ class ItemPreviewer extends ConfigurableService
      */
     private $itemHrefs = [];
 
+    /**
+     * ItemPreviewer constructor.
+     */
     public function __construct()
     {
         $this->fileStorage = FileStorage::singleton();
@@ -142,7 +145,7 @@ class ItemPreviewer extends ConfigurableService
             || empty($this->delivery)
         ) {
             throw new LogicException(
-                'UserLanguage, ItemDefiniton and Delivery are mandatory for loading of compiled item data'
+                'UserLanguage, ItemDefinition and Delivery are mandatory for loading of compiled item data.'
             );
         }
     }
@@ -195,7 +198,9 @@ class ItemPreviewer extends ConfigurableService
     {
         $this->validateProperties();
 
-        $variableElements = $this->getItemPrivateDir()->getFile($this->userLanguage . DIRECTORY_SEPARATOR . QtiJsonItemCompiler::VAR_ELT_FILE_NAME);
+        $variableElements = $this->getItemPrivateDir()->getFile(
+            $this->userLanguage . DIRECTORY_SEPARATOR . QtiJsonItemCompiler::VAR_ELT_FILE_NAME
+        );
 
         if (!$variableElements->exists()) {
             throw new NotFoundException('File variableElements.json should exist');

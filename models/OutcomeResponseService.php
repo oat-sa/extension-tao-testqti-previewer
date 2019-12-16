@@ -29,7 +29,8 @@ class OutcomeResponseService extends ConfigurableService
      * @param AssessmentItemSession $itemSession
      * @return array
      */
-    public function buildOutcomeResponse(AssessmentItemSession $itemSession) {
+    public function buildOutcomeResponse(AssessmentItemSession $itemSession)
+    {
         $stateOutput = new taoQtiCommon_helpers_PciStateOutput();
 
         foreach ($itemSession->getOutcomeVariables(false) as $var) {

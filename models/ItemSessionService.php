@@ -48,10 +48,10 @@ class ItemSessionService extends ConfigurableService
             $itemSession->beginAttempt();
             $itemSession->endAttempt(new State($variables));
         } catch (AssessmentItemSessionException $e) {
-            $msg = "An error occurred while processing the responses.";
+            $msg = 'An error occurred while processing the responses.';
             throw new RuntimeException($msg, 0, $e);
-        } catch(taoQtiCommon_helpers_ResultTransmissionException $e) {
-            $msg = "An error occurred while transmitting a result to the target Result Server.";
+        } catch (taoQtiCommon_helpers_ResultTransmissionException $e) {
+            $msg = 'An error occurred while transmitting a result to the target Result Server.';
             throw new RuntimeException($msg, 0, $e);
         }
 

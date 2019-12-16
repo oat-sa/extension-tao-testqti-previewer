@@ -25,43 +25,41 @@ use OutOfRangeException;
 use qtism\common\datatypes\files\FileManagerException;
 use qtism\common\datatypes\files\FileSystemFileManager;
 use qtism\runtime\common\Variable;
-use taoQtiCommon_helpers_PciVariableFiller;
+use taoQtiCommon_helpers_PciVariableFiller as PciVariableFiller;
 use taoQtiCommon_helpers_Utils;
 
 class QtiSmService extends ConfigurableService
 {
     /**
      * Convert client-side data as QtiSm Runtime Variables
-     * @param taoQtiCommon_helpers_PciVariableFiller $filler
-     * @throws FileManagerException
+     * @param PciVariableFiller $filler
+     * @param array $jsonPayload
      * @return Variable[]
+     * @throws FileManagerException
      */
     public function getQtiSmVariables($filler, $jsonPayload)
     {
-        $variables = array();
+        $variables = [];
 
         foreach ($jsonPayload as $id => $response) {
             try {
                 $var = $filler->fill($id, $response);
-                // Do not take into account QTI Files at preview time.
-                // Simply delete the created file.
+                // Do not take into account QTI Files at preview time. Simply delete the created file.
                 if (taoQtiCommon_helpers_Utils::isQtiFile($var, false) === true) {
                     $fileManager = new FileSystemFileManager();
                     $fileManager->delete($var->getValue());
-                }
-                else {
+                } else {
                     $variables[] = $var;
                 }
-            }
-            catch (OutOfRangeException $e) {
-                // A variable value could not be converted, ignore it.
-                // Developer's note: QTI Pairs with a single identifier (missing second identifier of the pair) are transmitted as an array of length 1,
-                // this might cause problem. Such "broken" pairs are simply ignored.
-                $this->logDebug("Client-side value for variable '${id}' is ignored due to data malformation.");
-            }
-            catch (OutOfBoundsException $e) {
-                // No such identifier found in item.
-                $this->logDebug("The variable with identifier '${id}' is not declared in the item definition.");
+            } catch (OutOfRangeException $e) {
+                // Variable value could not be converted, ignore it.
+                $this->logDebug(
+                    sprintf('Client-side value for variable "%s" is ignored due to data malformation.', $id)
+                );
+            } catch (OutOfBoundsException $e) {
+                $this->logDebug(
+                    sprintf('The variable with identifier "%s" is not declared in the item definition.', $id)
+                );
             }
         }
 
