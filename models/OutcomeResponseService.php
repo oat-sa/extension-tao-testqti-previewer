@@ -21,7 +21,7 @@ namespace oat\taoQtiTestPreviewer\models;
 
 use oat\oatbox\service\ConfigurableService;
 use qtism\runtime\tests\AssessmentItemSession;
-use taoQtiCommon_helpers_PciStateOutput;
+use taoQtiCommon_helpers_PciStateOutput as PciStateOutput;
 
 class OutcomeResponseService extends ConfigurableService
 {
@@ -31,7 +31,7 @@ class OutcomeResponseService extends ConfigurableService
      */
     public function buildOutcomeResponse(AssessmentItemSession $itemSession)
     {
-        $stateOutput = new taoQtiCommon_helpers_PciStateOutput();
+        $stateOutput = new PciStateOutput();
 
         foreach ($itemSession->getOutcomeVariables(false) as $var) {
             $stateOutput->addVariable($var);

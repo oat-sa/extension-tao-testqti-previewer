@@ -63,39 +63,38 @@ class Previewer extends ServiceModule
     }
 
     /**
-     * Gets an error response object
-     * @param Exception $e Optional exception from which extract the error context
+     * Gets an error response array
+     * @param Exception $e
      * @return array
      */
-    protected function getErrorResponse($e = null)
+    protected function getErrorResponse($e)
     {
         $response = [
             'success' => false,
             'type' => 'error',
         ];
 
-        if ($e !== null) {
-            switch (true) {
-                case $e instanceof FileNotFoundException:
-                    $response['type'] = 'FileNotFound';
-                    $response['message'] = __('File not found');
-                    break;
+        switch (true) {
+            case $e instanceof FileNotFoundException:
+                $response['type'] = 'FileNotFound';
+                $response['message'] = __('File not found');
+                break;
 
-                case $e instanceof UnauthorizedException:
-                    $response['code'] = 403;
-                    break;
-                case $e instanceof Exception:
-                    $response['type'] = 'exception';
-                    $response['code'] = $e->getCode();
-                    $response['message'] = $e->getMessage();
-                    break;
-                case $e instanceof UserReadableException:
-                    $response['message'] = $e->getUserMessage();
-                    break;
-                default:
-                    $response['message'] = __('An error occurred!');
-                    break;
-            }
+            case $e instanceof UnauthorizedException:
+                $response['code'] = 403;
+                $response['message'] = $e->getUserMessage();
+                break;
+            case $e instanceof UserReadableException:
+                $response['message'] = $e->getUserMessage();
+                break;
+            case $e instanceof Exception:
+                $response['type'] = 'exception';
+                $response['code'] = $e->getCode();
+                $response['message'] = $e->getMessage();
+                break;
+            default:
+                $response['message'] = __('An error occurred!');
+                break;
         }
 
         return $response;
@@ -103,29 +102,27 @@ class Previewer extends ServiceModule
 
     /**
      * Gets an HTTP response code
-     * @param Exception [$e] Optional exception from which extract the error context
+     * @param Exception $e
      * @return int
      */
-    protected function getErrorCode($e = null)
+    protected function getErrorCode($e)
     {
-        $code = 200;
-        if ($e !== null) {
-            switch (true) {
-                case $e instanceof NotImplementedException:
-                case $e instanceof NoImplementationException:
-                case $e instanceof UnauthorizedException:
-                    $code = 403;
-                    break;
+        switch (true) {
+            case $e instanceof NotImplementedException:
+            case $e instanceof NoImplementationException:
+            case $e instanceof UnauthorizedException:
+                $code = 403;
+                break;
 
-                case $e instanceof FileNotFoundException:
-                    $code = 404;
-                    break;
+            case $e instanceof FileNotFoundException:
+                $code = 404;
+                break;
 
-                default:
-                    $code = 500;
-                    break;
-            }
+            default:
+                $code = 500;
+                break;
         }
+
         return $code;
     }
 
