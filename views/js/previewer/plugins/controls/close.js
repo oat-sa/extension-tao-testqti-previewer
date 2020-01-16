@@ -42,6 +42,15 @@ define([
             var self = this;
             var testRunner = this.getTestRunner();
 
+            /**
+             * Tells if the component is enabled
+             * @returns {Boolean}
+             */
+            function isPluginAllowed() {
+                var config = testRunner.getConfig();
+                return !config.options.hideActionBars;
+            }
+
             this.$element = $(buttonTpl({
                 control: 'close',
                 title: __('Close the previewer'),
@@ -62,7 +71,9 @@ define([
 
             testRunner
                 .on('enablenav', function () {
-                    self.enable();
+                  if (isPluginAllowed()) {
+                      self.enable();
+                  }
                 })
                 .on('disablenav', function () {
                     self.disable();
