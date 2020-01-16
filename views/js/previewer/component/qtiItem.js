@@ -67,7 +67,8 @@ define([
             options: {
                 readOnly: config.readOnly,
                 fullPage: config.fullPage,
-                plugins: config.pluginsOptions
+                plugins: config.pluginsOptions,
+                hideActionBars: config.hideActionBars,
             }
         };
 

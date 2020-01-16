@@ -191,6 +191,48 @@ define([
             });
     });
 
+    QUnit.test('render', assert =>  {
+        const ready = assert.async();
+        const $container = $('#fixture-destroy');
+        const serviceCallId = 'previewer';
+        const config = {
+            serviceCallId,
+            providers,
+            options : {
+                readOnly: true,
+                fullPage: true,
+                hideActionBars: true,
+            },
+        };
+
+        assert.expect(3);
+
+        $.mockjax({
+            url: '/init*',
+            responseText: {
+                success: true
+            }
+        });
+
+        previewerFactory($container, config)
+            .on('error', function(err) {
+                assert.ok(false, 'An error has occurred');
+                assert.pushResult({
+                    result: false,
+                    message: err
+                });
+
+                ready();
+            })
+            .on('ready', function() {
+                assert.ok(this.is('fullpage'), 'The runner is in fullpage state');
+                assert.ok(this.is('readonly'), 'The runner is in readonly state');
+                assert.ok(this.is('hideactionbars'), 'The runner is in hideactionbars state');
+
+                ready();
+            });
+    });
+
     QUnit.test('destroy', assert =>  {
         const ready = assert.async();
         const $container = $('#fixture-destroy');
