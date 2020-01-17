@@ -154,6 +154,50 @@ define([
             });
     });
 
+    QUnit.test('config', assert => {
+        const ready = assert.async();
+        const config = {
+            readOnly: true,
+            fullPage: true,
+            pluginsOptions: true,
+            hideActionBars: true,
+        };
+
+        const previewerWithOptions = qtiItemPreviewerFactory('#fixture-api', config);
+        const previewerWithoutOptions = qtiItemPreviewerFactory('#fixture-api', {});
+
+        assert.expect(2);
+        $.mockjax({
+            url: '/*',
+            responseText: {
+                success: true
+            }
+        });
+
+        Promise.all([
+            new Promise(resolve => previewerWithOptions.on('ready', runner => resolve(runner))),
+            new Promise(resolve => previewerWithoutOptions.on('ready', runner => resolve(runner))),
+        ]).catch(function(err) {
+            assert.pushResult({
+                result: false,
+                message: err
+            });
+        }).then(([runnerWithOptions, runnerWithoutOptions]) => {
+            assert.deepEqual(
+                runnerWithOptions.getConfig().options,
+                { readOnly: true, fullPage: true, plugins: true, hideActionBars: true },
+                'The previewer factory set options using config'
+            );
+            assert.deepEqual(
+                runnerWithoutOptions.getConfig().options,
+                { readOnly: undefined, fullPage: undefined, plugins: undefined, hideActionBars: undefined },
+                'The previewer factory leave options undefined if config empty'
+            );
+
+            ready();
+        });
+    });
+
     QUnit.test('destroy', assert =>  {
         const ready = assert.async();
         const $container = $('#fixture-destroy');

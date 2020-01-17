@@ -168,7 +168,7 @@ define([
 
     QUnit.test('enable / disable', assert => {
         const ready = assert.async();
-        assert.expect(7);
+        assert.expect(8);
 
         previewerFactory('#fixture-enable', runnerConfig)
             .on('ready', function (runner) {
@@ -195,6 +195,22 @@ define([
                     .then(function () {
                         const $container = areaBroker.getArea('context');
                         const $button = $container.find('[data-control="close"]');
+                        const config = runner.getConfig();
+                        config.options.hideActionBars = true;
+
+                        assert.equal($button.hasClass('disabled'), true, 'The button has been disabled');
+                        return new Promise(function (resolve) {
+                            runner
+                                .after('enablenav', resolve)
+                                .trigger('enablenav');
+                        });
+                    })
+                    .then(function () {
+                        const $container = areaBroker.getArea('context');
+                        const $button = $container.find('[data-control="close"]');
+                        const config = runner.getConfig();
+                        config.options.hideActionBars = false;
+
                         assert.equal($button.hasClass('disabled'), true, 'The button has been disabled');
                         return new Promise(function (resolve) {
                             runner
