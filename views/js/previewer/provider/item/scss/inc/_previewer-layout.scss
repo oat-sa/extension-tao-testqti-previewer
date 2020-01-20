@@ -173,5 +173,14 @@
         }
     }
 
+    &.hideactionbars {
+        .test-sidebar {
+            height: 100%;
+        }
+
+        .action-bar {
+            display: none;
+        }
+    }
 }
 
