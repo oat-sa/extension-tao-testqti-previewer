@@ -65,11 +65,6 @@ class ItemPreviewer extends ConfigurableService
     private $delivery;
 
     /**
-     * @var FileStorage
-     */
-    private $fileStorage;
-
-    /**
      * @var string
      */
     private $itemUri;
@@ -90,11 +85,11 @@ class ItemPreviewer extends ConfigurableService
     private $itemHrefs = [];
 
     /**
-     * ItemPreviewer constructor.
+     * @return FileStorage
      */
-    public function __construct()
+    private function getFileStorage()
     {
-        $this->fileStorage = FileStorage::singleton();
+        return $this->getServiceLocator()->get(FileStorage::SERVICE_ID);
     }
 
     /**
@@ -310,7 +305,7 @@ class ItemPreviewer extends ConfigurableService
     private function getItemPublicDir()
     {
         if ($this->itemPublicDir === null) {
-            $this->itemPublicDir = $this->fileStorage->getDirectoryById($this->getItemPublicHref());
+            $this->itemPublicDir = $this->getFileStorage()->getDirectoryById($this->getItemPublicHref());
         }
 
         return $this->itemPublicDir;
@@ -323,7 +318,7 @@ class ItemPreviewer extends ConfigurableService
     private function getItemPrivateDir()
     {
         if ($this->itemPrivateDir === null) {
-            $this->itemPrivateDir = $this->fileStorage->getDirectoryById($this->getItemPrivateHref());
+            $this->itemPrivateDir = $this->getFileStorage()->getDirectoryById($this->getItemPrivateHref());
         }
 
         return $this->itemPrivateDir;
@@ -397,7 +392,7 @@ class ItemPreviewer extends ConfigurableService
             throw new InconsistentDataException('Could not determine private dir of delivery');
         }
 
-        $deliveryPrivateStorageDir = $this->fileStorage->getDirectoryById($deliveryPrivateDir);
+        $deliveryPrivateStorageDir = $this->getFileStorage()->getDirectoryById($deliveryPrivateDir);
 
         $itemHrefIndexPath = QtiTestCompiler::buildHrefIndexPath($this->itemDefinition);
 
