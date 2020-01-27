@@ -74,27 +74,20 @@ class Previewer extends ServiceModule
             'type' => 'error',
         ];
 
-        switch (true) {
-            case $e instanceof FileNotFoundException:
-                $response['type'] = 'FileNotFound';
-                $response['message'] = __('File not found');
-                break;
-
-            case $e instanceof UnauthorizedException:
-                $response['code'] = 403;
-                $response['message'] = $e->getUserMessage();
-                break;
-            case $e instanceof UserReadableException:
-                $response['message'] = $e->getUserMessage();
-                break;
-            case $e instanceof Exception:
-                $response['type'] = 'exception';
-                $response['code'] = $e->getCode();
-                $response['message'] = $e->getMessage();
-                break;
-            default:
-                $response['message'] = __('An error occurred!');
-                break;
+        if ($e instanceof FileNotFoundException) {
+            $response['type'] = 'FileNotFound';
+            $response['message'] = __('File not found');
+        } elseif ($e instanceof UnauthorizedException) {
+            $response['code'] = 403;
+            $response['message'] = $e->getUserMessage();
+        } elseif ($e instanceof UserReadableException) {
+            $response['message'] = $e->getUserMessage();
+        } elseif ($e instanceof Exception) {
+            $response['type'] = 'exception';
+            $response['code'] = $e->getCode();
+            $response['message'] = $e->getMessage();
+        } else {
+            $response['message'] = __('An error occurred!');
         }
 
         return $response;
