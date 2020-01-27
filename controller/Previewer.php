@@ -242,7 +242,7 @@ class Previewer extends ServiceModule
     {
         $requestParams = $this->getPsrRequest()->getQueryParams();
         $itemUri = $requestParams['uri'];
-        $path = rawurldecode($requestParams['path']);
+        $path = $requestParams['path'];
 
         $item = $this->getResource($itemUri);
         $lang = $this->getSession()->getDataLanguage();
