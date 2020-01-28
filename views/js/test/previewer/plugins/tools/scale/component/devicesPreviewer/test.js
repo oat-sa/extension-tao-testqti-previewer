@@ -741,8 +741,8 @@ define([
                                 .setDeviceType('standard')
                                 .on('devicepreview.test', function () {
                                     assert.equal($container.find('.devices-previewer').attr('data-type'), 'standard', 'The preview should be back in standard mode');
-                                    assert.equal(typeof $container.find('.devices-previewer .preview-content').attr('style'), 'undefined', 'The content has no forced style anymore');
-                                    assert.equal(typeof $container.find('.devices-previewer .preview-container').attr('style'), 'undefined', 'The container has no forced style anymore');
+                                    assert.notOk($container.find('.devices-previewer .preview-content').attr('style'), 'The content has no forced style anymore');
+                                    assert.notOk($container.find('.devices-previewer .preview-container').attr('style'), 'The container has no forced style anymore');
                                     resolve();
                                 })
                                 .previewDevice();
