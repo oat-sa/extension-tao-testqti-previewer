@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -60,7 +61,7 @@ class Updater extends \common_ext_ExtensionUpdater
 
             $service = $this->getServiceManager()->get(ResultsViewerService::SERVICE_ID);
             $service->setDefaultItemType('qtiItem');
-            $this->getServiceManager()->register(ResultsViewerService::SERVICE_ID , $service);
+            $this->getServiceManager()->register(ResultsViewerService::SERVICE_ID, $service);
 
             $this->setVersion('0.1.0');
         }
@@ -87,6 +88,6 @@ class Updater extends \common_ext_ExtensionUpdater
             $this->setVersion('0.2.0');
         }
 
-        $this->skip('0.2.0', '2.10.1');
+        $this->skip('0.2.0', '2.10.2');
     }
 }
