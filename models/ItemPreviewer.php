@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -122,7 +123,7 @@ class ItemPreviewer extends ConfigurableService
     public function setDelivery($delivery)
     {
         if (!$delivery->exists()) {
-            throw new NotFoundException('Delivery "'. $delivery->getUri() .'" not found');
+            throw new NotFoundException('Delivery "' . $delivery->getUri() . '" not found');
         }
 
         $this->delivery = $delivery;
@@ -135,7 +136,8 @@ class ItemPreviewer extends ConfigurableService
      */
     private function validateProperties()
     {
-        if (empty($this->userLanguage)
+        if (
+            empty($this->userLanguage)
             || empty($this->itemDefinition)
             || empty($this->delivery)
         ) {

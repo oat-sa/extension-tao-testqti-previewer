@@ -55,9 +55,9 @@ class RegisterPreviewers extends InstallAction
         
         $count = 0;
 
-        foreach(self::$providers as $categoryProviders) {
-            foreach($categoryProviders as $providerData){
-                if( $registry->registerAdapter(DynamicModule::fromArray($providerData)) ) {
+        foreach (self::$providers as $categoryProviders) {
+            foreach ($categoryProviders as $providerData) {
+                if ($registry->registerAdapter(DynamicModule::fromArray($providerData))) {
                     $count++;
                 }
             }
@@ -65,7 +65,7 @@ class RegisterPreviewers extends InstallAction
 
         $service = $this->getServiceManager()->get(ResultsViewerService::SERVICE_ID);
         $service->setDefaultItemType('qtiItem');
-        $this->getServiceManager()->register(ResultsViewerService::SERVICE_ID , $service);
+        $this->getServiceManager()->register(ResultsViewerService::SERVICE_ID, $service);
 
         return new Report(Report::TYPE_SUCCESS, $count .  ' providers registered.');
     }
