@@ -27,22 +27,19 @@ use common_exception_NoImplementation as NoImplementationException;
 use common_exception_NotImplemented as NotImplementedException;
 use common_exception_Unauthorized as UnauthorizedException;
 use common_exception_UserReadableException as UserReadableException;
-use core_kernel_users_GenerisUser as GenerisUser;
 use Exception;
 use oat\generis\model\OntologyAwareTrait;
 use oat\tao\model\media\sourceStrategy\HttpSource;
 use oat\tao\model\routing\AnnotationReader\security;
 use oat\taoItems\model\media\ItemMediaResolver;
 use oat\taoQtiTestPreviewer\models\ItemPreviewer;
-use oat\taoResultServer\models\classes\ResultServerService;
+use oat\taoQtiTestPreviewer\models\PreviewLanguageService;
 use tao_actions_ServiceModule as ServiceModule;
 use tao_helpers_Http as HttpHelper;
 use tao_models_classes_FileNotFoundException as FileNotFoundException;
 use taoQtiTest_helpers_TestRunnerUtils as TestRunnerUtils;
 use oat\taoItems\model\pack\ItemPack;
 use oat\taoItems\model\pack\Packer;
-use oat\generis\model\GenerisRdf;
-use taoResultServer_models_classes_ReadableResultStorage as ReadableResultStorage;
 
 /**
  * Class taoQtiTest_actions_Runner
@@ -121,26 +118,6 @@ class Previewer extends ServiceModule
     }
 
     /**
-     * @param string $resultId
-     * @param string $deliveryUri
-     * @return string
-     * @throws \common_exception_Error
-     */
-    protected function getUserLanguage($resultId, $deliveryUri)
-    {
-        /** @var ResultServerService $resultServerService */
-        $resultServerService = $this->getServiceLocator()->get(ResultServerService::SERVICE_ID);
-
-        /** @var ReadableResultStorage $resultStorage */
-        $resultStorage = $resultServerService->getResultStorage($deliveryUri);
-
-        $testTaker = new GenerisUser($this->getResource($resultStorage->getTestTaker($resultId)));
-        $lang = $testTaker->getPropertyValues(GenerisRdf::PROPERTY_USER_DEFLG);
-
-        return empty($lang) ? DEFAULT_LANG : (string) current($lang);
-    }
-
-    /**
      * Initializes the delivery session
      */
     public function init()
@@ -203,8 +180,11 @@ class Previewer extends ServiceModule
                 $itemPreviewer = $this->getServiceLocator()->get(ItemPreviewer::class);
                 $itemPreviewer->setServiceLocator($this->getServiceLocator());
 
+                /** @var PreviewLanguageService $previewLanguageService */
+                $previewLanguageService = $this->getServiceLocator()->get(PreviewLanguageService::class);
+
                 $response['content'] = $itemPreviewer->setItemDefinition($itemDefinition)
-                    ->setUserLanguage($this->getUserLanguage($resultId, $delivery->getUri()))
+                    ->setUserLanguage($previewLanguageService->getPreviewLanguage($delivery->getUri(), $resultId))
                     ->setDelivery($delivery)
                     ->loadCompiledItemData();
 
