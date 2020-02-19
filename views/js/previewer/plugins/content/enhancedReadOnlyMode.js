@@ -17,9 +17,9 @@
  */
 
 /**
- * Test Previewer Content Plugin : NonInteractiveInteraction
+ * Test Previewer Content Plugin : EnhancedReadOnlyMode
  *
- * This plugin can be used as a hook to do moditication in the items for read only mode
+ * This plugin can be used as a hook to do modification in the item preview for read only mode
  *
  * @author Ansul Sharma <ansul@taotesting.com>
  */
@@ -33,7 +33,7 @@ define([
 
     return pluginFactory({
 
-        name: 'NonInteractiveInteraction',
+        name: 'EnhancedReadOnlyMode',
 
         /**
          * Initialize the plugin (called during runner's init)
@@ -53,8 +53,9 @@ define([
             testRunner
                 .after('renderitem', () => {
                     if (isPluginAllowed()) {
-                        const extendedTextinteractionTextAreas = testRunner.getAreaBroker().getContentArea().find('.qti-extendedTextInteraction textarea.text-container');
-                        const ckeEditorsContent = testRunner.getAreaBroker().getContentArea().find('.qti-extendedTextInteraction div.cke_contents');
+                        const contentArea = testRunner.getAreaBroker().getContentArea();
+                        const extendedTextinteractionTextAreas = contentArea.find('.qti-extendedTextInteraction textarea.text-container');
+                        const ckeEditorsContent = contentArea.find('.qti-extendedTextInteraction div.cke_contents');
 
                         /**
                          * Updates the height of textarea element of all extended text interactions based on the height of the content

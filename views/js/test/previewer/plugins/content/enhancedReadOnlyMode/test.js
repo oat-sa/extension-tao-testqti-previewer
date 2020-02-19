@@ -23,7 +23,7 @@ define([
     'jquery',
     'ui/hider',
     'taoQtiTestPreviewer/previewer/runner',
-    'taoQtiTestPreviewer/previewer/plugins/content/nonInteractiveInteraction',
+    'taoQtiTestPreviewer/previewer/plugins/content/enhancedReadOnlyMode',
     'json!taoQtiItem/test/samples/json/formated-card.json',
     'lib/jquery.mockjax/jquery.mockjax',
     'css!taoQtiTestPreviewer/previewer/provider/item/css/item'
@@ -58,7 +58,7 @@ define([
                 category: 'communicator'
             },
             plugins: [{
-                module: 'taoQtiTestPreviewer/previewer/plugins/content/nonInteractiveInteraction',
+                module: 'taoQtiTestPreviewer/previewer/plugins/content/enhancedReadOnlyMode',
                 bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
                 category: 'content'
             }]
