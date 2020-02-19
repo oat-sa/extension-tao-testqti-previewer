@@ -25,6 +25,7 @@ define([
     'jquery',
     'lodash',
     'i18n',
+    'ui/feedback',
     'taoTests/runner/areaBroker',
     'taoTests/runner/testStore',
     'taoTests/runner/proxy',
@@ -37,6 +38,7 @@ define([
     $,
     _,
     __,
+    feedback,
     areaBrokerFactory,
     testStoreFactory,
     proxyFactory,
@@ -267,6 +269,7 @@ define([
                     .on('error', err => {
                         this.trigger('enablenav');
                         reject(err);
+                        feedback().error(__('It seems that there is an error during item preview loading. Please, try again.'));
                     })
                     .on('init', function onItemRunnerInit() {
                         const {state, portableElements} = itemData;
