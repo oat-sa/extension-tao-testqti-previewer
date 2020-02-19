@@ -33,6 +33,7 @@ define([
     'taoQtiItem/runner/qtiItemRunner',
     'taoQtiTest/runner/config/assetManager',
     'taoItems/assets/strategies',
+    'taoQtiItem/qtiCommonRenderer/helpers/container',
     'tpl!taoQtiTestPreviewer/previewer/provider/item/tpl/item'
 ], function (
     $,
@@ -46,6 +47,7 @@ define([
     qtiItemRunner,
     assetManagerFactory,
     assetStrategies,
+    containerHelper,
     layoutTpl
 ) {
     'use strict';
@@ -54,6 +56,16 @@ define([
     const assetManager = assetManagerFactory();
     assetManager.prependStrategy(assetStrategies.taomedia);
 
+    //store the current execution context of the common renderer (preview)
+    let _$previousContext = null;
+    function setContext($context){
+        _$previousContext = $context;
+        return containerHelper.setContext($context);
+    };
+    function restoreContext(){
+        containerHelper.setContext(_$previousContext);
+         _$previousContext = null;
+    };
     /**
      * A Test runner provider to be registered against the runner
      */
@@ -258,6 +270,8 @@ define([
                 this.setItemState(itemIdentifier, 'changed', true);
             };
 
+            setContext(areaBroker.getContentArea());
+
             return new Promise((resolve, reject) => {
                 assetManager.setData('baseUrl', itemData.baseUrl);
 
@@ -324,6 +338,8 @@ define([
             if (areaBroker) {
                 areaBroker.getToolbox().destroy();
             }
+
+            restoreContext();
         }
     };
 });
