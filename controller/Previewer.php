@@ -182,9 +182,11 @@ class Previewer extends ServiceModule
 
                 /** @var PreviewLanguageService $previewLanguageService */
                 $previewLanguageService = $this->getServiceLocator()->get(PreviewLanguageService::class);
+                $previewLanguage = $previewLanguageService->getPreviewLanguage($delivery->getUri(), $resultId);
 
-                $response['content'] = $itemPreviewer->setItemDefinition($itemDefinition)
-                    ->setUserLanguage($previewLanguageService->getPreviewLanguage($delivery->getUri(), $resultId))
+                $response['content'] = $itemPreviewer
+                    ->setItemDefinition($itemDefinition)
+                    ->setUserLanguage($previewLanguage)
                     ->setDelivery($delivery)
                     ->loadCompiledItemData();
 

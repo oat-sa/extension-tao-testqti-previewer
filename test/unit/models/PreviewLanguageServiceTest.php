@@ -25,7 +25,7 @@ use oat\generis\model\GenerisRdf;
 use oat\generis\test\MockObject;
 use oat\generis\test\TestCase;
 use oat\oatbox\user\UserLanguageService;
-use oat\taoQtiTestPreviewer\models\GenerisUserService;
+use oat\taoQtiTestPreviewer\models\TestTakerService;
 use oat\taoQtiTestPreviewer\models\PreviewLanguageService;
 
 class PreviewLanguageServiceTest extends TestCase
@@ -33,8 +33,8 @@ class PreviewLanguageServiceTest extends TestCase
     /** @var UserLanguageService|MockObject  */
     private $userLanguageServiceMock;
 
-    /** * @var GenerisUserService|MockObject */
-    private $generisUserServiceMock;
+    /** * @var TestTakerService|MockObject */
+    private $testTakerServiceMock;
 
     /** * @var PreviewLanguageService */
     private $subject;
@@ -42,7 +42,7 @@ class PreviewLanguageServiceTest extends TestCase
     protected function setUp()
     {
         $this->userLanguageServiceMock = $this->createMock(UserLanguageService::class);
-        $this->generisUserServiceMock = $this->createMock(GenerisUserService::class);
+        $this->testTakerServiceMock = $this->createMock(TestTakerService::class);
 
         $this->subject = new PreviewLanguageService();
         $this->subject->setServiceLocator($this->getServiceLocator());
@@ -106,7 +106,7 @@ class PreviewLanguageServiceTest extends TestCase
             ->with(GenerisRdf::PROPERTY_USER_DEFLG)
             ->willReturn($languages);
 
-        $this->generisUserServiceMock
+        $this->testTakerServiceMock
             ->expects($this->once())
             ->method('getGenerisUser')
             ->with($deliveryUri, $resultId)
@@ -117,7 +117,7 @@ class PreviewLanguageServiceTest extends TestCase
     {
         return $this->getServiceLocatorMock([
             UserLanguageService::class => $this->userLanguageServiceMock,
-            GenerisUserService::class => $this->generisUserServiceMock
+            TestTakerService::class => $this->testTakerServiceMock
         ]);
     }
 }

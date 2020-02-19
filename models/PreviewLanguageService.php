@@ -57,10 +57,10 @@ class PreviewLanguageService extends ConfigurableService
      */
     private function getTestTakerInterfaceLanguage($deliveryUri, $resultId)
     {
-        /** @var GenerisUserService $generisUserService */
-        $generisUserService = $this->getServiceLocator()->get(GenerisUserService::class);
+        /** @var TestTakerService $testTakerService */
+        $testTakerService = $this->getServiceLocator()->get(TestTakerService::class);
 
-        $testTaker = $generisUserService->getGenerisUser($deliveryUri, $resultId);
+        $testTaker = $testTakerService->getTestTaker($deliveryUri, $resultId);
 
         $languages = $testTaker->getPropertyValues(GenerisRdf::PROPERTY_USER_DEFLG);
 

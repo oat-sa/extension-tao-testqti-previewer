@@ -26,18 +26,20 @@ use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
 use oat\taoResultServer\models\classes\implementation\ResultServerService;
 
-class GenerisUserService extends ConfigurableService
+class TestTakerService extends ConfigurableService
 {
     use OntologyAwareTrait;
 
     /**
+     * Find test taker by given delivery URI and result ID
+     *
      * @param $deliveryUri
      * @param $resultId
      * @return GenerisUser
      *
      * @throws common_exception_Error
      */
-    public function getGenerisUser($deliveryUri, $resultId)
+    public function getTestTaker($deliveryUri, $resultId)
     {
         /** @var ResultServerService $resultServerService */
         $resultServerService = $this->getServiceLocator()->get(ResultServerService::SERVICE_ID);
