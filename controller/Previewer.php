@@ -218,7 +218,7 @@ class Previewer extends ServiceModule
                 /** @var ItemPack $itemPack */
                 $itemPack = $packer->pack();
                 $response['content'] = $itemPack->JsonSerialize();
-                $response['baseUrl'] = _url('asset', null, null, ['uri' => $itemUri, 'path' => '/']);
+                $response['baseUrl'] = _url('asset', null, null, ['uri' => $itemUri, 'path' => '']);
             } else {
                 throw new BadRequestException('Either itemUri or resultId needs to be provided.');
             }
