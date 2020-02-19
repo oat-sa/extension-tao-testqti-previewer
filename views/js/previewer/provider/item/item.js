@@ -60,7 +60,7 @@ define([
     let _$previousContext = null;
     function setContext($context){
         _$previousContext = $context;
-        return containerHelper.setContext($context);
+        containerHelper.setContext($context);
     };
     function restoreContext(){
         containerHelper.setContext(_$previousContext);
