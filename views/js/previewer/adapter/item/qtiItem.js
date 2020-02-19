@@ -48,6 +48,10 @@ define([
         module: 'taoQtiTest/runner/plugins/tools/itemThemeSwitcher/itemThemeSwitcher',
         bundle: 'taoQtiTest/loader/testPlugins.min',
         category: 'tools'
+    }, {
+        module: 'taoQtiTestPreviewer/previewer/plugins/content/nonInteractiveInteraction',
+        bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+        category: 'content'
     }];
 
     /**
