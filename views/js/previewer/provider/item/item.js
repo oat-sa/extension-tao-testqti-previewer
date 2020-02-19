@@ -31,6 +31,7 @@ define([
     'taoQtiTest/runner/ui/toolbox/toolbox',
     'taoQtiItem/runner/qtiItemRunner',
     'taoQtiTest/runner/config/assetManager',
+    'taoItems/assets/strategies',
     'tpl!taoQtiTestPreviewer/previewer/provider/item/tpl/item'
 ], function (
     $,
@@ -42,12 +43,14 @@ define([
     toolboxFactory,
     qtiItemRunner,
     assetManagerFactory,
+    assetStrategies,
     layoutTpl
 ) {
     'use strict';
 
     //the asset strategies
     const assetManager = assetManagerFactory();
+    assetManager.prependStrategy(assetStrategies.taomedia);
 
     /**
      * A Test runner provider to be registered against the runner
