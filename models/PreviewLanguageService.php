@@ -41,10 +41,6 @@ class PreviewLanguageService extends ConfigurableService
         /** @var UserLanguageService $userLanguageService */
         $userLanguageService = $this->getServiceLocator()->get(UserLanguageService::class);
 
-        if (!$userLanguageService->isDataLanguageEnabled()) {
-            return $userLanguageService->getDefaultLanguage();
-        }
-
         return $userLanguageService->getDataLanguage($this->findTestTaker($deliveryUri, $resultId));
     }
 

@@ -53,27 +53,7 @@ class PreviewLanguageServiceTest extends TestCase
         $this->subject->setServiceLocator($this->getServiceLocator());
     }
 
-    public function testItReturnsDefaultLanguageIfDataLanguageIsDisabled()
-    {
-        $this->userLanguageServiceMock
-            ->expects($this->once())
-            ->method('isDataLanguageEnabled')
-            ->willReturn(false);
-
-        $this->userLanguageServiceMock
-            ->expects($this->once())
-            ->method('getDefaultLanguage')
-            ->willReturn('defaultLanguage');
-
-        $this->userLanguageServiceMock
-            ->expects($this->never())
-            ->method('getDataLanguage');
-
-        $previewLanguage = $this->subject->getPreviewLanguage('deliveryUri', 'resultId');
-        $this->assertSame('defaultLanguage', $previewLanguage);
-    }
-
-    public function testItReturnsDataLanguageIfItEnabled()
+    public function testItReturnsDataLanguageProperly()
     {
         $resultStorageMock = $this->createMock(ResultStorageInterface::class);
 
@@ -96,11 +76,6 @@ class PreviewLanguageServiceTest extends TestCase
             ->method('getUserById')
             ->with('userId')
             ->willReturn($userMock);
-
-        $this->userLanguageServiceMock
-            ->expects($this->once())
-            ->method('isDataLanguageEnabled')
-            ->willReturn(true);
 
         $this->userLanguageServiceMock
             ->expects($this->once())
