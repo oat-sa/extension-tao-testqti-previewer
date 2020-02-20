@@ -20,104 +20,77 @@
 
 namespace oat\taoQtiTestPreviewer\test\unit\models;
 
-use core_kernel_users_GenerisUser;
-use oat\generis\model\GenerisRdf;
 use oat\generis\test\MockObject;
 use oat\generis\test\TestCase;
+use oat\oatbox\user\User;
 use oat\oatbox\user\UserLanguageService;
-use oat\taoQtiTestPreviewer\models\TestTakerService;
 use oat\taoQtiTestPreviewer\models\PreviewLanguageService;
+use oat\taoResultServer\models\classes\implementation\ResultServerService;
+use oat\taoResultServer\models\classes\ResultStorageInterface;
+use tao_models_classes_UserService;
 
 class PreviewLanguageServiceTest extends TestCase
 {
     /** @var UserLanguageService|MockObject  */
     private $userLanguageServiceMock;
 
-    /** * @var TestTakerService|MockObject */
-    private $testTakerServiceMock;
+    /** @var ResultServerService|MockObject */
+    private $resultServerServiceMock;
 
-    /** * @var PreviewLanguageService */
+    /** @var tao_models_classes_UserService|MockObject */
+    private $userServiceMock;
+
+    /** @var PreviewLanguageService */
     private $subject;
 
     protected function setUp()
     {
         $this->userLanguageServiceMock = $this->createMock(UserLanguageService::class);
-        $this->testTakerServiceMock = $this->createMock(TestTakerService::class);
+        $this->resultServerServiceMock = $this->createMock(ResultServerService::class);
+        $this->userServiceMock = $this->createMock(tao_models_classes_UserService::class);
 
         $this->subject = new PreviewLanguageService();
         $this->subject->setServiceLocator($this->getServiceLocator());
     }
 
-    public function testItReturnsDataLanguageIfItEnabled()
+    public function testItCanReturnDataLanguageProperly()
     {
-        $this->userLanguageServiceMock
+        $resultStorageMock = $this->createMock(ResultStorageInterface::class);
+
+        $resultStorageMock
             ->expects($this->once())
-            ->method('isDataLanguageEnabled')
-            ->willReturn(true);
+            ->method('getTestTaker')
+            ->with('resultId')
+            ->willReturn('userId');
 
-        $this->userLanguageServiceMock
+        $this->resultServerServiceMock
             ->expects($this->once())
-            ->method('getDefaultLanguage')
-            ->willReturn('default-LANG');
+            ->method('getResultStorage')
+            ->with('deliveryUri')
+            ->willReturn($resultStorageMock);
 
-        $this->assertSame('default-LANG', $this->subject->getPreviewLanguage('deliveryUri', 'resultId'));
-    }
+        $userMock = $this->createMock(User::class);
 
-    public function testItReturnsUserInterfaceLanguageIfDataLanguageDisabled()
-    {
-        $this->userLanguageServiceMock
+        $this->userServiceMock
             ->expects($this->once())
-            ->method('isDataLanguageEnabled')
-            ->willReturn(false);
-
-        $this->userLanguageServiceMock
-            ->expects($this->never())
-            ->method('getDefaultLanguage');
-
-        $this->setTestTakerInterfaceLanguages(['tt-LANG'], 'resultId', 'deliveryUri');
-
-        $this->assertSame('tt-LANG', $this->subject->getPreviewLanguage('deliveryUri', 'resultId'));
-    }
-
-    public function testItReturnsDefaultLanguageIfNoUserInterfaceLanguageSet()
-    {
-        $this->userLanguageServiceMock
-            ->expects($this->once())
-            ->method('isDataLanguageEnabled')
-            ->willReturn(false);
-
-        $this->setTestTakerInterfaceLanguages([], 'resultId', 'deliveryUri');
+            ->method('getUserById')
+            ->with('userId')
+            ->willReturn($userMock);
 
         $this->userLanguageServiceMock
             ->expects($this->once())
-            ->method('getDefaultLanguage')
-            ->willReturn('default-LANG');
+            ->method('getDataLanguage')
+            ->with($userMock);
 
-        $this->assertSame('default-LANG', $this->subject->getPreviewLanguage('deliveryUri', 'resultId'));
-    }
-
-    private function setTestTakerInterfaceLanguages($languages, $resultId, $deliveryUri)
-    {
-        $generisUserMock = $this->createMock(core_kernel_users_GenerisUser::class);
-
-        $generisUserMock
-            ->expects($this->once())
-            ->method('getPropertyValues')
-            ->with(GenerisRdf::PROPERTY_USER_DEFLG)
-            ->willReturn($languages);
-
-        $this->testTakerServiceMock
-            ->expects($this->once())
-            ->method('getGenerisUser')
-            ->with($deliveryUri, $resultId)
-            ->willReturn($generisUserMock);
+        $this->subject->getPreviewLanguage('deliveryUri', 'resultId');
     }
 
     private function getServiceLocator()
     {
         return $this->getServiceLocatorMock([
             UserLanguageService::class => $this->userLanguageServiceMock,
-            TestTakerService::class => $this->testTakerServiceMock
+            ResultServerService::SERVICE_ID => $this->resultServerServiceMock,
+            tao_models_classes_UserService::SERVICE_ID => $this->userServiceMock
         ]);
     }
 }

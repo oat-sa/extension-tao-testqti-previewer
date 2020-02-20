@@ -21,9 +21,11 @@
 namespace oat\taoQtiTestPreviewer\models;
 
 use common_exception_Error;
-use oat\generis\model\GenerisRdf;
 use oat\oatbox\service\ConfigurableService;
+use oat\oatbox\user\User;
 use oat\oatbox\user\UserLanguageService;
+use oat\taoResultServer\models\classes\implementation\ResultServerService;
+use tao_models_classes_UserService;
 
 class PreviewLanguageService extends ConfigurableService
 {
@@ -39,31 +41,28 @@ class PreviewLanguageService extends ConfigurableService
         /** @var UserLanguageService $userLanguageService */
         $userLanguageService = $this->getServiceLocator()->get(UserLanguageService::class);
 
-        if ($userLanguageService->isDataLanguageEnabled()) {
-            return $userLanguageService->getDefaultLanguage();
-        }
-
-        $ttLanguage = $this->getTestTakerInterfaceLanguage($deliveryUri, $resultId);
-
-        return !empty($ttLanguage) ? $ttLanguage : $userLanguageService->getDefaultLanguage();
+        return $userLanguageService->getDataLanguage($this->findTestTaker($deliveryUri, $resultId));
     }
 
     /**
-     * @param string $deliveryUri
-     * @param string $resultId
-     * @return string|null
+     * @param $deliveryUri
+     * @param $resultId
+     * @return User
      *
      * @throws common_exception_Error
      */
-    private function getTestTakerInterfaceLanguage($deliveryUri, $resultId)
+    private function findTestTaker($deliveryUri, $resultId)
     {
-        /** @var TestTakerService $testTakerService */
-        $testTakerService = $this->getServiceLocator()->get(TestTakerService::class);
+        /** @var ResultServerService $resultServerService */
+        $resultServerService = $this->getServiceLocator()->get(ResultServerService::SERVICE_ID);
 
-        $testTaker = $testTakerService->getTestTaker($deliveryUri, $resultId);
+        $resultStorage = $resultServerService->getResultStorage($deliveryUri);
 
-        $languages = $testTaker->getPropertyValues(GenerisRdf::PROPERTY_USER_DEFLG);
+        $userId = $resultStorage->getTestTaker($resultId);
 
-        return !empty($languages) ? current($languages) : null;
+        /** @var tao_models_classes_UserService $userService */
+        $userService = $this->getServiceLocator()->get(tao_models_classes_UserService::SERVICE_ID);
+
+        return $userService->getUserById($userId);
     }
 }
