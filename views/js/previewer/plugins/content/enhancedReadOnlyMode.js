@@ -53,15 +53,15 @@ define([
             testRunner
                 .after('renderitem', () => {
                     if (isPluginAllowed()) {
-                        const contentArea = testRunner.getAreaBroker().getContentArea();
-                        const extendedTextinteractionTextAreas = contentArea.find('.qti-extendedTextInteraction textarea.text-container');
-                        const ckeEditorsContent = contentArea.find('.qti-extendedTextInteraction div.cke_contents');
+                        const $contentArea = testRunner.getAreaBroker().getContentArea();
+                        const $extendedTextinteractionTextAreas = $contentArea.find('.qti-extendedTextInteraction textarea.text-container');
+                        const $ckeEditorsContent = $contentArea.find('.qti-extendedTextInteraction div.cke_contents');
 
                         /**
                          * Updates the height of textarea element of all extended text interactions based on the height of the content
                          */
-                        if(extendedTextinteractionTextAreas.length) {
-                            extendedTextinteractionTextAreas.map((i, $textArea) => {
+                        if($extendedTextinteractionTextAreas.length) {
+                            $extendedTextinteractionTextAreas.map((i, $textArea) => {
                                 $textArea.style.height = `${$textArea.scrollHeight + 20}px`;
                             });
                         }
@@ -69,18 +69,18 @@ define([
                         /**
                          * Updates the height of all the ckeEditor container of wysiwyg extended text interaction based on the height of the iFrame
                          */
-                        if(ckeEditorsContent.length) {
-                            ckeEditorsContent.map((i, ckeEditorContent) => {
+                        if($ckeEditorsContent.length) {
+                            $ckeEditorsContent.map((i, ckeEditorContent) => {
                                 const $ckeEditorContent = $(ckeEditorContent);
-                                const ckeEditorIFrame = $ckeEditorContent.find('iframe.cke_wysiwyg_frame');
+                                const $ckeEditorIFrame = $ckeEditorContent.find('iframe.cke_wysiwyg_frame');
 
                                 /**
                                  * Only update the height when the iFrame has finished loading the styles because font-size may change the height
                                  */
-                                ckeEditorIFrame.load = setTimeout(() => {
-                                        const ckeEditorBody = ckeEditorIFrame[0].contentWindow.document.querySelector('body');
+                                $ckeEditorIFrame.load = setTimeout(() => {
+                                        const ckeEditorBody = $ckeEditorIFrame[0].contentWindow.document.querySelector('body');
                                         $ckeEditorContent[0].style.height = `${ckeEditorBody.scrollHeight + 20}px`;
-                                }, 0)
+                                }, 0);
                             });
                         }
                     }

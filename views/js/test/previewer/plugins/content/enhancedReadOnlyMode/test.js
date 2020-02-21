@@ -181,8 +181,8 @@ define([
                     .after('renderitem.runnerComponent', function() {
                         const ckeEditorsContent = runner.getAreaBroker().getContentArea().find('.qti-extendedTextInteraction div.cke_contents');
                         const $ckeEditorContent = $(ckeEditorsContent[0]);
-                        const ckeEditorIFrame = $ckeEditorContent.find('iframe.cke_wysiwyg_frame');
-                        const ckeEditorBody = ckeEditorIFrame[0].contentWindow.document.querySelector('body');
+                        const $ckeEditorIFrame = $ckeEditorContent.find('iframe.cke_wysiwyg_frame');
+                        const ckeEditorBody = $ckeEditorIFrame[0].contentWindow.document.querySelector('body');
                         $ckeEditorContent[0].style.height = `${ckeEditorBody.scrollHeight + 20}px`;
 
                         assert.ok(true, 'The previewer has been rendered');
