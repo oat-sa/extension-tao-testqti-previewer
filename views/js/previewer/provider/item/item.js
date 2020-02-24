@@ -25,30 +25,47 @@ define([
     'jquery',
     'lodash',
     'i18n',
+    'ui/feedback',
     'taoTests/runner/areaBroker',
     'taoTests/runner/testStore',
     'taoTests/runner/proxy',
     'taoQtiTest/runner/ui/toolbox/toolbox',
     'taoQtiItem/runner/qtiItemRunner',
     'taoQtiTest/runner/config/assetManager',
+    'taoItems/assets/strategies',
+    'taoQtiItem/qtiCommonRenderer/helpers/container',
     'tpl!taoQtiTestPreviewer/previewer/provider/item/tpl/item'
 ], function (
     $,
     _,
     __,
+    feedback,
     areaBrokerFactory,
     testStoreFactory,
     proxyFactory,
     toolboxFactory,
     qtiItemRunner,
     assetManagerFactory,
+    assetStrategies,
+    containerHelper,
     layoutTpl
 ) {
     'use strict';
 
     //the asset strategies
     const assetManager = assetManagerFactory();
+    assetManager.prependStrategy(assetStrategies.taomedia);
 
+    //store the current execution context of the common renderer (preview)
+    let _$previousContext = null;
+    function setContext($context){
+        _$previousContext = $context;
+        containerHelper.setContext($context);
+    }
+    function restoreContext(){
+        containerHelper.setContext(_$previousContext);
+         _$previousContext = null;
+    }
     /**
      * A Test runner provider to be registered against the runner
      */
@@ -253,6 +270,8 @@ define([
                 this.setItemState(itemIdentifier, 'changed', true);
             };
 
+            setContext(areaBroker.getContentArea());
+
             return new Promise((resolve, reject) => {
                 assetManager.setData('baseUrl', itemData.baseUrl);
 
@@ -264,6 +283,7 @@ define([
                     .on('error', err => {
                         this.trigger('enablenav');
                         reject(err);
+                        feedback().error(__('It seems that there is an error during item preview loading. Please, try again.'));
                     })
                     .on('init', function onItemRunnerInit() {
                         const {state, portableElements} = itemData;
@@ -318,6 +338,8 @@ define([
             if (areaBroker) {
                 areaBroker.getToolbox().destroy();
             }
+
+            restoreContext();
         }
     };
 });
