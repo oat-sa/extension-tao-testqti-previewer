@@ -61,11 +61,11 @@ define([
     function setContext($context){
         _$previousContext = $context;
         containerHelper.setContext($context);
-    };
+    }
     function restoreContext(){
         containerHelper.setContext(_$previousContext);
          _$previousContext = null;
-    };
+    }
     /**
      * A Test runner provider to be registered against the runner
      */
