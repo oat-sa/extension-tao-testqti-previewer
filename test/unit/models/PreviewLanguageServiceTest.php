@@ -43,7 +43,7 @@ class PreviewLanguageServiceTest extends TestCase
     /** @var PreviewLanguageService */
     private $subject;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->userLanguageServiceMock = $this->createMock(UserLanguageService::class);
         $this->resultServerServiceMock = $this->createMock(ResultServerService::class);
