@@ -237,7 +237,9 @@ class Previewer extends ServiceModule
         }
         $info = $asset->getMediaSource()->getFileInfo($asset->getMediaIdentifier());
         $stream = $asset->getMediaSource()->getFileStream($asset->getMediaIdentifier());
-        HttpHelper::returnStream($stream, $info['mime']);
+        return $this->getPsrResponse()
+            ->withBody($stream)
+            ->withAddedHeader('Content-Type', $info['mime']);
     }
 
     /**
