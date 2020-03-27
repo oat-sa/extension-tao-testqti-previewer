@@ -71,7 +71,7 @@ class ItemPreviewerTest extends TestCase
     private $fileMockXML;
 
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->deliveryMock = $this->createMock(core_kernel_classes_Resource::class);
         $this->deliveryMock->method('exists')->willReturn(true);
@@ -80,7 +80,7 @@ class ItemPreviewerTest extends TestCase
         $this->failedDeliveryMock = $this->createMock(core_kernel_classes_Resource::class);
         $this->failedDeliveryMock->method('exists')->willReturn(false);
 
-        $this->deliveryContainerMock = $this->getMock(QtiTestDeliveryContainer::class);
+        $this->deliveryContainerMock = $this->createMock(QtiTestDeliveryContainer::class);
         $this->deliveryContainerMock->method('getRuntimeParams')->willReturn(['private' => '/test/private/path']);
 
         $this->runtimeServiceMock = $this->createMock(RuntimeService::class);
