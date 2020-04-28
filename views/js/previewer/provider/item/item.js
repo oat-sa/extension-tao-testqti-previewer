@@ -278,9 +278,9 @@ define([
 
                 itemData.content = itemData.content || {};
 
-                this.itemRunner = qtiItemRunner(itemData.content.type, itemData.content.data, {
-                    assetManager: assetManager, ...options
-                })
+                this.itemRunner = qtiItemRunner(itemData.content.type, itemData.content.data, Object.assign({
+                    assetManager: assetManager
+                }, options))
                     .on('error', err => {
                         this.trigger('enablenav');
                         reject(err);
