@@ -65,6 +65,7 @@ define([
                 plugins: config.plugins || []
             },
             options: {
+                view: config.view,
                 readOnly: config.readOnly,
                 fullPage: config.fullPage,
                 plugins: config.pluginsOptions,

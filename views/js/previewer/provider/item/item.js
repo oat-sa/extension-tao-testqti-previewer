@@ -265,6 +265,7 @@ define([
          */
         renderItem(itemIdentifier, itemData) {
             const areaBroker = this.getAreaBroker();
+            const options = this.getConfig().options;
 
             const changeState = () => {
                 this.setItemState(itemIdentifier, 'changed', true);
@@ -277,9 +278,9 @@ define([
 
                 itemData.content = itemData.content || {};
 
-                this.itemRunner = qtiItemRunner(itemData.content.type, itemData.content.data, {
+                this.itemRunner = qtiItemRunner(itemData.content.type, itemData.content.data, Object.assign({
                     assetManager: assetManager
-                })
+                }, options))
                     .on('error', err => {
                         this.trigger('enablenav');
                         reject(err);

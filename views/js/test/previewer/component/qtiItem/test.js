@@ -157,6 +157,7 @@ define([
     QUnit.test('config', assert => {
         const ready = assert.async();
         const config = {
+            view: 'scorer',
             readOnly: true,
             fullPage: true,
             pluginsOptions: true,
@@ -185,12 +186,12 @@ define([
         }).then(([runnerWithOptions, runnerWithoutOptions]) => {
             assert.deepEqual(
                 runnerWithOptions.getConfig().options,
-                { readOnly: true, fullPage: true, plugins: true, hideActionBars: true },
+                { view: 'scorer', readOnly: true, fullPage: true, plugins: true, hideActionBars: true },
                 'The previewer factory set options using config'
             );
             assert.deepEqual(
                 runnerWithoutOptions.getConfig().options,
-                { readOnly: undefined, fullPage: undefined, plugins: undefined, hideActionBars: undefined },
+                { view: undefined,readOnly: undefined, fullPage: undefined, plugins: undefined, hideActionBars: undefined },
                 'The previewer factory leave options undefined if config empty'
             );
 
