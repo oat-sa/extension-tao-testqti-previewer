@@ -27,7 +27,7 @@ return [
     'label' => 'extension-tao-testqti-previewer',
     'description' => 'extension that provides QTI test previewer',
     'license'     => 'GPL-2.0',
-    'version' => '2.14.1',
+    'version' => '2.15.0',
     'author' => 'Open Assessment Technologies SA',
     'requires' => [
         'generis'      => '>=12.15.0',

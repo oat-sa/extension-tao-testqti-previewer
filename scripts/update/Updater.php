@@ -31,6 +31,7 @@ use oat\taoOutcomeUi\model\ResultsViewerService;
 /**
  * Class Updater
  * @package oat\taoQtiTestPreviewer\scripts\update
+ * @deprecated use migrations instead. See https://github.com/oat-sa/generis/wiki/Tao-Update-Process
  */
 class Updater extends \common_ext_ExtensionUpdater
 {
@@ -89,5 +90,10 @@ class Updater extends \common_ext_ExtensionUpdater
         }
 
         $this->skip('0.2.0', '2.14.1');
+        
+        //Updater files are deprecated. Please use migrations.
+        //See: https://github.com/oat-sa/generis/wiki/Tao-Update-Process
+
+        $this->setVersion($this->getExtension()->getManifest()->getVersion());
     }
 }
