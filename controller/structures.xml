@@ -7,7 +7,7 @@
         <sections>
             <section id="manage_tests" name="Manage tests" url="/taoTests/Tests/index">
                 <actions allowClassActions="true">
-                    <action id="test-preview" name="Preview" url="taoQtiTestPreviewer/Previewer/init" context="instance" group="content" binding="testPreview">
+                    <action id="test-preview" name="Preview" url="/taoQtiTestPreviewer/Previewer/init" context="instance" group="content" binding="testPreview">
                         <icon id="icon-preview"/>
                     </action>
                 </actions>
