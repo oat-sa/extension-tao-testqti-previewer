@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE structures SYSTEM "../../tao/doc/structures.dtd">
+<structures>
+    <structure id="tests" name="Tests" level="1" group="main">
+        <description>Combine a selection of items into tests.</description>
+        <icon id="icon-test" src=""/>
+        <sections>
+            <section id="manage_tests" name="Manage tests" url="/taoTests/Tests/index">
+                <actions allowClassActions="true">
+                    <action id="test-preview" name="Preview" url="taoQtiTestPreviewer/Previewer/init" context="instance" group="content" binding="testPreview">
+                        <icon id="icon-preview"/>
+                    </action>
+                </actions>
+            </section>
+        </sections>
+    </structure>
+</structures>
