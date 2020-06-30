@@ -34,7 +34,8 @@ define([
     'taoQtiTest/runner/config/assetManager',
     'taoItems/assets/strategies',
     'taoQtiItem/qtiCommonRenderer/helpers/container',
-    'tpl!taoQtiTestPreviewer/previewer/provider/item/tpl/item'
+    'tpl!taoQtiTestPreviewer/previewer/provider/item/tpl/item',
+    'taoQtiTest/runner/helpers/map'
 ], function (
     $,
     _,
@@ -48,7 +49,8 @@ define([
     assetManagerFactory,
     assetStrategies,
     containerHelper,
-    layoutTpl
+    layoutTpl,
+    mapHelper
 ) {
     'use strict';
 
@@ -221,6 +223,13 @@ define([
                 .then(data => {
                     dataHolder.set('itemIdentifier', data.itemIdentifier);
                     dataHolder.set('itemData', data.itemData);
+                    if (_.isPlainObject(data.testMap)) {
+                        //the received map is not complete and should be "built"
+                        const builtTestMap = mapHelper.reindex(data.testMap);
+                        if (builtTestMap) {
+                            dataHolder.set('testMap', builtTestMap);
+                        }
+                    }
                 });
         },
 
