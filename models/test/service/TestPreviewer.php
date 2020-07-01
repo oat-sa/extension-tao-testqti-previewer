@@ -55,6 +55,6 @@ class TestPreviewer extends ConfigurableService implements TestPreviewerInterfac
 
     private function getMapper(): TestPreviewMapperInterface
     {
-        return $this->getServiceManager()->get(TestPreviewMapper::class);
+        return $this->getServiceLocator()->get(TestPreviewMapper::class);
     }
 }
