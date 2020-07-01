@@ -1,0 +1,94 @@
+openapi: 3.0.1
+info:
+  title: taoTestPreview API
+  description: Stands for TAO test Previewer API.
+  version: 1.0.0
+servers:
+  - url: '{server}'
+    variables:
+      server:
+        default: https://community.docker.localhost/
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: tao_community
+  responses:
+    init:
+      description: Good response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/testInit'
+  schemas:
+    testInit:
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            success:
+              type: boolean
+            testData:
+              $ref: '#/components/schemas/testData'
+            testContext:
+              $ref: '#/components/schemas/testContext'
+            testMap:
+              $ref: '#/components/schemas/testMap'
+            toolStates:
+              description: the current tools states
+              type: array
+              items:
+                type: integer
+            lastStoreId:
+              description: Checks the storeId request parameter and returns the last store id if set, false otherwise
+              type: boolean|string
+            messages:
+              type: array
+              items:
+                type: integer
+    testData:
+      description: test definition data
+      deprecated: true
+      type: object
+      properties:
+        title:
+          type: string
+        identifier:
+          type: string
+        className:
+          type: string
+        toolName:
+          type: string
+        exclusivelyLinear:
+          type: boolean
+        hasTimeLimits:
+          type: boolean
+        states:
+          type: object
+        itemStates:
+          type: object
+        config:
+          type: object
+
+    testContext:
+      description: test context object
+      type: object
+    testMap:
+      description: the map of the test items
+      type: object
+
+security:
+  - cookieAuth: []
+
+paths:
+  /taoQtiTestPreviewer/TestPreviewer/init:
+    get:
+      summary: Returns a test map
+      responses:
+        '200':
+          $ref: '#/components/responses/init'
+        '401':
+          description: Not Authorised
