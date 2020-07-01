@@ -61,9 +61,9 @@ class TestPreviewer extends tao_actions_ServiceModule
             $this->setSuccessJsonResponse(
                 [
                     'success' => true,
-                    'testData' => $response->getTestData(),
-                    'testContext' => $response->getTestContext(),
-                    'testMap' => $response->getTestMap(),
+                    'testData' => [],
+                    'testContext' => [],
+                    'testMap' => $response->getMap()->getMap(),
                 ]
             );
         } catch (Throwable $exception) {
