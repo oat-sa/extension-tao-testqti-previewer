@@ -23,32 +23,14 @@ namespace oat\taoQtiTestPreviewer\models\test;
 class TestPreview
 {
     /** @var array */
-    private $testData;
-
-    /** @var array */
-    private $testContext;
-
-    /** @var array */
     private $testMap;
 
-    public function __construct(array $testData, array $testContext, array $testMap)
+    public function __construct(TestPreviewMap $testMap)
     {
-        $this->testData = $testData;
-        $this->testContext = $testContext;
         $this->testMap = $testMap;
     }
 
-    public function getTestData(): array
-    {
-        return $this->testData;
-    }
-
-    public function getTestContext(): array
-    {
-        return $this->testContext;
-    }
-
-    public function getTestMap(): array
+    public function getMap(): TestPreviewMap
     {
         return $this->testMap;
     }

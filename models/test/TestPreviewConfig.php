@@ -20,27 +20,25 @@
 
 namespace oat\taoQtiTestPreviewer\models\test;
 
-class TestPreviewRequest
+class TestPreviewConfig
 {
-    /** @var string */
-    private $testUri;
+    public const REVIEW_FORCE_INFORMATION_TITLE = 'review.forceInformationalTitle';
+    public const REVIEW_DISPLAY_SUBSECTION_TITLE = 'review.displaySubsectionTitle';
+    public const CHECK_INFORMATIONAL = 'checkInformational';
 
-    /** @var TestPreviewConfig */
+    /** @var array */
     private $config;
 
-    public function __construct(string $testUri, TestPreviewConfig $config = null)
+    public function __construct(array $config = [])
     {
-        $this->testUri = $testUri;
-        $this->config = $config ?? new TestPreviewConfig();
+        $this->config = $config;
     }
 
-    public function getTestUri(): string
+    /**
+     * @return mixed|null
+     */
+    public function get(string $config)
     {
-        return $this->testUri;
-    }
-
-    public function getConfig(): TestPreviewConfig
-    {
-        return $this->config;
+        return array_key_exists($config, $this->config) ? $this->config[$config] : null;
     }
 }

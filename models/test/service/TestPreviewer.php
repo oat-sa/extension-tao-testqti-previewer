@@ -21,7 +21,9 @@
 namespace oat\taoQtiTestPreviewer\models\test\service;
 
 use oat\oatbox\service\ConfigurableService;
-use oat\taoQtiTest\models\runner\QtiRunnerService;
+use oat\taoQtiTestPreviewer\models\test\mapper\TestPreviewMapper;
+use oat\taoQtiTestPreviewer\models\test\mapper\TestPreviewMapperInterface;
+use oat\taoQtiTestPreviewer\models\test\session\TestPreviewSessionManager;
 use oat\taoQtiTestPreviewer\models\test\TestPreview;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewRequest;
 
@@ -32,25 +34,24 @@ class TestPreviewer extends ConfigurableService implements TestPreviewerInterfac
      */
     public function createPreview(TestPreviewRequest $testPreviewRequest): TestPreview
     {
-        $runnerService = $this->getRunnerService()->mapAsTestPreview();
-        $runnerService->getQtiRunnerMap()->mapAsTestPreview();
+        /** @var TestPreviewSessionManager $sessionManager */
+        $sessionManager = new TestPreviewSessionManager();
 
-        $serviceContext = $this->getTestPreviewerContextGenerator()->generate($testPreviewRequest);
+        $testAssessment = $this->getTestPreviewerAssessmentTestGenerator()->generate($testPreviewRequest);
+        $route = $sessionManager->createRoute($testAssessment);
 
         return new TestPreview(
-            $runnerService->getTestData($serviceContext),
-            $runnerService->getTestContext($serviceContext),
-            $runnerService->getTestMap($serviceContext)
+            $this->getTestPreviewMapper()->map($testAssessment, $route, $testPreviewRequest->getConfig())
         );
     }
 
-    private function getRunnerService(): QtiRunnerService
+    private function getTestPreviewerAssessmentTestGenerator(): TestPreviewerAssessmentTestGeneratorInterface
     {
-        return $this->getServiceLocator()->get(QtiRunnerService::SERVICE_ID);
+        return $this->getServiceLocator()->get(TestPreviewerAssessmentTestGenerator::class);
     }
 
-    private function getTestPreviewerContextGenerator(): TestPreviewerContextGeneratorInterface
+    private function getTestPreviewMapper(): TestPreviewMapperInterface
     {
-        return $this->getServiceManager()->get(TestPreviewerContextGenerator::class);
+        return $this->getServiceManager()->get(TestPreviewMapper::class);
     }
 }
