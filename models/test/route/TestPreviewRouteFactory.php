@@ -18,15 +18,24 @@
  * Copyright (c) 2020 (original work) Open Assessment Technologies SA ;
  */
 
-namespace oat\taoQtiTestPreviewer\models\test\session;
+namespace oat\taoQtiTestPreviewer\models\test\route;
 
+use oat\oatbox\service\ConfigurableService;
 use qtism\data\AssessmentTest;
+use qtism\runtime\tests\Route;
 use qtism\runtime\tests\SessionManager;
 
-class TestPreviewSessionManager extends SessionManager
+class TestPreviewRouteFactory extends ConfigurableService implements TestPreviewRouteFactoryInterface
 {
-    public function createRoute(AssessmentTest $test)
+    public function createRoute(AssessmentTest $test): Route
     {
-        return parent::createRoute($test);
+        $manager = new class() extends SessionManager {
+            public function createRoute(AssessmentTest $test)
+            {
+                return parent::createRoute($test);
+            }
+        };
+
+        return $manager->createRoute($test);
     }
 }
