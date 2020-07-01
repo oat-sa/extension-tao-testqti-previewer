@@ -92,13 +92,3 @@ paths:
           $ref: '#/components/responses/init'
         '401':
           description: Not Authorised
-
-  /taoQtiTestPreviewer/TestPreviewer/getItem:
-    get:
-      summary: Item Definition
-      responses:
-        '200':
-          description: all good
-
-
-

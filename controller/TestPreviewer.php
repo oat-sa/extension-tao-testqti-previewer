@@ -44,8 +44,4 @@ class TestPreviewer extends tao_actions_ServiceModule
         $this->setSuccessJsonResponse(json_decode($arr));
     }
 
-    public function getItem()
-    {
-        $this->setSuccessJsonResponse([]);
-    }
 }
