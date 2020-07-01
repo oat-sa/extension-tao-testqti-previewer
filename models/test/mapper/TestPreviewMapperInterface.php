@@ -18,12 +18,14 @@
  * Copyright (c) 2020 (original work) Open Assessment Technologies SA ;
  */
 
-namespace oat\taoQtiTestPreviewer\models\test\service;
+namespace oat\taoQtiTestPreviewer\models\test\mapper;
 
-use oat\taoQtiTestPreviewer\models\test\context\TestPreviewContext;
-use oat\taoQtiTestPreviewer\models\test\TestPreviewRequest;
+use oat\taoQtiTestPreviewer\models\test\TestPreviewConfig;
+use oat\taoQtiTestPreviewer\models\test\TestPreviewMap;
+use qtism\data\AssessmentTest;
+use qtism\runtime\tests\Route;
 
-interface TestPreviewerContextGeneratorInterface
+interface TestPreviewMapperInterface
 {
-    public function generate(TestPreviewRequest $testPreviewRequest): TestPreviewContext;
+    public function map(AssessmentTest $test, Route $route, TestPreviewConfig $config): TestPreviewMap;
 }

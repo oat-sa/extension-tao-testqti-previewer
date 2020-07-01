@@ -18,33 +18,20 @@
  * Copyright (c) 2020 (original work) Open Assessment Technologies SA ;
  */
 
-namespace oat\taoQtiTestPreviewer\models\test\session;
+namespace oat\taoQtiTestPreviewer\models\test;
 
-use qtism\common\storage\IStream;
-use qtism\common\storage\MemoryStream;
-use qtism\runtime\tests\AssessmentTestSession;
-use taoQtiTest_helpers_TestSessionStorage;
-
-class TestPreviewSessionStorage extends taoQtiTest_helpers_TestSessionStorage
+class TestPreviewMap
 {
-    public function __construct()
+    /** @var array */
+    private $map;
+
+    public function __construct(array $map)
     {
+        $this->map = $map;
     }
 
-    public function exists($id)
+    public function getMap(): array
     {
-        return true;
-    }
-
-    protected function getRetrievalStream($sessionId)
-    {
-    }
-
-    protected function persistStream(AssessmentTestSession $assessmentTestSession, MemoryStream $stream)
-    {
-    }
-
-    protected function createBinaryStreamAccess(IStream $stream)
-    {
+        return $this->map;
     }
 }

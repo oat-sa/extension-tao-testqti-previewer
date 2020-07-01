@@ -22,11 +22,14 @@ declare(strict_types=1);
 
 namespace oat\taoQtiTestPreviewer\controller;
 
+use common_exception_UserReadableException;
+use InvalidArgumentException;
 use oat\tao\model\http\HttpJsonResponseTrait;
 use oat\taoQtiTestPreviewer\models\test\service\TestPreviewer as TestPreviewerService;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewRequest;
 use tao_actions_ServiceModule;
 use taoQtiTest_helpers_TestRunnerUtils;
+use Throwable;
 
 class TestPreviewer extends tao_actions_ServiceModule
 {
@@ -45,18 +48,28 @@ class TestPreviewer extends tao_actions_ServiceModule
         $requestParams = $this->getPsrRequest()->getQueryParams();
         $testUri = $requestParams['testUri'] ?? null;
 
-        /** @var TestPreviewerService $previewer */
-        $previewer = $this->getServiceLocator()->get(TestPreviewerService::class);
+        try {
+            if (null === $testUri) {
+                throw  new InvalidArgumentException('Required `testUri` param is missing ');
+            }
 
-        $response = $previewer->createPreview(new TestPreviewRequest($testUri));
+            /** @var TestPreviewerService $previewer */
+            $previewer = $this->getServiceLocator()->get(TestPreviewerService::class);
 
-        $this->setSuccessJsonResponse(
-            [
-                'success' => true,
-                'testData' => $response->getTestData(),
-                'testContext' => $response->getTestContext(),
-                'testMap' => $response->getTestMap(),
-            ]
-        );
+            $response = $previewer->createPreview(new TestPreviewRequest($testUri));
+
+            $this->setSuccessJsonResponse(
+                [
+                    'success' => true,
+                    'testData' => [],
+                    'testContext' => [],
+                    'testMap' => $response->getMap()->getMap(),
+                ]
+            );
+        } catch (Throwable $exception) {
+            $message = ($exception instanceof common_exception_UserReadableException) ? $exception->getUserMessage(
+            ) : $exception->getMessage();
+            $this->setErrorJsonResponse($message);
+        }
     }
 }
