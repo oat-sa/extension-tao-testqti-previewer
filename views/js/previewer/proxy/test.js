@@ -54,12 +54,15 @@ define([
         },
         /**
          * Initializes the proxy
+         * @param {Object} configs - configuration from proxy
+         * @param {String} testUri - The identifier of the test
          * @returns {Promise} - Returns a promise. The proxy will be fully initialized on resolve.
          *                      Any error will be provided if rejected.
          */
-        init: function init() {
+        init: function init(configs, { testUri }) {
             return request( {
-                url: urlUtil.route('init', serviceControllerInit, serviceExtension)
+                url: urlUtil.route('init', serviceControllerInit, serviceExtension),
+                data: { testUri }
             })
             .then(response => response.data);
         },

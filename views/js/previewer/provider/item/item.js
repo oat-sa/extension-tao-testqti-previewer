@@ -218,8 +218,9 @@ define([
                     this.destroy();
                 });
 
+            const {testUri} = this.getConfig();
             return this.getProxy()
-                .init()
+                .init({testUri})
                 .then(data => {
                     dataHolder.set('itemIdentifier', data.itemIdentifier);
                     dataHolder.set('itemData', data.itemData);

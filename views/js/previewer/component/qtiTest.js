@@ -69,7 +69,8 @@ define([
                 plugins: config.pluginsOptions,
                 hideActionBars: config.hideActionBars
             },
-            proxyProvider: 'qtiTestPreviewerProxy'
+            proxyProvider: 'qtiTestPreviewerProxy',
+            testUri: config.testUri
         };
 
         //extra context config

@@ -59,15 +59,15 @@ define(['lodash', 'core/logger', 'taoQtiTestPreviewer/previewer/component/qtiTes
         /**
          * Builds and shows the legacy item previewer
          *
-         * @param {String} testId - The ID of the test to load
+         * @param {String} testUri - The ID of the test to load
          * @param {Object} [config] - Some config entries
          * @param {Object[]} [config.plugins] - Additional plugins to load
          * @param {String} [config.fullPage] - Force the previewer to occupy the full window.
          * @param {String} [config.readOnly] - Do not allow to modify the previewed item.
          * @returns {Object}
          */
-        init(testId, config = {}) {
-            config.itemUri = testId;
+        init(testUri, config = {}) {
+            config.testUri = testUri;
             config.plugins = Array.isArray(config.plugins) ? [...defaultPlugins, ...config.plugins] : defaultPlugins;
             return qtiItemPreviewerFactory(window.document.body, config).on('error', function (err) {
                 if (!_.isUndefined(err.message)) {
