@@ -23,8 +23,8 @@ namespace oat\taoQtiTestPreviewer\models\test\service;
 use oat\oatbox\service\ConfigurableService;
 use oat\taoQtiTestPreviewer\models\test\mapper\TestPreviewMapper;
 use oat\taoQtiTestPreviewer\models\test\mapper\TestPreviewMapperInterface;
-use oat\taoQtiTestPreviewer\models\test\route\TestPreviewRouteFactory;
-use oat\taoQtiTestPreviewer\models\test\route\TestPreviewRouteFactoryInterface;
+use oat\taoQtiTestPreviewer\models\test\factory\TestPreviewRouteFactory;
+use oat\taoQtiTestPreviewer\models\test\factory\TestPreviewRouteFactoryInterface;
 use oat\taoQtiTestPreviewer\models\test\TestPreview;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewRequest;
 
