@@ -77,7 +77,7 @@ define([
         testRunnerConfig.loadFromBundle = !!context.bundle;
 
         return previewerFactory(container, testRunnerConfig, template).on('ready', runner => {
-            // TODO check testMap
+            // use testMap to display first item (position: 0)
             const dataHolder = runner.getDataHolder();
             const testMap = dataHolder.get('testMap');
             const item = mapHelper.getItemAt(testMap, 0);
