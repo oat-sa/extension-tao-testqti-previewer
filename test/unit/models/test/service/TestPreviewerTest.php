@@ -22,7 +22,6 @@ namespace oat\taoQtiTestPreviewer\test\unit\models\test\service;
 
 use oat\generis\test\MockObject;
 use oat\generis\test\TestCase;
-use oat\taoQtiTestPreviewer\models\PreviewLanguageService;
 use oat\taoQtiTestPreviewer\models\test\factory\TestPreviewRouteFactory;
 use oat\taoQtiTestPreviewer\models\test\factory\TestPreviewRouteFactoryInterface;
 use oat\taoQtiTestPreviewer\models\test\mapper\TestPreviewMapper;
@@ -47,7 +46,7 @@ class TestPreviewerTest extends TestCase
     /** @var TestPreviewRouteFactoryInterface|MockObject */
     private $factory;
 
-    /** @var PreviewLanguageService */
+    /** @var TestPreviewer */
     private $subject;
 
     protected function setUp(): void
