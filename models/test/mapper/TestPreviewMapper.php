@@ -61,7 +61,7 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
         $offsetSection = 0;
         $lastSection = null;
 
-        /** @var \qtism\runtime\tests\RouteItem $routeItem */
+        /** @var RouteItem $routeItem */
         foreach ($routeItems as $routeItem) {
             $itemRefs = $this->getRouteItemAssessmentItemRefs($routeItem);
 
