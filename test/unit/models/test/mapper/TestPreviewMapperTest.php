@@ -24,25 +24,46 @@ namespace oat\taoQtiTestPreviewer\test\unit\models\test\factory;
 
 use oat\generis\test\TestCase;
 use oat\taoQtiTestPreviewer\models\test\factory\TestPreviewRouteFactory;
+use oat\taoQtiTestPreviewer\models\test\mapper\TestPreviewMapper;
+use oat\taoQtiTestPreviewer\models\test\TestPreviewConfig;
+use oat\taoQtiTestPreviewer\models\test\TestPreviewMap;
 use qtism\data\AssessmentTest;
 use qtism\runtime\tests\Route;
 
-class TestPreviewRouteFactoryTest extends TestCase
+class TestPreviewMapperTest extends TestCase
 {
-    /** @var TestPreviewRouteFactory */
+    /** @var TestPreviewMapper */
     private $subject;
 
     protected function setUp(): void
     {
-        $this->subject = new TestPreviewRouteFactory();
+        $this->subject = new TestPreviewMapper();
     }
 
-    public function testCreate(): void
+    public function testMapEmptyTest(): void
     {
         $assessmentTest = $this->createMock(AssessmentTest::class);
         $assessmentTest->method('getTestParts')
             ->willReturn([]);
 
-        $this->assertInstanceOf(Route::class, $this->subject->create($assessmentTest));
+        $route = $this->createMock(Route::class);
+        $route->method('getAllRouteItems')
+            ->willReturn([]);
+
+        $this->assertEquals(
+            new TestPreviewMap(
+                [
+                    'scope' => 'test',
+                    'parts' => [],
+                    'title' => null,
+                    'identifier' => null,
+                    'className' => null,
+                    'toolName' => null,
+                    'exclusivelyLinear' => null,
+                    'hasTimeLimits' => null
+                ]
+            ),
+            $this->subject->map($assessmentTest, $route, new TestPreviewConfig())
+        );
     }
 }
