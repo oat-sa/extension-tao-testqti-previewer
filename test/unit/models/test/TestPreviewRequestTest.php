@@ -15,25 +15,32 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2020 (original work) Open Assessment Technologies SA ;
+ * Copyright (c) 2020 (original work) Open Assessment Technologies SA;
  */
 
 declare(strict_types=1);
 
-namespace oat\taoQtiTestPreviewer\models\test;
+namespace oat\taoQtiTestPreviewer\test\unit\models\test;
 
-class TestPreview
+use oat\generis\test\TestCase;
+use oat\taoQtiTestPreviewer\models\test\TestPreviewConfig;
+use oat\taoQtiTestPreviewer\models\test\TestPreviewRequest;
+
+class TestPreviewRequestTest extends TestCase
 {
-    /** @var array */
-    private $testMap;
+    private const TEST_URI = 'testUri';
 
-    public function __construct(TestPreviewMap $testMap)
+    /** @var TestPreviewRequest */
+    private $subject;
+
+    protected function setUp(): void
     {
-        $this->testMap = $testMap;
+        $this->subject = new TestPreviewRequest(self::TEST_URI);
     }
 
-    public function getMap(): TestPreviewMap
+    public function testConstruct(): void
     {
-        return $this->testMap;
+        $this->assertInstanceOf(TestPreviewConfig::class, $this->subject->getConfig());
+        $this->assertSame(self::TEST_URI, $this->subject->getTestUri());
     }
 }

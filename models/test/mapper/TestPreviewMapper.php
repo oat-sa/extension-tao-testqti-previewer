@@ -18,6 +18,8 @@
  * Copyright (c) 2020 (original work) Open Assessment Technologies SA ;
  */
 
+declare(strict_types=1);
+
 namespace oat\taoQtiTestPreviewer\models\test\mapper;
 
 use oat\generis\model\OntologyAwareTrait;
@@ -59,7 +61,7 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
         $offsetSection = 0;
         $lastSection = null;
 
-        /** @var \qtism\runtime\tests\RouteItem $routeItem */
+        /** @var RouteItem $routeItem */
         foreach ($routeItems as $routeItem) {
             $itemRefs = $this->getRouteItemAssessmentItemRefs($routeItem);
 

@@ -18,12 +18,15 @@
  * Copyright (c) 2020 (original work) Open Assessment Technologies SA ;
  */
 
+declare(strict_types=1);
+
 namespace oat\taoQtiTestPreviewer\models\test\service;
 
 use oat\oatbox\service\ConfigurableService;
 use oat\taoQtiTestPreviewer\models\test\mapper\TestPreviewMapper;
 use oat\taoQtiTestPreviewer\models\test\mapper\TestPreviewMapperInterface;
-use oat\taoQtiTestPreviewer\models\test\session\TestPreviewSessionManager;
+use oat\taoQtiTestPreviewer\models\test\factory\TestPreviewRouteFactory;
+use oat\taoQtiTestPreviewer\models\test\factory\TestPreviewRouteFactoryInterface;
 use oat\taoQtiTestPreviewer\models\test\TestPreview;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewRequest;
 
@@ -34,24 +37,26 @@ class TestPreviewer extends ConfigurableService implements TestPreviewerInterfac
      */
     public function createPreview(TestPreviewRequest $testPreviewRequest): TestPreview
     {
-        /** @var TestPreviewSessionManager $sessionManager */
-        $sessionManager = new TestPreviewSessionManager();
-
-        $testAssessment = $this->getTestPreviewerAssessmentTestGenerator()->generate($testPreviewRequest);
-        $route = $sessionManager->createRoute($testAssessment);
+        $testAssessment = $this->getAssessmentTestGenerator()->generate($testPreviewRequest);
+        $route = $this->getRouteFactory()->create($testAssessment);
 
         return new TestPreview(
-            $this->getTestPreviewMapper()->map($testAssessment, $route, $testPreviewRequest->getConfig())
+            $this->getMapper()->map($testAssessment, $route, $testPreviewRequest->getConfig())
         );
     }
 
-    private function getTestPreviewerAssessmentTestGenerator(): TestPreviewerAssessmentTestGeneratorInterface
+    private function getAssessmentTestGenerator(): TestPreviewerAssessmentTestGeneratorInterface
     {
         return $this->getServiceLocator()->get(TestPreviewerAssessmentTestGenerator::class);
     }
 
-    private function getTestPreviewMapper(): TestPreviewMapperInterface
+    private function getRouteFactory(): TestPreviewRouteFactoryInterface
     {
-        return $this->getServiceManager()->get(TestPreviewMapper::class);
+        return $this->getServiceLocator()->get(TestPreviewRouteFactory::class);
+    }
+
+    private function getMapper(): TestPreviewMapperInterface
+    {
+        return $this->getServiceLocator()->get(TestPreviewMapper::class);
     }
 }

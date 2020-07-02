@@ -20,20 +20,12 @@
 
 declare(strict_types=1);
 
-namespace oat\taoQtiTestPreviewer\models\test;
+namespace oat\taoQtiTestPreviewer\models\test\factory;
 
-class TestPreview
+use qtism\data\AssessmentTest;
+use qtism\runtime\tests\Route;
+
+interface TestPreviewRouteFactoryInterface
 {
-    /** @var array */
-    private $testMap;
-
-    public function __construct(TestPreviewMap $testMap)
-    {
-        $this->testMap = $testMap;
-    }
-
-    public function getMap(): TestPreviewMap
-    {
-        return $this->testMap;
-    }
+    public function create(AssessmentTest $test): Route;
 }

@@ -15,25 +15,30 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2020 (original work) Open Assessment Technologies SA ;
+ * Copyright (c) 2020 (original work) Open Assessment Technologies SA;
  */
 
 declare(strict_types=1);
 
-namespace oat\taoQtiTestPreviewer\models\test;
+namespace oat\taoQtiTestPreviewer\test\unit\models\test;
 
-class TestPreview
+use oat\generis\test\TestCase;
+use oat\taoQtiTestPreviewer\models\test\TestPreviewMap;
+
+class TestPreviewMapTest extends TestCase
 {
-    /** @var array */
-    private $testMap;
+    private const MAP = ['map'];
 
-    public function __construct(TestPreviewMap $testMap)
+    /** @var TestPreviewMap */
+    private $subject;
+
+    protected function setUp(): void
     {
-        $this->testMap = $testMap;
+        $this->subject = new TestPreviewMap(self::MAP);
     }
 
-    public function getMap(): TestPreviewMap
+    public function testConstruct(): void
     {
-        return $this->testMap;
+        $this->assertSame(self::MAP, $this->subject->getMap());
     }
 }
