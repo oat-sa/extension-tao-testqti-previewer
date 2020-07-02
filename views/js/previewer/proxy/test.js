@@ -17,18 +17,15 @@
  */
 
 /**
- * Test runner proxy for the QTI item previewer
+ * Test runner proxy for the QTI test previewer
  *
  * @author Hanna Dzmitryieva <hanna@taotesting.com>
  */
 define([
-    'jquery',
-    'lodash',
-    'i18n',
     'core/promiseQueue',
     'core/request',
     'util/url',
-], function ($, _, __, promiseQueue, request, urlUtil) {
+], function (promiseQueue, request, urlUtil) {
     'use strict';
 
     const serviceControllerInit = 'TestPreviewer';

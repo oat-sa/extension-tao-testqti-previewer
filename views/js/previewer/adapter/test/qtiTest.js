@@ -21,7 +21,7 @@
 define(['lodash', 'core/logger', 'taoQtiTestPreviewer/previewer/component/qtiTest', 'ui/feedback'], function (
     _,
     loggerFactory,
-    qtiItemPreviewerFactory,
+    qtiTestPreviewerFactory,
     feedback
 ) {
     'use strict';
@@ -51,13 +51,13 @@ define(['lodash', 'core/logger', 'taoQtiTestPreviewer/previewer/component/qtiTes
     ];
 
     /**
-     * Wraps the legacy item previewer in order to be loaded by the taoItems previewer factory
+     * Wraps the test previewer in order to be loaded by the taoItems previewer factory
      */
     return {
         name: 'qtiTests',
 
         /**
-         * Builds and shows the legacy item previewer
+         * Builds and shows the test previewer
          *
          * @param {String} testUri - The URI of the test to load
          * @param {Object} [config] - Some config entries
@@ -69,7 +69,7 @@ define(['lodash', 'core/logger', 'taoQtiTestPreviewer/previewer/component/qtiTes
         init(testUri, config = {}) {
             config.testUri = testUri;
             config.plugins = Array.isArray(config.plugins) ? [...defaultPlugins, ...config.plugins] : defaultPlugins;
-            return qtiItemPreviewerFactory(window.document.body, config).on('error', function (err) {
+            return qtiTestPreviewerFactory(window.document.body, config).on('error', function (err) {
                 if (!_.isUndefined(err.message)) {
                     feedback().error(err.message);
                 }

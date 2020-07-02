@@ -27,7 +27,7 @@ define([
     'use strict';
 
     /**
-     * Builds a test runner to preview test item
+     * Builds a test runner to preview test
      * @param {jQuery|HTMLElement|String} container - The container in which renders the component
      * @param {Object} [config] - The testRunner options
      * @param {String} [config.testUri] - The test URI
