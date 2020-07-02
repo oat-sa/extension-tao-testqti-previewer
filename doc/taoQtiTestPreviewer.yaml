@@ -14,6 +14,7 @@ components:
       type: apiKey
       in: cookie
       name: tao_community
+
   responses:
     init:
       description: Good response
@@ -21,6 +22,7 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/testInit'
+
     badResponse:
       description: If something went wrong
       content:
@@ -32,11 +34,13 @@ components:
       properties:
         success:
           type: boolean
+          example: true
         data:
           type: object
           properties:
             success:
               type: boolean
+              example: true
             testData:
               $ref: '#/components/schemas/testData'
             testContext:
@@ -55,6 +59,7 @@ components:
               type: array
               items:
                 type: integer
+
     testData:
       description: test definition data
       deprecated: true
@@ -78,12 +83,116 @@ components:
           type: object
         config:
           type: object
+
     testContext:
       description: test context object
       type: object
+
     testMap:
       description: the map of the test items
-      type: object
+      properties:
+        scope:
+          type: string
+          example: test
+        parts:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/testPartElement'
+        title:
+          type: string
+          example: My awsame MathTest
+        identifier:
+          type: string
+        className:
+          type: string
+        toolName:
+          type: string
+          example: tao
+        exclusivelyLinear:
+          type: boolean
+          example: false
+        hasTimeLimits:
+          type: boolean
+        stats:
+          $ref: '#/components/schemas/statsBlock'
+
+    itemElement:
+      allOf:
+        - $ref: '#/components/schemas/entryBaseElement'
+        - type: object
+          properties:
+            occurrence:
+              type: integer
+              example: 0
+            remainingAttempts:
+              type: integer
+              example: -1
+            answered:
+              type: boolean
+              example: false
+            flagged:
+              type: boolean
+              example: false
+            viewed:
+              type: boolean
+              example: false
+            categories:
+              type: array
+              items:
+                type: string
+                example:
+                  - x-tao-option-reviewScreen
+                  - x-tao-option-markReview
+            uri:
+              type: string
+              example: 'https:\/\/community.docker.localhost\/ontologies\/tao.rdf#i5efb4307b48d370fb46778476db6eb9'
+            informational:
+              type: boolean
+              example: false
+
+    sectionElement:
+      allOf:
+        - $ref: '#/components/schemas/entryBaseElement'
+        - type: object
+          properties:
+            isCatAdaptive:
+              type: boolean
+              example: false
+            timeConstraint:
+              example: null
+            items:
+              type: object
+              additionalProperties:
+                $ref: '#/components/schemas/itemElement'
+            stats:
+              $ref: '#/components/schemas/statsBlock'
+
+    testPartElement:
+      allOf:
+        - $ref: '#/components/schemas/entryBaseElement'
+        - type: object
+          properties:
+            isLinear:
+              type: boolean
+            timeConstraint:
+              example: null
+            sections:
+              type: object
+              additionalProperties:
+                $ref: '#/components/schemas/sectionElement'
+
+    entryBaseElement:
+      properties:
+        id:
+          type: string
+          example: i-4
+        label:
+          type: string
+          example: Showcase label
+        position:
+          type: integer
+          example: 20
+
     errorResponse:
       properties:
         success:
@@ -94,6 +203,28 @@ components:
           example: 400
         message:
           type: string
+          example: Internal error occured
+
+    statsBlock:
+      properties:
+        questions:
+          type: integer
+          example: 11
+        answered:
+          type: integer
+          example: 0
+        flagged:
+          type: integer
+          example: 3
+        viewed:
+          type: integer
+          example: 5
+        total:
+          type: integer
+          example: 99
+        questionsViewed:
+          type: integer
+          example: 19
 
 security:
   - cookieAuth: []
