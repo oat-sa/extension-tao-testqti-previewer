@@ -36,7 +36,7 @@ class TestPreviewer extends ConfigurableService implements TestPreviewerInterfac
     public function createPreview(TestPreviewRequest $testPreviewRequest): TestPreview
     {
         $testAssessment = $this->getAssessmentTestGenerator()->generate($testPreviewRequest);
-        $route = $this->getRouteFactory()->createRoute($testAssessment);
+        $route = $this->getRouteFactory()->create($testAssessment);
 
         return new TestPreview(
             $this->getMapper()->map($testAssessment, $route, $testPreviewRequest->getConfig())

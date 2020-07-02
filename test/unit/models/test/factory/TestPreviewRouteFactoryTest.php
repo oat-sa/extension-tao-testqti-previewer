@@ -15,15 +15,32 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2020 (original work) Open Assessment Technologies SA ;
+ * Copyright (c) 2020 (original work) Open Assessment Technologies SA;
  */
 
-namespace oat\taoQtiTestPreviewer\models\test\factory;
+namespace oat\taoQtiTestPreviewer\test\unit\models\test\service;
 
+use oat\generis\test\TestCase;
+use oat\taoQtiTestPreviewer\models\test\factory\TestPreviewRouteFactory;
 use qtism\data\AssessmentTest;
 use qtism\runtime\tests\Route;
 
-interface TestPreviewRouteFactoryInterface
+class TestPreviewRouteFactoryTest extends TestCase
 {
-    public function create(AssessmentTest $test): Route;
+    /** @var TestPreviewRouteFactory */
+    private $subject;
+
+    protected function setUp(): void
+    {
+        $this->subject = new TestPreviewRouteFactory();
+    }
+
+    public function testCreate(): void
+    {
+        $assessmentTest = $this->createMock(AssessmentTest::class);
+        $assessmentTest->method('getTestParts')
+            ->willReturn([]);
+
+        $this->assertInstanceOf(Route::class, $this->subject->create($assessmentTest));
+    }
 }

@@ -27,7 +27,7 @@ use qtism\runtime\tests\SessionManager;
 
 class TestPreviewRouteFactory extends ConfigurableService implements TestPreviewRouteFactoryInterface
 {
-    public function createRoute(AssessmentTest $test): Route
+    public function create(AssessmentTest $test): Route
     {
         $manager = new class() extends SessionManager {
             public function createRoute(AssessmentTest $test)

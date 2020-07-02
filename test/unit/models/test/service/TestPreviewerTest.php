@@ -81,7 +81,7 @@ class TestPreviewerTest extends TestCase
             ->willReturn($assessmentTest);
 
         $this->factory
-            ->method('createRoute')
+            ->method('create')
             ->willReturn($route);
 
         $this->assertEquals(
