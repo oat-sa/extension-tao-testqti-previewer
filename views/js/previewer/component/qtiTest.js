@@ -16,7 +16,7 @@
  * Copyright (c) 2020 (original work) Open Assessment Technologies SA ;
  */
 /**
- * @author Jean-Sébastien Conan <jean-sebastien@taotesting.com>
+ * @author Hanna Dzmitryieva <hanna@taotesting.com>
  */
 define([
     'context',
@@ -30,14 +30,14 @@ define([
      * Builds a test runner to preview test item
      * @param {jQuery|HTMLElement|String} container - The container in which renders the component
      * @param {Object} [config] - The testRunner options
-     * @param {String} [config.itemUri] - The ID of the SharedStimulus (for consisten with other providers)
+     * @param {String} [config.testUri] - The test URI
      * @param {Object[]} [config.plugins] - Additional plugins to load
      * @param {String} [config.fullPage] - Force the previewer to occupy the full window.
      * @param {String} [config.readOnly] - Do not allow to modify the previewed item.
      * @param {Function} [template] - An optional template for the component
      * @returns {previewer}
      */
-    return function qtiItemPreviewerFactory(container, config = {}, template = null) {
+    return function qtiTestPreviewerFactory(container, config = {}, template = null) {
         const testRunnerConfig = {
             testDefinition: 'test-container',
             serviceCallId: 'previewer',

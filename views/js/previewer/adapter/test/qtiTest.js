@@ -16,7 +16,7 @@
  * Copyright (c) 2020 (original work) Open Assessment Technologies SA ;
  */
 /**
- * @author Jean-Sébastien Conan <jean-sebastien@taotesting.com>
+ * @author Hanna Dzmitryieva <hanna@taotesting.com>
  */
 define(['lodash', 'core/logger', 'taoQtiTestPreviewer/previewer/component/qtiTest', 'ui/feedback'], function (
     _,
@@ -59,7 +59,7 @@ define(['lodash', 'core/logger', 'taoQtiTestPreviewer/previewer/component/qtiTes
         /**
          * Builds and shows the legacy item previewer
          *
-         * @param {String} testUri - The ID of the test to load
+         * @param {String} testUri - The URI of the test to load
          * @param {Object} [config] - Some config entries
          * @param {Object[]} [config.plugins] - Additional plugins to load
          * @param {String} [config.fullPage] - Force the previewer to occupy the full window.

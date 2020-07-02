@@ -81,8 +81,8 @@ define([
         },
 
         /**
-         * Gets an item definition by its identifier, also gets its current state
-         * @param {String} itemUri - The identifier of the item to get
+         * Gets an item definition by its URI, also gets its current state
+         * @param {String} itemUri - The URI of the item to get
          * @returns {Promise} - Returns a promise. The item data will be provided on resolve.
          *                      Any error will be provided if rejected.
          */
