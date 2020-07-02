@@ -83,6 +83,8 @@ define([
             const item = mapHelper.getItemAt(testMap, 0);
             if (item && item.uri) {
                 return runner.loadItem(item.uri);
+            } else {
+                runner.trigger('enabletools enablenav');
             }
         });
     };
