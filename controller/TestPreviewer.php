@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,6 +18,8 @@ declare(strict_types=1);
  * Copyright (c) 2020 (original work) Open Assessment Technologies SA ;
  */
 
+declare(strict_types=1);
+
 namespace oat\taoQtiTestPreviewer\controller;
 
 use common_exception_UserReadableException;
@@ -28,35 +28,30 @@ use oat\tao\model\http\HttpJsonResponseTrait;
 use oat\taoQtiTestPreviewer\models\test\service\TestPreviewer as TestPreviewerService;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewRequest;
 use tao_actions_ServiceModule;
-use taoQtiTest_helpers_TestRunnerUtils;
 use Throwable;
 
 class TestPreviewer extends tao_actions_ServiceModule
 {
     use HttpJsonResponseTrait;
 
-    /**
-     * @security("hide")
-     */
-    public function __construct()
-    {
-        taoQtiTest_helpers_TestRunnerUtils::noHttpClientCache();
-    }
-
     public function init()
     {
-        $requestParams = $this->getPsrRequest()->getQueryParams();
-        $testUri = $requestParams['testUri'] ?? null;
-
         try {
-            if (null === $testUri) {
+            $requestParams = $this->getPsrRequest()->getQueryParams();
+
+            if (empty($requestParams['testUri'])) {
                 throw  new InvalidArgumentException('Required `testUri` param is missing ');
             }
 
             /** @var TestPreviewerService $previewer */
             $previewer = $this->getServiceLocator()->get(TestPreviewerService::class);
 
-            $response = $previewer->createPreview(new TestPreviewRequest($testUri));
+            $response = $previewer->createPreview(new TestPreviewRequest($requestParams['testUri']));
+
+            $this->getResponseFormatter()
+                ->addHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+                ->addHeader('Pragma', 'no-cache')
+                ->addHeader('Expires', '0');
 
             $this->setSuccessJsonResponse(
                 [

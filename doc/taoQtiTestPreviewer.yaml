@@ -8,6 +8,26 @@ servers:
     variables:
       server:
         default: https://community.docker.localhost/
+security:
+  - cookieAuth: []
+paths:
+  /taoQtiTestPreviewer/TestPreviewer/init:
+    get:
+      parameters:
+        - in: query
+          name: testUri
+          schema:
+            type: string
+          required: true
+          example: 'https%3A%2F%2Fcommunity.docker.localhost%2Fontologies%2Ftao.rdf%23i5efb42fced1ce7064796c08b38ee176'
+          description: Url encoded test identifier
+
+      summary: Returns a test map
+      responses:
+        '200':
+          $ref: '#/components/responses/InitResponse'
+        '500':
+          $ref: '#/components/responses/BadResponse'
 components:
   securitySchemes:
     cookieAuth:
@@ -225,25 +245,3 @@ components:
         questionsViewed:
           type: integer
           example: 19
-
-security:
-  - cookieAuth: []
-
-paths:
-  /taoQtiTestPreviewer/TestPreviewer/init:
-    get:
-      parameters:
-        - in: query
-          name: testUri
-          schema:
-            type: string
-          required: true
-          example: 'https%3A%2F%2Fcommunity.docker.localhost%2Fontologies%2Ftao.rdf%23i5efb42fced1ce7064796c08b38ee176'
-          description: Url encoded test identifier
-
-      summary: Returns a test map
-      responses:
-        '200':
-          $ref: '#/components/responses/InitResponse'
-        '500':
-          $ref: '#/components/responses/BadResponse'
