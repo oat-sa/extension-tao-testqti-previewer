@@ -26,7 +26,7 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/InitResponse'
-        '500':
+        '400':
           $ref: '#/components/responses/BadResponse'
 components:
   securitySchemes:
