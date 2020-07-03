@@ -43,10 +43,8 @@ class TestPreviewer extends tao_actions_ServiceModule
                 throw  new InvalidArgumentException('Required `testUri` param is missing ');
             }
 
-            /** @var TestPreviewerService $previewer */
-            $previewer = $this->getServiceLocator()->get(TestPreviewerService::class);
-
-            $response = $previewer->createPreview(new TestPreviewRequest($requestParams['testUri']));
+            $response = $this->getTestPreviewerService()
+                ->createPreview(new TestPreviewRequest($requestParams['testUri']));
 
             $this->getResponseFormatter()
                 ->addHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
@@ -68,5 +66,10 @@ class TestPreviewer extends tao_actions_ServiceModule
 
             $this->setErrorJsonResponse($message);
         }
+    }
+
+    private function getTestPreviewerService(): TestPreviewerService
+    {
+        return $this->getServiceLocator()->get(TestPreviewerService::class);
     }
 }
