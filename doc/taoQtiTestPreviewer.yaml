@@ -16,21 +16,21 @@ components:
       name: tao_community
 
   responses:
-    init:
+    InitResponse:
       description: Good response
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/testInit'
+            $ref: '#/components/schemas/TestInit'
 
-    badResponse:
+    BadResponse:
       description: If something went wrong
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/errorResponse'
+            $ref: '#/components/schemas/ErrorResponse'
   schemas:
-    testInit:
+    TestInit:
       properties:
         success:
           type: boolean
@@ -42,11 +42,11 @@ components:
               type: boolean
               example: true
             testData:
-              $ref: '#/components/schemas/testData'
+              $ref: '#/components/schemas/TestData'
             testContext:
-              $ref: '#/components/schemas/testContext'
+              $ref: '#/components/schemas/TestContext'
             testMap:
-              $ref: '#/components/schemas/testMap'
+              $ref: '#/components/schemas/TestMap'
             toolStates:
               description: the current tools states
               type: array
@@ -60,7 +60,7 @@ components:
               items:
                 type: integer
 
-    testData:
+    TestData:
       description: test definition data
       deprecated: true
       type: object
@@ -84,11 +84,11 @@ components:
         config:
           type: object
 
-    testContext:
+    TestContext:
       description: test context object
       type: object
 
-    testMap:
+    TestMap:
       description: the map of the test items
       properties:
         scope:
@@ -97,7 +97,7 @@ components:
         parts:
           type: object
           additionalProperties:
-            $ref: '#/components/schemas/testPartElement'
+            $ref: '#/components/schemas/TestPartElement'
         title:
           type: string
           example: My awsame MathTest
@@ -114,11 +114,11 @@ components:
         hasTimeLimits:
           type: boolean
         stats:
-          $ref: '#/components/schemas/statsBlock'
+          $ref: '#/components/schemas/StatsBlock'
 
-    itemElement:
+    ItemElement:
       allOf:
-        - $ref: '#/components/schemas/entryBaseElement'
+        - $ref: '#/components/schemas/EntryBaseElement'
         - type: object
           properties:
             occurrence:
@@ -150,9 +150,9 @@ components:
               type: boolean
               example: false
 
-    sectionElement:
+    SectionElement:
       allOf:
-        - $ref: '#/components/schemas/entryBaseElement'
+        - $ref: '#/components/schemas/EntryBaseElement'
         - type: object
           properties:
             isCatAdaptive:
@@ -163,13 +163,13 @@ components:
             items:
               type: object
               additionalProperties:
-                $ref: '#/components/schemas/itemElement'
+                $ref: '#/components/schemas/ItemElement'
             stats:
-              $ref: '#/components/schemas/statsBlock'
+              $ref: '#/components/schemas/StatsBlock'
 
-    testPartElement:
+    TestPartElement:
       allOf:
-        - $ref: '#/components/schemas/entryBaseElement'
+        - $ref: '#/components/schemas/EntryBaseElement'
         - type: object
           properties:
             isLinear:
@@ -179,9 +179,9 @@ components:
             sections:
               type: object
               additionalProperties:
-                $ref: '#/components/schemas/sectionElement'
+                $ref: '#/components/schemas/SectionElement'
 
-    entryBaseElement:
+    EntryBaseElement:
       properties:
         id:
           type: string
@@ -193,7 +193,7 @@ components:
           type: integer
           example: 20
 
-    errorResponse:
+    ErrorResponse:
       properties:
         success:
           type: boolean
@@ -205,7 +205,7 @@ components:
           type: string
           example: Internal error occured
 
-    statsBlock:
+    StatsBlock:
       properties:
         questions:
           type: integer
@@ -244,6 +244,6 @@ paths:
       summary: Returns a test map
       responses:
         '200':
-          $ref: '#/components/responses/init'
+          $ref: '#/components/responses/InitResponse'
         '500':
-          $ref: '#/components/responses/badResponse'
+          $ref: '#/components/responses/BadResponse'
