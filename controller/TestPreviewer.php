@@ -62,8 +62,10 @@ class TestPreviewer extends tao_actions_ServiceModule
                 ]
             );
         } catch (Throwable $exception) {
-            $message = $exception instanceof common_exception_UserReadableException ? $exception->getUserMessage(
-            ) : $exception->getMessage();
+            $message = $exception instanceof common_exception_UserReadableException
+                ? $exception->getUserMessage()
+                : $exception->getMessage();
+
             $this->setErrorJsonResponse($message);
         }
     }
