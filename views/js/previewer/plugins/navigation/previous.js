@@ -61,21 +61,24 @@ define([
             const testRunner = this.getTestRunner();
             const testRunnerOptions = testRunner.getOptions();
             const pluginShortcuts = (testRunnerOptions.shortcuts || {})[this.getName()] || {};
+            const testMap = testRunner.getTestMap();
+            const context = {
+                itemIdentifier: testMap.jumps[0].identifier,
+                itemPosition: 0
+            };
 
             /**
              * Check if the "Previous" functionality should be available or not
              */
             var canDoPrevious = function canDoPrevious() {
-                const testMap = testRunner.getTestMap();
-                const context = testRunner.getTestContext();
-                const currentSection = testRunner.getCurrentSection();
+                const currentSection = testMap.jumps[context.itemPosition];
                 const noExitTimedSectionWarning = mapHelper.hasItemCategory(
                     testMap,
                     context.itemIdentifier,
                     'noExitTimedSectionWarning',
                     true
                 );
-                const currentPart = testRunner.getCurrentPart();
+                const currentPart = testMap.jumps[context.itemPosition];
                 let previousSection;
                 let previousPart;
 

@@ -120,14 +120,17 @@ define([
             const testRunner = this.getTestRunner();
             const testRunnerOptions = testRunner.getOptions();
             const pluginShortcuts = (testRunnerOptions.shortcuts || {})[this.getName()] || {};
+            const testMap = testRunner.getTestMap();
+            const testContext = {
+                itemIdentifier: testMap.jumps[0].identifier,
+                itemPosition: 0
+            };
 
             /**
              * Check if the currrent item is the last item
              * @returns {Boolean} true if the last
              */
             function isLastItem() {
-                const testContext = testRunner.getTestContext();
-                const testMap = testRunner.getTestMap();
                 const itemIdentifier = testContext.itemIdentifier;
                 return navigationHelper.isLast(testMap, itemIdentifier);
             }
@@ -139,8 +142,7 @@ define([
              */
             function doNext(nextItemWarning) {
                 const testContext = testRunner.getTestContext();
-                const testMap = testRunner.getTestMap();
-                const testPart = testRunner.getCurrentPart();
+                const testPart = testMap.jumps[testContext.itemPosition];
                 const nextItemPosition = testContext.itemPosition + 1;
                 const itemIdentifier = testContext.itemIdentifier;
 
