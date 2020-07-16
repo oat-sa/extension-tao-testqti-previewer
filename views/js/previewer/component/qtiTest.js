@@ -86,6 +86,14 @@ define([
             } else {
                 runner.trigger('enabletools enablenav');
             }
+
+            runner.on('nav-next', runner => {
+                console.log('nav-next', runner);
+            })
+
+            runner.on('nav-prev', runner => {
+                console.log('nav-prev', runner);
+            })
         });
     };
 });
