@@ -80,14 +80,37 @@ define([
             // use testMap to display first item (position: 0)
             const dataHolder = runner.getDataHolder();
             const testMap = dataHolder.get('testMap');
-            const testContext = dataHolder.get('testContext');
             const item = mapHelper.getItemAt(testMap, 0);
-            runner.on('nav-next', () => runner.loadItem(
-                mapHelper.getItemAt(testMap, testContext.itemPosition + 1).uri)
-            );
-            runner.on('nav-prev', () => runner.loadItem(
-                mapHelper.getItemAt(testMap, testContext.itemPosition - 1).uri)
-            );
+            runner.on('nav-next', () => {
+                const newTextContext = dataHolder.get('testContext');
+                const newPosition = newTextContext.itemPosition + 1;
+                const newItem = mapHelper.getItemAt(testMap, newPosition);
+                if (newItem && newItem.uri) {
+                    dataHolder.set('testContext', {
+                        itemIdentifier: testMap.jumps[newPosition].identifier,
+                        itemPosition: newPosition,
+                        testPartId: testMap.jumps[newPosition].part
+                    });
+                    return runner.loadItem(newItem.uri);
+                } else {
+                    runner.trigger('finish leave');
+                }
+            });
+            runner.on('nav-prev', () => {
+                const newTextContext = dataHolder.get('testContext');
+                const newPosition = newTextContext.itemPosition - 1;
+                const newItem = mapHelper.getItemAt(testMap, newPosition);
+                if (newItem && newItem.uri) {
+                    dataHolder.set('testContext', {
+                        itemIdentifier: testMap.jumps[newPosition].identifier,
+                        itemPosition: newPosition,
+                        testPartId: testMap.jumps[newPosition].part
+                    });
+                    return runner.loadItem(newItem.uri);
+                } else {
+                    runner.trigger('finish leave');
+                }
+            });
 
             if (item && item.uri) {
                 return runner.loadItem(item.uri);
