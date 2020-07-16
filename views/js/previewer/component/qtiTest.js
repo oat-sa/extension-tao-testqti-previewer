@@ -80,20 +80,20 @@ define([
             // use testMap to display first item (position: 0)
             const dataHolder = runner.getDataHolder();
             const testMap = dataHolder.get('testMap');
+            const testContext = dataHolder.get('testMap');
             const item = mapHelper.getItemAt(testMap, 0);
+            runner.on('nav-next', runner => {
+                console.log('nav-next', runner);
+            });
+            runner.on('nav-prev', runner => {
+                console.log('nav-prev', runner);
+            });
+
             if (item && item.uri) {
                 return runner.loadItem(item.uri);
             } else {
                 runner.trigger('enabletools enablenav');
             }
-
-            runner.on('nav-next', runner => {
-                console.log('nav-next', runner);
-            })
-
-            runner.on('nav-prev', runner => {
-                console.log('nav-prev', runner);
-            })
         });
     };
 });
