@@ -80,14 +80,14 @@ define([
             // use testMap to display first item (position: 0)
             const dataHolder = runner.getDataHolder();
             const testMap = dataHolder.get('testMap');
-            const testContext = dataHolder.get('testMap');
+            const testContext = dataHolder.get('testContext');
             const item = mapHelper.getItemAt(testMap, 0);
-            runner.on('nav-next', runner => {
-                console.log('nav-next', runner);
-            });
-            runner.on('nav-prev', runner => {
-                console.log('nav-prev', runner);
-            });
+            runner.on('nav-next', () => runner.loadItem(
+                mapHelper.getItemAt(testMap, testContext.itemPosition + 1).uri)
+            );
+            runner.on('nav-prev', () => runner.loadItem(
+                mapHelper.getItemAt(testMap, testContext.itemPosition - 1).uri)
+            );
 
             if (item && item.uri) {
                 return runner.loadItem(item.uri);
