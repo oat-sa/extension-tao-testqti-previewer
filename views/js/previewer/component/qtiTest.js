@@ -22,8 +22,9 @@ define([
     'context',
     'taoQtiTestPreviewer/previewer/runner',
     'taoQtiTest/runner/helpers/map',
-    'css!taoQtiTestPreviewer/previewer/provider/item/css/item'
-], function (context, previewerFactory, mapHelper) {
+    'css!taoQtiTestPreviewer/previewer/provider/item/css/item',
+    'layout/loading-bar'
+], function (context, previewerFactory, mapHelper, loadingBar) {
     'use strict';
 
     /**
@@ -78,10 +79,12 @@ define([
 
         return previewerFactory(container, testRunnerConfig, template).on('ready', runner => {
             // use testMap to display first item (position: 0)
+            loadingBar.start();
             const dataHolder = runner.getDataHolder();
             const testMap = dataHolder.get('testMap');
             const item = mapHelper.getItemAt(testMap, 0);
             const loadItem = position => {
+                loadingBar.start();
                 const textContext = dataHolder.get('testContext');
                 const newPosition = textContext.itemPosition + position;
                 const newItem = mapHelper.getItemAt(testMap, newPosition);
@@ -95,6 +98,7 @@ define([
                 } else {
                     runner.trigger('finish leave');
                 }
+                loadingBar.stop();
             };
             runner.on('nav-next', () => loadItem(1));
             runner.on('nav-previous', () => loadItem(-1));
@@ -103,6 +107,7 @@ define([
             } else {
                 runner.trigger('enabletools enablenav');
             }
+            loadingBar.stop();
         });
     };
 });
