@@ -81,11 +81,6 @@ define([
             const dataHolder = runner.getDataHolder();
             const testMap = dataHolder.get('testMap');
             const item = mapHelper.getItemAt(testMap, 0);
-            if (item && item.uri) {
-                return runner.loadItem(item.uri);
-            } else {
-                runner.trigger('enabletools enablenav');
-            }
 
             runner.on('nav-next', runner => {
                 console.log('nav-next', runner);
@@ -94,6 +89,12 @@ define([
             runner.on('nav-prev', runner => {
                 console.log('nav-prev', runner);
             })
+
+            if (item && item.uri) {
+                return runner.loadItem(item.uri);
+            } else {
+                runner.trigger('enabletools enablenav');
+            }
         });
     };
 });

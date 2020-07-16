@@ -66,7 +66,7 @@ define([
     }
     function restoreContext(){
         containerHelper.setContext(_$previousContext);
-         _$previousContext = null;
+        _$previousContext = null;
     }
     /**
      * A Test runner provider to be registered against the runner
@@ -217,6 +217,41 @@ define([
                 .on('flush', () => {
                     this.destroy();
                 });
+        /**
+         * Convenience function to load the current item from the testMap
+         * @returns {Object?} the current item if any or falsy
+         */
+            this.getCurrentItem = function getCurrentItem() {
+                const testContext = this.getTestContext();
+                const testMap     = this.getTestMap();
+                if (testContext && testMap && testContext.itemIdentifier) {
+                    return mapHelper.getItem(testMap, testContext.itemIdentifier);
+                }
+            };
+
+            /**
+         * Convenience function to load the current section from the testMap
+         * @returns {Object?} the current section if any or falsy
+         */
+            this.getCurrentSection = function getCurrentSection() {
+                const testContext = this.getTestContext();
+                const testMap     = this.getTestMap();
+                if (testContext && testMap && testContext.sectionId) {
+                    return mapHelper.getSection(testMap, testContext.sectionId);
+                }
+            };
+
+            /**
+         * Convenience function to load the current part from the testMap
+         * @returns {Object?} the current part if any or falsy
+         */
+            this.getCurrentPart = function getCurrentPart() {
+                const testContext = this.getTestContext();
+                const testMap     = this.getTestMap();
+                if (testContext && testMap && testContext.testPartId) {
+                    return mapHelper.getPart(testMap, testContext.testPartId);
+                }
+            };
 
             const {testUri} = this.getConfig();
             return this.getProxy()
@@ -231,7 +266,8 @@ define([
                             dataHolder.set('testMap', builtTestMap);
                             dataHolder.set('testContext', {
                                 itemIdentifier: builtTestMap.jumps[0].identifier,
-                                itemPosition: 0
+                                itemPosition: 0,
+                                testPartId: builtTestMap.jumps[0].part
                             });
                         }
                     }
