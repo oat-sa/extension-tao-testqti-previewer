@@ -49,13 +49,13 @@ define(['lodash', 'core/logger', 'taoQtiTestPreviewer/previewer/component/qtiTes
             category: 'tools'
         },
         {
-            module: 'taoQtiTestPreviewer/previewer/plugins/navigation/next',
-            bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+            module: 'taoQtiTest/runner/plugins/navigation/next',
+            bundle: 'taoQtiTest/loader/testPlugins.min',
             category: 'navigation'
         },
         {
-            module: 'taoQtiTestPreviewer/previewer/plugins/navigation/previous',
-            bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+            module: 'taoQtiTest/runner/plugins/navigation/previous',
+            bundle: 'taoQtiTest/loader/testPlugins.min',
             category: 'navigation'
         }
     ];
