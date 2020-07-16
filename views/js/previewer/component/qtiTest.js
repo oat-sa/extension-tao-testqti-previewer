@@ -22,8 +22,8 @@ define([
     'context',
     'taoQtiTestPreviewer/previewer/runner',
     'taoQtiTest/runner/helpers/map',
-    'css!taoQtiTestPreviewer/previewer/provider/item/css/item',
-    'layout/loading-bar'
+    'layout/loading-bar',
+    'css!taoQtiTestPreviewer/previewer/provider/item/css/item'
 ], function (context, previewerFactory, mapHelper, loadingBar) {
     'use strict';
 
