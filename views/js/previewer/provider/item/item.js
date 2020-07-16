@@ -229,6 +229,10 @@ define([
                         const builtTestMap = mapHelper.reindex(data.testMap);
                         if (builtTestMap) {
                             dataHolder.set('testMap', builtTestMap);
+                            dataHolder.set('testContext', {
+                                itemIdentifier: builtTestMap.jumps[0].identifier,
+                                itemPosition: 0
+                            });
                         }
                     }
                 });
