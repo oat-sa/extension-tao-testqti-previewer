@@ -267,7 +267,9 @@ define([
                             dataHolder.set('testContext', {
                                 itemIdentifier: builtTestMap.jumps[0].identifier,
                                 itemPosition: 0,
-                                testPartId: builtTestMap.jumps[0].part
+                                testPartId: builtTestMap.jumps[0].part,
+                                sectionId: builtTestMap.jumps[0].section,
+                                canMoveBackward: true
                             });
                         }
                     }

@@ -49,12 +49,12 @@ define(['lodash', 'core/logger', 'taoQtiTestPreviewer/previewer/component/qtiTes
             category: 'tools'
         },
         {
-            module: 'taoQtiTest/runner/plugins/navigation/next',
+            module: 'taoQtiTest/runner/plugins/navigation/previous',
             bundle: 'taoQtiTest/loader/testPlugins.min',
             category: 'navigation'
         },
         {
-            module: 'taoQtiTest/runner/plugins/navigation/previous',
+            module: 'taoQtiTest/runner/plugins/navigation/next',
             bundle: 'taoQtiTest/loader/testPlugins.min',
             category: 'navigation'
         }
