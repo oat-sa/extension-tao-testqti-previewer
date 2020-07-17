@@ -95,9 +95,8 @@ define([
                     textContext.sectionId = testMap.jumps[newPosition].section;
                     dataHolder.set('testContext', textContext);
                     return runner.loadItem(newItem.uri);
-                } else {
-                    runner.trigger('finish leave');
                 }
+                runner.trigger('finish leave');
                 loadingBar.stop();
             };
             runner.on('nav-next', () => loadItem(1));
