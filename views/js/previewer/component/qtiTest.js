@@ -22,9 +22,8 @@ define([
     'context',
     'taoQtiTestPreviewer/previewer/runner',
     'taoQtiTest/runner/helpers/map',
-    'layout/loading-bar',
     'css!taoQtiTestPreviewer/previewer/provider/item/css/item'
-], function (context, previewerFactory, mapHelper, loadingBar) {
+], function (context, previewerFactory, mapHelper) {
     'use strict';
 
     /**
@@ -79,15 +78,10 @@ define([
 
         return previewerFactory(container, testRunnerConfig, template).on('ready', runner => {
             // use testMap to display first item (position: 0)
-            loadingBar.start();
-            const $loadingBar = $('.no-version-warning .loading-bar.loadingbar-covered');
-            const originalTop = $loadingBar.css('top');
-            $loadingBar.css('top', '-58px');
             const dataHolder = runner.getDataHolder();
             const testMap = dataHolder.get('testMap');
             const item = mapHelper.getItemAt(testMap, 0);
             const loadItem = position => {
-                loadingBar.start();
                 const textContext = dataHolder.get('testContext');
                 const newPosition = textContext.itemPosition + position;
                 const newItem = mapHelper.getItemAt(testMap, newPosition);
@@ -99,9 +93,7 @@ define([
                     dataHolder.set('testContext', textContext);
                     return runner.loadItem(newItem.uri);
                 }
-                $loadingBar.css('top', originalTop);
                 runner.trigger('finish leave');
-                loadingBar.stop();
             };
             runner.on('nav-next', () => loadItem(1));
             runner.on('nav-previous', () => loadItem(-1));
@@ -109,7 +101,6 @@ define([
                 return runner.loadItem(item.uri);
             }
             runner.trigger('enabletools enablenav');
-            loadingBar.stop();
         });
     };
 });
