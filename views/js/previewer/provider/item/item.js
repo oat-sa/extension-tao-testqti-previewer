@@ -217,41 +217,23 @@ define([
                 .on('flush', () => {
                     this.destroy();
                 });
-        /**
-         * Convenience function to load the current item from the testMap
-         * @returns {Object?} the current item if any or falsy
-         */
-            this.getCurrentItem = function getCurrentItem() {
-                const testContext = this.getTestContext();
-                const testMap     = this.getTestMap();
-                if (testContext && testMap && testContext.itemIdentifier) {
-                    return mapHelper.getItem(testMap, testContext.itemIdentifier);
-                }
-            };
 
             /**
-         * Convenience function to load the current section from the testMap
-         * @returns {Object?} the current section if any or falsy
-         */
-            this.getCurrentSection = function getCurrentSection() {
+             * Convenience function to load the current item/section/testPart from the testMap
+             * @returns {Object?} the current item/section/testPart if any or falsy
+             */
+            this.getFromContext = (key)=>{
                 const testContext = this.getTestContext();
                 const testMap     = this.getTestMap();
-                if (testContext && testMap && testContext.sectionId) {
-                    return mapHelper.getSection(testMap, testContext.sectionId);
-                }
-            };
 
-            /**
-         * Convenience function to load the current part from the testMap
-         * @returns {Object?} the current part if any or falsy
-         */
-            this.getCurrentPart = function getCurrentPart() {
-                const testContext = this.getTestContext();
-                const testMap     = this.getTestMap();
-                if (testContext && testMap && testContext.testPartId) {
-                    return mapHelper.getPart(testMap, testContext.testPartId);
+                if (testContext && testMap && testContext[key]) {
+                    return mapHelper.getItem(testMap, testContext[key]);
                 }
-            };
+            }
+
+            this.getCurrentItem = () => this.getFromContext('itemIdentifier');
+            this.getCurrentSection = () => this.getCurrentSection('sectionId');
+            this.getCurrentPart = () => this.getCurrentSection('testPartId');
 
             const {testUri} = this.getConfig();
             return this.getProxy()
