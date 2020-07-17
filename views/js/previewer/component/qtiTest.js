@@ -103,9 +103,8 @@ define([
             runner.on('nav-previous', () => loadItem(-1));
             if (item && item.uri) {
                 return runner.loadItem(item.uri);
-            } else {
-                runner.trigger('enabletools enablenav');
             }
+            runner.trigger('enabletools enablenav');
             loadingBar.stop();
         });
     };
