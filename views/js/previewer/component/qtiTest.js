@@ -80,6 +80,9 @@ define([
         return previewerFactory(container, testRunnerConfig, template).on('ready', runner => {
             // use testMap to display first item (position: 0)
             loadingBar.start();
+            const $loadingBar = $('.no-version-warning .loading-bar.loadingbar-covered');
+            const originalTop = $loadingBar.css('top');
+            $loadingBar.css('top', '-58px');
             const dataHolder = runner.getDataHolder();
             const testMap = dataHolder.get('testMap');
             const item = mapHelper.getItemAt(testMap, 0);
@@ -96,6 +99,7 @@ define([
                     dataHolder.set('testContext', textContext);
                     return runner.loadItem(newItem.uri);
                 }
+                $loadingBar.css('top', originalTop);
                 runner.trigger('finish leave');
                 loadingBar.stop();
             };
