@@ -227,7 +227,17 @@ define([
                 const testMap     = this.getTestMap();
 
                 if (testContext && testMap && testContext[key]) {
-                    return mapHelper.getItem(testMap, testContext[key]);
+                    switch (key) {
+                        case 'itemIdentifier':
+                            return mapHelper.getItem(testMap, testContext[key]);
+                            break;
+                        case 'sectionId':
+                            return mapHelper.getSection(testMap, testContext[key]);
+                            break;
+                        case 'testPartId':
+                            return mapHelper.getPart(testMap, testContext[key]);
+                            break;
+                    }
                 }
             }
 
