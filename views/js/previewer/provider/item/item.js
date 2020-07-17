@@ -222,7 +222,7 @@ define([
              * Convenience function to load the current item/section/testPart from the testMap
              * @returns {Object?} the current item/section/testPart if any or falsy
              */
-            this.getFromContext = (key)=>{
+            this.getFromContext = key => {
                 const testContext = this.getTestContext();
                 const testMap     = this.getTestMap();
 
@@ -232,8 +232,8 @@ define([
             }
 
             this.getCurrentItem = () => this.getFromContext('itemIdentifier');
-            this.getCurrentSection = () => this.getCurrentSection('sectionId');
-            this.getCurrentPart = () => this.getCurrentSection('testPartId');
+            this.getCurrentSection = () => this.getFromContext('sectionId');
+            this.getCurrentPart = () => this.getFromContext('testPartId');
 
             const {testUri} = this.getConfig();
             return this.getProxy()
