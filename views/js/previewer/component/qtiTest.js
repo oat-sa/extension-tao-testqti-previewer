@@ -81,11 +81,26 @@ define([
             const dataHolder = runner.getDataHolder();
             const testMap = dataHolder.get('testMap');
             const item = mapHelper.getItemAt(testMap, 0);
+            const loadItem = position => {
+                const textContext = dataHolder.get('testContext');
+                const newPosition = textContext.itemPosition + position;
+                const newItem = mapHelper.getItemAt(testMap, newPosition);
+                if (newItem && newItem.uri) {
+                    textContext.itemIdentifier = testMap.jumps[newPosition].identifier;
+                    textContext.itemPosition = newPosition;
+                    textContext.testPartId = testMap.jumps[newPosition].part;
+                    textContext.sectionId = testMap.jumps[newPosition].section;
+                    dataHolder.set('testContext', textContext);
+                    return runner.loadItem(newItem.uri);
+                }
+                runner.trigger('finish leave');
+            };
+            runner.on('nav-next', () => loadItem(1));
+            runner.on('nav-previous', () => loadItem(-1));
             if (item && item.uri) {
                 return runner.loadItem(item.uri);
-            } else {
-                runner.trigger('enabletools enablenav');
             }
+            runner.trigger('enabletools enablenav');
         });
     };
 });

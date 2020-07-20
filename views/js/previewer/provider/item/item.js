@@ -66,7 +66,7 @@ define([
     }
     function restoreContext(){
         containerHelper.setContext(_$previousContext);
-         _$previousContext = null;
+        _$previousContext = null;
     }
     /**
      * A Test runner provider to be registered against the runner
@@ -218,6 +218,32 @@ define([
                     this.destroy();
                 });
 
+            /**
+             * Convenience function to load the current item/section/testPart from the testMap
+             * @returns {Object?} the current item/section/testPart if any or falsy
+             */
+            this.getFromContext = key => {
+                const testContext = this.getTestContext();
+                const testMap     = this.getTestMap();
+
+                if (testContext && testMap && testContext[key]) {
+                    switch (key) {
+                        case 'itemIdentifier':
+                            return mapHelper.getItem(testMap, testContext[key]);
+                        case 'sectionId':
+                            return mapHelper.getSection(testMap, testContext[key]);
+                        case 'testPartId':
+                            return mapHelper.getPart(testMap, testContext[key]);
+                        default:
+                            throw `Unknown test context key ${key} provided.`;
+                    }
+                }
+            }
+
+            this.getCurrentItem = () => this.getFromContext('itemIdentifier');
+            this.getCurrentSection = () => this.getFromContext('sectionId');
+            this.getCurrentPart = () => this.getFromContext('testPartId');
+
             const {testUri} = this.getConfig();
             return this.getProxy()
                 .init({testUri})
@@ -229,6 +255,13 @@ define([
                         const builtTestMap = mapHelper.reindex(data.testMap);
                         if (builtTestMap) {
                             dataHolder.set('testMap', builtTestMap);
+                            dataHolder.set('testContext', {
+                                itemIdentifier: builtTestMap.jumps[0].identifier,
+                                itemPosition: 0,
+                                testPartId: builtTestMap.jumps[0].part,
+                                sectionId: builtTestMap.jumps[0].section,
+                                canMoveBackward: true
+                            });
                         }
                     }
                 });
