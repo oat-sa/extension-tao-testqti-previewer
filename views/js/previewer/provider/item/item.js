@@ -230,13 +230,12 @@ define([
                     switch (key) {
                         case 'itemIdentifier':
                             return mapHelper.getItem(testMap, testContext[key]);
-                            break;
                         case 'sectionId':
                             return mapHelper.getSection(testMap, testContext[key]);
-                            break;
                         case 'testPartId':
                             return mapHelper.getPart(testMap, testContext[key]);
-                            break;
+                        default:
+                            throw `Unknown test context key ${key} provided.`;
                     }
                 }
             }
