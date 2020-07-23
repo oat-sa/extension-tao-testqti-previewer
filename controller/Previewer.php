@@ -37,8 +37,8 @@ use oat\taoQtiTestPreviewer\models\PreviewLanguageService;
 use tao_actions_ServiceModule as ServiceModule;
 use tao_helpers_Http as HttpHelper;
 use tao_models_classes_FileNotFoundException as FileNotFoundException;
+use taoItems_models_classes_ItemsService;
 use taoQtiTest_helpers_TestRunnerUtils as TestRunnerUtils;
-use oat\taoItems\model\pack\ItemPack;
 use oat\taoItems\model\pack\Packer;
 
 /**
@@ -145,8 +145,12 @@ class Previewer extends ServiceModule
 
     /**
      * Provides the definition data and the state for a particular item
+     *
+     * @param taoItems_models_classes_ItemsService $itemsService
+     *
+     * @return void
      */
-    public function getItem()
+    public function getItem(taoItems_models_classes_ItemsService $itemsService)
     {
         $code = 200;
 
@@ -194,10 +198,14 @@ class Previewer extends ServiceModule
             } elseif ($itemUri) {
                 $item = $this->getResource($itemUri);
                 $lang = $this->getSession()->getDataLanguage();
+
+                if (!$itemsService->hasItemContent($item, $lang)) {
+                    return $this->returnJson($response, $code);
+                }
+
                 $packer = new Packer($item, $lang);
                 $packer->setServiceLocator($this->getServiceLocator());
 
-                /** @var ItemPack $itemPack */
                 $itemPack = $packer->pack();
                 $response['content'] = $itemPack->JsonSerialize();
                 $response['baseUrl'] = _url('asset', null, null, ['uri' => $itemUri, 'path' => '']);
