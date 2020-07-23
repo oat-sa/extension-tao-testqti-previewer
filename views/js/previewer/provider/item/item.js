@@ -35,7 +35,9 @@ define([
     'taoItems/assets/strategies',
     'taoQtiItem/qtiCommonRenderer/helpers/container',
     'tpl!taoQtiTestPreviewer/previewer/provider/item/tpl/item',
-    'taoQtiTest/runner/helpers/map'
+    'taoQtiTest/runner/helpers/map',
+    'taoItems/runner/api/itemRunner',
+    '@oat-sa-private/tao-item-runner-qtinui/src/runner/qti'
 ], function (
     $,
     _,
@@ -50,7 +52,9 @@ define([
     assetStrategies,
     containerHelper,
     layoutTpl,
-    mapHelper
+    mapHelper,
+    itemRunnerFactory,
+    qtiNuiProvider
 ) {
     'use strict';
 
@@ -68,6 +72,10 @@ define([
         containerHelper.setContext(_$previousContext);
         _$previousContext = null;
     }
+
+    //the provider needs to be registered globally, once.
+    itemRunnerFactory.register(qtiNuiProvider.providerName, qtiNuiProvider);
+
     /**
      * A Test runner provider to be registered against the runner
      */
@@ -321,24 +329,39 @@ define([
 
                 itemData.content = itemData.content || {};
 
-                this.itemRunner = qtiItemRunner(itemData.content.type, itemData.content.data, Object.assign({
-                    assetManager: assetManager
-                }, options))
+                itemRunnerFactory('qtinui', itemData)
                     .on('error', err => {
                         this.trigger('enablenav');
                         reject(err);
                         feedback().error(__('It seems that there is an error during item preview loading. Please, try again.'));
                     })
-                    .on('init', function onItemRunnerInit() {
-                        const {state, portableElements} = itemData;
-                        this.render(areaBroker.getContentArea(), {state, portableElements});
-                    })
-                    .on('render', function onItemRunnerRender() {
+                    .on('statechange',  newState => console.log(newState) )
+                    .on('render', () => {
                         this.on('responsechange', changeState);
                         this.on('statechange', changeState);
                         resolve();
                     })
-                    .init();
+                    .init()
+                    .render(areaBroker.getContentArea());
+
+                // this.itemRunner = qtiItemRunner(itemData.content.type, itemData.content.data, Object.assign({
+                //     assetManager: assetManager
+                // }, options))
+                //     .on('error', err => {
+                //         this.trigger('enablenav');
+                //         reject(err);
+                //         feedback().error(__('It seems that there is an error during item preview loading. Please, try again.'));
+                //     })
+                //     .on('init', function onItemRunnerInit() {
+                //         const {state, portableElements} = itemData;
+                //         this.render(areaBroker.getContentArea(), {state, portableElements});
+                //     })
+                //     .on('render', function onItemRunnerRender() {
+                //         this.on('responsechange', changeState);
+                //         this.on('statechange', changeState);
+                //         resolve();
+                //     })
+                //     .init();
             });
         },
 
