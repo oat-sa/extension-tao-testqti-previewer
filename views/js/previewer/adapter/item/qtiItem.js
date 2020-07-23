@@ -52,6 +52,11 @@ define([
         module: 'taoQtiTestPreviewer/previewer/plugins/content/enhancedReadOnlyMode',
         bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
         category: 'content'
+    },
+    {
+        module: 'taoQtiItem/qtiCreator/plugins/content/changeTracker',
+        bundle: 'taoQtiItem/loader/taoQtiItem.min',
+        category: 'content'
     }];
 
     /**

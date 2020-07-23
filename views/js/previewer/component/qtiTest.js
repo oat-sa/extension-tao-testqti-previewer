@@ -66,7 +66,7 @@ define([
                 view: config.view,
                 readOnly: config.readOnly,
                 fullPage: config.fullPage,
-                plugins: config.pluginsOptions,
+                plugins: config.plugins,
                 hideActionBars: config.hideActionBars
             },
             proxyProvider: 'qtiTestPreviewerProxy',
