@@ -27,11 +27,11 @@ return [
     'label' => 'extension-tao-testqti-previewer',
     'description' => 'extension that provides QTI test previewer',
     'license'     => 'GPL-2.0',
-    'version' => '2.15.3',
+    'version' => '2.15.4',
     'author' => 'Open Assessment Technologies SA',
     'requires' => [
         'generis'      => '>=12.15.0',
-        'tao'          => '>=37.6.0',
+        'tao'          => '>=44.13.2',
         'taoTests'     => '>=12.0.0',
         'taoItems'     => '>=10.2.0',
         'taoQtiTest'   => '>=29.0.0',
@@ -58,10 +58,10 @@ return [
     ],
     'constants' => [
         # views directory
-        "DIR_VIEWS" => __DIR__ . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR,
+        'DIR_VIEWS' => __DIR__ . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR,
 
         #BASE URL (usually the domain root)
-        'BASE_URL' => ROOT_URL . 'taoQtiTestPreviewer/',
+        'BASE_URL'  => ROOT_URL . 'taoQtiTestPreviewer/',
     ],
     'extra' => [
         'structures' => __DIR__ . DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR . 'structures.xml',
