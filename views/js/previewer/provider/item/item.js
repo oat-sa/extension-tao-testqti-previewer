@@ -331,7 +331,7 @@ define([
                 itemData.itemData = itemData.content || {};
                 itemData.itemIdentifier = itemIdentifier;
 
-                itemRunnerFactory('qtinui', itemData)
+                this.itemRunner = itemRunnerFactory('qtinui', itemData, {assetManager})
                     .on('error', err => {
                         this.trigger('enablenav');
                         reject(err);
@@ -342,8 +342,11 @@ define([
                         this.on('statechange', changeState);
                         resolve();
                     })
-                    .init()
-                    .render(areaBroker.getContentArea());
+                    .on('init', function onItemRunnerInit() {
+                        const {state, portableElements} = itemData;
+                        this.render(areaBroker.getContentArea(), {state, portableElements});
+                    })
+                    .init();
 
                 // this.itemRunner = qtiItemRunner(itemData.content.type, itemData.content.data, Object.assign({
                 //     assetManager: assetManager

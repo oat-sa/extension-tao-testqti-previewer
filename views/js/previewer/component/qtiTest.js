@@ -91,6 +91,7 @@ define([
                     textContext.testPartId = testMap.jumps[newPosition].part;
                     textContext.sectionId = testMap.jumps[newPosition].section;
                     dataHolder.set('testContext', textContext);
+                    runner.unloadItem();
                     return runner.loadItem(newItem.uri);
                 }
                 runner.trigger('finish leave');
