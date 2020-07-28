@@ -37,7 +37,7 @@ define([
     'tpl!taoQtiTestPreviewer/previewer/provider/item/tpl/item',
     'taoQtiTest/runner/helpers/map',
     'taoItems/runner/api/itemRunner',
-    '@oat-sa-private/tao-item-runner-qtinui/src/runner/qti'
+    'taoItemRunnerQtiNUI/index'
 ], function (
     $,
     _,
@@ -54,7 +54,7 @@ define([
     layoutTpl,
     mapHelper,
     itemRunnerFactory,
-    qtiNuiProvider
+    qtiNui
 ) {
     'use strict';
 
@@ -74,7 +74,7 @@ define([
     }
 
     //the provider needs to be registered globally, once.
-    itemRunnerFactory.register(qtiNuiProvider.providerName, qtiNuiProvider);
+    itemRunnerFactory.register(qtiNui.qtiItemRunner.name, qtiNui.qtiItemRunner);
 
     /**
      * A Test runner provider to be registered against the runner
@@ -328,6 +328,8 @@ define([
                 assetManager.setData('baseUrl', itemData.baseUrl);
 
                 itemData.content = itemData.content || {};
+                itemData.itemData = itemData.content || {};
+                itemData.itemIdentifier = itemIdentifier;
 
                 itemRunnerFactory('qtinui', itemData)
                     .on('error', err => {
@@ -335,7 +337,6 @@ define([
                         reject(err);
                         feedback().error(__('It seems that there is an error during item preview loading. Please, try again.'));
                     })
-                    .on('statechange',  newState => console.log(newState) )
                     .on('render', () => {
                         this.on('responsechange', changeState);
                         this.on('statechange', changeState);
