@@ -23,9 +23,9 @@ final class Version202007281009426771_taoQtiTestPreviewer extends AbstractMigrat
     public function up(Schema $schema): void
     {
         $assetService = $this->getServiceManager()->get(AssetService::SERVICE_ID);
-        $taoItemRunnerNpmDist = $assetService->getJsBaseWww('taoQtiTestPreviewer') . 'node_modules/@oat-sa-private/tao-item-runner-qtinui/dist/';
+        $taoItemRunnerNpmDist = $assetService->getJsBaseWww('taoQtiTestPreviewer') . 'node_modules/@oat-sa-private/tao-item-runner-qtinui/dist/index';
         $clientLibRegistry = ClientLibRegistry::getRegistry();
-        $clientLibRegistry->register('taoItemRunnerQtiNUI', $taoItemRunnerNpmDist);
+        $clientLibRegistry->register('taoQtiTestPreviewer/taoItemRunnerQtiNUI', $taoItemRunnerNpmDist);
     }
 
     public function down(Schema $schema): void
