@@ -39,7 +39,6 @@ define([
      * @returns {previewer}
      */
     return function qtiItemPreviewerFactory(container, config = {}, template = null) {
-
         const testRunnerConfig = {
             testDefinition: 'test-container',
             serviceCallId: 'previewer',
@@ -68,22 +67,21 @@ define([
                 view: config.view,
                 readOnly: config.readOnly,
                 fullPage: config.fullPage,
-                plugins: config.pluginsOptions,
-                hideActionBars: config.hideActionBars,
+                plugins: config.pluginsOptions || config.plugins,
+                hideActionBars: config.hideActionBars
             }
         };
 
         //extra context config
         testRunnerConfig.loadFromBundle = !!context.bundle;
 
-        return previewerFactory(container, testRunnerConfig, template)
-            .on('ready', runner => {
-                if (config.itemState) {
-                    runner.on('renderitem', () => runner.itemRunner.setState(config.itemState));
-                }
-                if (config.itemUri) {
-                    return runner.loadItem(config.itemUri);
-                }
-            });
+        return previewerFactory(container, testRunnerConfig, template).on('ready', runner => {
+            if (config.itemState) {
+                runner.on('renderitem', () => runner.itemRunner.setState(config.itemState));
+            }
+            if (config.itemUri) {
+                return runner.loadItem(config.itemUri);
+            }
+        });
     };
 });

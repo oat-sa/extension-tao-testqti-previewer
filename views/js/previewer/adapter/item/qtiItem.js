@@ -18,12 +18,12 @@
 /**
  * @author Jean-Sébastien Conan <jean-sebastien@taotesting.com>
  */
-define([
-    'lodash',
-    'core/logger',
-    'taoQtiTestPreviewer/previewer/component/qtiItem',
-    'ui/feedback'
-], function (_, loggerFactory, qtiItemPreviewerFactory, feedback) {
+define(['lodash', 'core/logger', 'taoQtiTestPreviewer/previewer/component/qtiItem', 'ui/feedback'], function (
+    _,
+    loggerFactory,
+    qtiItemPreviewerFactory,
+    feedback
+) {
     'use strict';
 
     const logger = loggerFactory('taoQtiTest/previewer');
@@ -32,27 +32,38 @@ define([
      * List of required plugins that should be loaded in order to make the previewer work properly
      * @type {Object[]}
      */
-    const defaultPlugins = [{
-        module: 'taoQtiTestPreviewer/previewer/plugins/controls/close',
-        bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-        category: 'controls'
-    }, {
-        module: 'taoQtiTestPreviewer/previewer/plugins/navigation/submit/submit',
-        bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-        category: 'navigation'
-    }, {
-        module: 'taoQtiTestPreviewer/previewer/plugins/tools/scale/scale',
-        bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-        category: 'tools'
-    }, {
-        module: 'taoQtiTest/runner/plugins/tools/itemThemeSwitcher/itemThemeSwitcher',
-        bundle: 'taoQtiTest/loader/testPlugins.min',
-        category: 'tools'
-    }, {
-        module: 'taoQtiTestPreviewer/previewer/plugins/content/enhancedReadOnlyMode',
-        bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-        category: 'content'
-    }];
+    const defaultPlugins = [
+        {
+            module: 'taoQtiTestPreviewer/previewer/plugins/controls/close',
+            bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+            category: 'controls'
+        },
+        {
+            module: 'taoQtiTestPreviewer/previewer/plugins/navigation/submit/submit',
+            bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+            category: 'navigation'
+        },
+        {
+            module: 'taoQtiTestPreviewer/previewer/plugins/tools/scale/scale',
+            bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+            category: 'tools'
+        },
+        {
+            module: 'taoQtiTest/runner/plugins/tools/itemThemeSwitcher/itemThemeSwitcher',
+            bundle: 'taoQtiTest/loader/testPlugins.min',
+            category: 'tools'
+        },
+        {
+            module: 'taoQtiTestPreviewer/previewer/plugins/tools/scale/highlighterr',
+            bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+            category: 'tools'
+        },
+        {
+            module: 'taoQtiTestPreviewer/previewer/plugins/content/enhancedReadOnlyMode',
+            bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+            category: 'content'
+        }
+    ];
 
     /**
      * Wraps the legacy item previewer in order to be loaded by the taoItems previewer factory
@@ -75,14 +86,13 @@ define([
             config.itemUri = uri;
             config.itemState = state;
             config.plugins = Array.isArray(config.plugins) ? [...defaultPlugins, ...config.plugins] : defaultPlugins;
-            return qtiItemPreviewerFactory(window.document.body, config)
-                .on('error', function (err) {
-                    if (!_.isUndefined(err.message)) {
-                        feedback().error(err.message);
-                    } else {
-                        logger.error(err);
-                    }
-                });
+            return qtiItemPreviewerFactory(window.document.body, config).on('error', function (err) {
+                if (!_.isUndefined(err.message)) {
+                    feedback().error(err.message);
+                } else {
+                    logger.error(err);
+                }
+            });
         }
     };
 });
