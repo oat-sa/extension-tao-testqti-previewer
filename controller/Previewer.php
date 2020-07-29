@@ -20,6 +20,8 @@
 
 namespace oat\taoQtiTestPreviewer\controller;
 
+use common_exception_Error;
+use oat\tao\helpers\Base64;
 use common_Exception as CommonException;
 use common_exception_BadRequest as BadRequestException;
 use common_exception_MissingParameter as MissingParameterException;
@@ -224,10 +226,10 @@ class Previewer extends ServiceModule
 
     /**
      * Gets access to an asset
-     * @throws \common_exception_Error
-     * @throws FileNotFoundException
+     *
      * @throws CommonException
-     * @throws Exception
+     * @throws FileNotFoundException
+     * @throws common_exception_Error
      */
     public function asset()
     {
@@ -240,11 +242,15 @@ class Previewer extends ServiceModule
         $resolver = new ItemMediaResolver($item, $lang);
 
         $asset = $resolver->resolve($path);
-        if ($asset->getMediaSource() instanceof HttpSource) {
+        $mediaSource = $asset->getMediaSource();
+        $mediaIdentifier = $asset->getMediaIdentifier();
+
+        if ($mediaSource instanceof HttpSource || Base64::isEncodedImage($mediaIdentifier)) {
             throw new CommonException('Only tao files available for rendering through item preview');
         }
-        $info = $asset->getMediaSource()->getFileInfo($asset->getMediaIdentifier());
-        $stream = $asset->getMediaSource()->getFileStream($asset->getMediaIdentifier());
+
+        $info = $mediaSource->getFileInfo($mediaIdentifier);
+        $stream = $mediaSource->getFileStream($mediaIdentifier);
         HttpHelper::returnStream($stream, $info['mime']);
     }
 
