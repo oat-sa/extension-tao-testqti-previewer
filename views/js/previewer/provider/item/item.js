@@ -37,7 +37,7 @@ define([
     'tpl!taoQtiTestPreviewer/previewer/provider/item/tpl/item',
     'taoQtiTest/runner/helpers/map',
     'taoItems/runner/api/itemRunner',
-    'taoItemRunnerQtiNUI/index'
+    'taoQtiTestPreviewer/taoItemRunnerQtiNUI'
 ], function (
     $,
     _,
