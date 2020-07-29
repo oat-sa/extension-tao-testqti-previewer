@@ -31,6 +31,7 @@ module.exports = function(grunt) {
                 options : {
                     extension : 'taoQtiTestPreviewer',
                     outputDir : 'loader',
+                    paths: require('./paths.json'),
                     dependencies : ['taoItems', 'taoQtiItem', 'taoTests', 'taoQtiTest'],
                     bundles : [{
                         name : 'qtiPreviewer',
