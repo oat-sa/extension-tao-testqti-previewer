@@ -20,6 +20,8 @@
 
 namespace oat\taoQtiTestPreviewer\controller;
 
+use common_exception_Error;
+use oat\tao\helpers\Base64;
 use common_Exception as CommonException;
 use common_exception_BadRequest as BadRequestException;
 use common_exception_MissingParameter as MissingParameterException;
@@ -37,8 +39,8 @@ use oat\taoQtiTestPreviewer\models\PreviewLanguageService;
 use tao_actions_ServiceModule as ServiceModule;
 use tao_helpers_Http as HttpHelper;
 use tao_models_classes_FileNotFoundException as FileNotFoundException;
+use taoItems_models_classes_ItemsService;
 use taoQtiTest_helpers_TestRunnerUtils as TestRunnerUtils;
-use oat\taoItems\model\pack\ItemPack;
 use oat\taoItems\model\pack\Packer;
 
 /**
@@ -145,8 +147,12 @@ class Previewer extends ServiceModule
 
     /**
      * Provides the definition data and the state for a particular item
+     *
+     * @param taoItems_models_classes_ItemsService $itemsService
+     *
+     * @return void
      */
-    public function getItem()
+    public function getItem(taoItems_models_classes_ItemsService $itemsService)
     {
         $code = 200;
 
@@ -194,10 +200,14 @@ class Previewer extends ServiceModule
             } elseif ($itemUri) {
                 $item = $this->getResource($itemUri);
                 $lang = $this->getSession()->getDataLanguage();
+
+                if (!$itemsService->hasItemContent($item, $lang)) {
+                    return $this->returnJson($response, $code);
+                }
+
                 $packer = new Packer($item, $lang);
                 $packer->setServiceLocator($this->getServiceLocator());
 
-                /** @var ItemPack $itemPack */
                 $itemPack = $packer->pack();
                 $response['content'] = $itemPack->JsonSerialize();
                 $response['baseUrl'] = _url('asset', null, null, ['uri' => $itemUri, 'path' => '']);
@@ -216,10 +226,10 @@ class Previewer extends ServiceModule
 
     /**
      * Gets access to an asset
-     * @throws \common_exception_Error
-     * @throws FileNotFoundException
+     *
      * @throws CommonException
-     * @throws Exception
+     * @throws FileNotFoundException
+     * @throws common_exception_Error
      */
     public function asset()
     {
@@ -232,11 +242,15 @@ class Previewer extends ServiceModule
         $resolver = new ItemMediaResolver($item, $lang);
 
         $asset = $resolver->resolve($path);
-        if ($asset->getMediaSource() instanceof HttpSource) {
+        $mediaSource = $asset->getMediaSource();
+        $mediaIdentifier = $asset->getMediaIdentifier();
+
+        if ($mediaSource instanceof HttpSource || Base64::isEncodedImage($mediaIdentifier)) {
             throw new CommonException('Only tao files available for rendering through item preview');
         }
-        $info = $asset->getMediaSource()->getFileInfo($asset->getMediaIdentifier());
-        $stream = $asset->getMediaSource()->getFileStream($asset->getMediaIdentifier());
+
+        $info = $mediaSource->getFileInfo($mediaIdentifier);
+        $stream = $mediaSource->getFileStream($mediaIdentifier);
         HttpHelper::returnStream($stream, $info['mime']);
     }
 
