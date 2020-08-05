@@ -126,7 +126,12 @@ define([
             this.configStorage = configFactory(config || {});
 
             // request for initialization
-            return this.request(this.configStorage.getTestActionUrl('init'), params);
+            return this.request(
+                this.configStorage.getTestActionUrl('init'),
+                params,
+                void 0,
+                true
+            );
         },
 
         /**
@@ -174,7 +179,12 @@ define([
          *                      Any error will be provided if rejected.
          */
         getItem: function getItem(itemIdentifier, params) {
-            return this.request(this.configStorage.getItemActionUrl(itemIdentifier, 'getItem'), params);
+            return this.request(
+                this.configStorage.getItemActionUrl(itemIdentifier, 'getItem'),
+                params,
+                void 0,
+                true
+            );
         },
 
         /**
@@ -192,7 +202,12 @@ define([
                 itemResponse: response
             }, params || {});
 
-            return this.request(this.configStorage.getItemActionUrl(itemIdentifier, 'submitItem'), body);
+            return this.request(
+                this.configStorage.getItemActionUrl(itemIdentifier, 'submitItem'),
+                body,
+                void 0,
+                true
+            );
         }
     };
 });
