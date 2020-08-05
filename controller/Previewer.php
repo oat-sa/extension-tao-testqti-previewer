@@ -15,108 +15,56 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2018-2019 (original work) Open Assessment Technologies SA ;
+ * Copyright (c) 2018-2020 (original work) Open Assessment Technologies SA ;
  */
+
+declare(strict_types=1);
 
 namespace oat\taoQtiTestPreviewer\controller;
 
+use Exception;
 use common_exception_Error;
 use oat\tao\helpers\Base64;
+use tao_helpers_Http as HttpHelper;
+use oat\taoItems\model\pack\Packer;
 use common_Exception as CommonException;
-use common_exception_BadRequest as BadRequestException;
-use common_exception_MissingParameter as MissingParameterException;
-use common_exception_NoImplementation as NoImplementationException;
-use common_exception_NotImplemented as NotImplementedException;
-use common_exception_Unauthorized as UnauthorizedException;
-use common_exception_UserReadableException as UserReadableException;
-use Exception;
+use taoItems_models_classes_ItemsService;
 use oat\generis\model\OntologyAwareTrait;
-use oat\tao\model\media\sourceStrategy\HttpSource;
-use oat\tao\model\routing\AnnotationReader\security;
+use tao_actions_ServiceModule as ServiceModule;
 use oat\taoItems\model\media\ItemMediaResolver;
 use oat\taoQtiTestPreviewer\models\ItemPreviewer;
-use oat\taoQtiTestPreviewer\models\PreviewLanguageService;
-use tao_actions_ServiceModule as ServiceModule;
-use tao_helpers_Http as HttpHelper;
-use tao_models_classes_FileNotFoundException as FileNotFoundException;
-use taoItems_models_classes_ItemsService;
+use oat\tao\model\media\sourceStrategy\HttpSource;
+use oat\tao\model\routing\AnnotationReader\security;
+use common_exception_BadRequest as BadRequestException;
 use taoQtiTest_helpers_TestRunnerUtils as TestRunnerUtils;
-use oat\taoItems\model\pack\Packer;
+use oat\taoQtiTestPreviewer\models\PreviewLanguageService;
+use common_exception_Unauthorized as UnauthorizedException;
+use common_exception_NotImplemented as NotImplementedException;
+use common_exception_MissingParameter as MissingParameterException;
+use common_exception_NoImplementation as NoImplementationException;
+use common_exception_UserReadableException as UserReadableException;
+use tao_models_classes_FileNotFoundException as FileNotFoundException;
 
 /**
- * Class taoQtiTest_actions_Runner
+ * Class Previewer
  *
- * Serves QTI implementation of the test runner
+ * @package oat\taoQtiTestPreviewer\controller
  */
 class Previewer extends ServiceModule
 {
     use OntologyAwareTrait;
 
     /**
-     * taoQtiTest_actions_Runner constructor.
+     * Previewer constructor.
+     *
      * @security("hide")
      */
     public function __construct()
     {
+        parent::__construct();
+
         // Prevent anything to be cached by the client.
         TestRunnerUtils::noHttpClientCache();
-    }
-
-    /**
-     * Gets an error response array
-     * @param Exception $e
-     * @return array
-     */
-    protected function getErrorResponse($e)
-    {
-        $response = [
-            'success' => false,
-            'type' => 'error',
-        ];
-
-        if ($e instanceof FileNotFoundException) {
-            $response['type'] = 'FileNotFound';
-            $response['message'] = __('File not found');
-        } elseif ($e instanceof UnauthorizedException) {
-            $response['code'] = 403;
-            $response['message'] = $e->getUserMessage();
-        } elseif ($e instanceof UserReadableException) {
-            $response['message'] = $e->getUserMessage();
-        } elseif ($e instanceof Exception) {
-            $response['type'] = 'exception';
-            $response['code'] = $e->getCode();
-            $response['message'] = $e->getMessage();
-        } else {
-            $response['message'] = __('An error occurred!');
-        }
-
-        return $response;
-    }
-
-    /**
-     * Gets an HTTP response code
-     * @param Exception $e
-     * @return int
-     */
-    protected function getErrorCode($e)
-    {
-        switch (true) {
-            case $e instanceof NotImplementedException:
-            case $e instanceof NoImplementationException:
-            case $e instanceof UnauthorizedException:
-                $code = 403;
-                break;
-
-            case $e instanceof FileNotFoundException:
-                $code = 404;
-                break;
-
-            default:
-                $code = 500;
-                break;
-        }
-
-        return $code;
     }
 
     /**
@@ -127,15 +75,13 @@ class Previewer extends ServiceModule
         $code = 200;
 
         try {
-            $this->validateCsrf();
-
             $requestParams = $this->getPsrRequest()->getQueryParams();
             $serviceCallId = $requestParams['serviceCallId'];
 
             $response = [
                 'success' => $serviceCallId === 'previewer',
                 'itemIdentifier' => null,
-                'itemData' => null
+                'itemData' => null,
             ];
         } catch (Exception $e) {
             $response = $this->getErrorResponse($e);
@@ -157,8 +103,6 @@ class Previewer extends ServiceModule
         $code = 200;
 
         try {
-            $this->validateCsrf();
-
             $requestParams = $this->getPsrRequest()->getQueryParams();
 
             $itemUri = $requestParams['itemUri'] ?? '';
@@ -210,7 +154,10 @@ class Previewer extends ServiceModule
 
                 $itemPack = $packer->pack();
                 $response['content'] = $itemPack->JsonSerialize();
-                $response['baseUrl'] = _url('asset', null, null, ['uri' => $itemUri, 'path' => '']);
+                $response['baseUrl'] = _url('asset', null, null, [
+                    'uri' => $itemUri,
+                    'path' => '',
+                ]);
             } else {
                 throw new BadRequestException('Either itemUri or resultId needs to be provided.');
             }
@@ -231,17 +178,15 @@ class Previewer extends ServiceModule
      * @throws FileNotFoundException
      * @throws common_exception_Error
      */
-    public function asset()
+    public function asset(): void
     {
         $requestParams = $this->getPsrRequest()->getQueryParams();
-        $itemUri = $requestParams['uri'];
-        $path = $requestParams['path'];
 
-        $item = $this->getResource($itemUri);
+        $item = $this->getResource($requestParams['uri']);
         $lang = $this->getSession()->getDataLanguage();
         $resolver = new ItemMediaResolver($item, $lang);
 
-        $asset = $resolver->resolve($path);
+        $asset = $resolver->resolve($requestParams['path']);
         $mediaSource = $asset->getMediaSource();
         $mediaIdentifier = $asset->getMediaIdentifier();
 
@@ -251,18 +196,18 @@ class Previewer extends ServiceModule
 
         $info = $mediaSource->getFileInfo($mediaIdentifier);
         $stream = $mediaSource->getFileStream($mediaIdentifier);
+
         HttpHelper::returnStream($stream, $info['mime']);
     }
 
     /**
      * Stores the state object and the response set of a particular item
      */
-    public function submitItem()
+    public function submitItem(): void
     {
         $code = 200;
 
         try {
-            $this->validateCsrf();
             $requestParams = $this->getPsrRequest()->getQueryParams();
             $itemUri = $requestParams['itemUri'];
             $jsonPayload = $this->getPayload();
@@ -276,22 +221,86 @@ class Previewer extends ServiceModule
     }
 
     /**
+     * Gets an error response array
+     *
+     * @param Exception $e
+     *
+     * @return array
+     */
+    protected function getErrorResponse(Exception $e): array
+    {
+        $response = [
+            'success' => false,
+            'type' => 'error',
+        ];
+
+        if ($e instanceof FileNotFoundException) {
+            $response['type'] = 'FileNotFound';
+            $response['message'] = __('File not found');
+        } elseif ($e instanceof UnauthorizedException) {
+            $response['code'] = 403;
+            $response['message'] = $e->getUserMessage();
+        } elseif ($e instanceof UserReadableException) {
+            $response['message'] = $e->getUserMessage();
+        } elseif ($e instanceof Exception) {
+            $response['type'] = 'exception';
+            $response['code'] = $e->getCode();
+            $response['message'] = $e->getMessage();
+        } else {
+            $response['message'] = __('An error occurred!');
+        }
+
+        return $response;
+    }
+
+    /**
+     * Gets an HTTP response code
+     *
+     * @param Exception $e
+     *
+     * @return int
+     */
+    protected function getErrorCode(Exception $e): int
+    {
+        switch (true) {
+            case $e instanceof NotImplementedException:
+            case $e instanceof NoImplementationException:
+            case $e instanceof UnauthorizedException:
+                $code = 403;
+                break;
+
+            case $e instanceof FileNotFoundException:
+                $code = 404;
+                break;
+
+            default:
+                $code = 500;
+                break;
+        }
+
+        return $code;
+    }
+
+    /**
      * @return ItemPreviewer
      */
-    private function getItemPreviewer()
+    private function getItemPreviewer(): ItemPreviewer
     {
-        return $this->getServiceLocator()->get(ItemPreviewer::class);
+        /** @var ItemPreviewer $itemPreviewer */
+        $itemPreviewer = $this->getServiceLocator()->get(ItemPreviewer::class);
+
+        return $itemPreviewer;
     }
 
     /**
      * Gets payload from the request
+     *
      * @return array|mixed|object|null
      */
     private function getPayload()
     {
         $jsonPayload = $this->getPsrRequest()->getParsedBody();
-        $jsonPayload = json_decode($jsonPayload['itemResponse'], true);
 
-        return $jsonPayload;
+        return json_decode($jsonPayload['itemResponse'], true);
     }
 }
