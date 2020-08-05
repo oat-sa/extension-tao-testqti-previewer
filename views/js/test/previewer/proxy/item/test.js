@@ -72,8 +72,6 @@ define([
     QUnit
         .cases.init([{
             title: 'success',
-            sendToken: '1234',
-            receiveToken: '4567',
             response: {
                 success: true
             },
@@ -81,8 +79,6 @@ define([
             success: true
         }, {
             title: 'failing data',
-            sendToken: '1234',
-            receiveToken: '4567',
             response: {
                 errorCode: 1,
                 errorMessage: 'oops',
@@ -92,8 +88,6 @@ define([
             success: false
         }, {
             title: 'failing request',
-            sendToken: '1234',
-            receiveToken: '4567',
             response: 'error',
             ajaxSuccess: false,
             success: false
@@ -112,8 +106,6 @@ define([
                 serviceCallId: initConfig.serviceCallId
             });
 
-            var proxy, tokenHandler, result;
-
             assert.expect(7);
 
             proxyFactory.registerProvider('itemProxy', itemProxy);
@@ -121,17 +113,15 @@ define([
             $.mockjax({
                 url: '/*',
                 status: caseData.ajaxSuccess ? 200 : 500,
-                headers: {
-                    'X-CSRF-Token': caseData.receiveToken
-                },
                 responseText: caseData.response,
                 response: function(settings) {
                     assert.equal(settings.url, expectedUrl, 'The proxy has called the right service');
                 }
             });
 
-            proxy = proxyFactory('itemProxy', initConfig);
-            tokenHandler = proxy.getTokenHandler();
+            const proxy = proxyFactory('itemProxy', initConfig);
+            const tokenHandler = proxy.getTokenHandler();
+            const tokenValue = 'test';
 
             proxy
                 .install()
@@ -139,7 +129,7 @@ define([
                     return tokenHandler.clearStore();
                 })
                 .then(function() {
-                    return proxy.getTokenHandler().setToken(caseData.sendToken);
+                    return proxy.getTokenHandler().setToken(tokenValue);
                 })
                 .then(function() {
                     proxy.on('init', function(promise, config) {
@@ -148,7 +138,7 @@ define([
                         assert.equal(config, initConfig, 'The proxy has provided the config object through the "init" event');
                     });
 
-                    result = proxy.init();
+                    const result = proxy.init();
 
                     assert.equal(typeof result, 'object', 'The proxy.init method has returned a promise');
 
@@ -166,7 +156,7 @@ define([
                 })
                 .then(function() {
                     return proxy.getTokenHandler().getToken().then(function(token) {
-                        assert.equal(token, caseData.receiveToken, 'The proxy must update the security token');
+                        assert.equal(token, tokenValue, 'The proxy must not use the security token');
                     });
                 })
                 .then(function() {
@@ -299,8 +289,6 @@ define([
                 serviceCallId: initConfig.serviceCallId
             });
 
-            var proxy, tokenHandler, result;
-
             assert.expect(9);
 
             proxyFactory.registerProvider('itemProxy', itemProxy);
@@ -308,9 +296,6 @@ define([
             $.mockjax([{
                 url: '/init*',
                 status: 200,
-                headers: {
-                    'X-CSRF-Token': caseData.receiveToken
-                },
                 responseText: {
                     success: true
                 }
@@ -326,8 +311,8 @@ define([
                 }
             }]);
 
-            proxy = proxyFactory('itemProxy', initConfig);
-            tokenHandler = proxy.getTokenHandler();
+            const proxy = proxyFactory('itemProxy', initConfig);
+            const tokenHandler = proxy.getTokenHandler();
 
             proxy
                 .install()
@@ -357,7 +342,7 @@ define([
                         assert.deepEqual(params, caseData.params, 'The proxy has provided the params through the "callTestAction" event');
                     });
 
-                    result = proxy.callTestAction(caseData.action, caseData.params);
+                    const result = proxy.callTestAction(caseData.action, caseData.params);
 
                     assert.equal(typeof result, 'object', 'The proxy.callTestAction method has returned a promise');
 
@@ -387,8 +372,6 @@ define([
         .cases.init([{
             title: 'success',
             uri: 'http://tao.dev/mockItemDefinition#123',
-            sendToken: '1234',
-            receiveToken: '4567',
             response: {
                 itemData: {
                     interactions: [{}]
@@ -403,8 +386,6 @@ define([
         }, {
             title: 'failing data',
             uri: 'http://tao.dev/mockItemDefinition#123',
-            sendToken: '1234',
-            receiveToken: '4567',
             response: {
                 errorCode: 1,
                 errorMessage: 'oops',
@@ -415,8 +396,6 @@ define([
         }, {
             title: 'failing request',
             uri: 'http://tao.dev/mockItemDefinition#123',
-            sendToken: '1234',
-            receiveToken: '4567',
             response: 'error',
             ajaxSuccess: false,
             success: false
@@ -436,8 +415,6 @@ define([
                 itemUri: caseData.uri
             });
 
-            var proxy, tokenHandler, result;
-
             assert.expect(8);
 
             proxyFactory.registerProvider('itemProxy', itemProxy);
@@ -445,26 +422,21 @@ define([
             $.mockjax([{
                 url: '/init*',
                 status: 200,
-                headers: {
-                    'X-CSRF-Token': caseData.receiveToken
-                },
                 responseText: {
                     success: true
                 }
             }, {
                 url: '/*',
                 status: caseData.ajaxSuccess ? 200 : 500,
-                headers: {
-                    'X-CSRF-Token': caseData.receiveToken
-                },
                 responseText: caseData.response,
                 response: function(settings) {
                     assert.equal(settings.url, expectedUrl, 'The proxy has called the right service');
                 }
             }]);
 
-            proxy = proxyFactory('itemProxy', initConfig);
-            tokenHandler = proxy.getTokenHandler();
+            const proxy = proxyFactory('itemProxy', initConfig);
+            const tokenHandler = proxy.getTokenHandler();
+            const tokenValue = 'test';
 
             proxy
                 .install()
@@ -472,7 +444,7 @@ define([
                     return tokenHandler.clearStore();
                 })
                 .then(function() {
-                    return proxy.getTokenHandler().setToken(caseData.sendToken);
+                    return proxy.getTokenHandler().setToken(tokenValue);
                 })
                 .then(function() {
                     return proxy.getItem(caseData.uri);
@@ -493,7 +465,7 @@ define([
                         assert.equal(uri, caseData.uri, 'The proxy has provided the URI through the "getItem" event');
                     });
 
-                    result = proxy.getItem(caseData.uri);
+                    const result = proxy.getItem(caseData.uri);
 
                     assert.equal(typeof result, 'object', 'The proxy.getItem method has returned a promise');
 
@@ -511,7 +483,7 @@ define([
                 })
                 .then(function() {
                     return proxy.getTokenHandler().getToken().then(function(token) {
-                        assert.equal(token, caseData.receiveToken, 'The proxy must update the security token');
+                        assert.equal(token, tokenValue, 'The proxy must not use the security token');
                     });
                 })
                 .then(function() {
@@ -525,8 +497,6 @@ define([
             uri: 'http://tao.dev/mockItemDefinition#123',
             itemState: {response: [{}]},
             itemResponse: {response: [{}]},
-            sendToken: '1234',
-            receiveToken: '4567',
             response: {
                 success: true
             },
@@ -537,8 +507,6 @@ define([
             uri: 'http://tao.dev/mockItemDefinition#123',
             itemState: {response: [{}]},
             itemResponse: {response: [{}]},
-            sendToken: '1234',
-            receiveToken: '4567',
             response: {
                 errorCode: 1,
                 errorMessage: 'oops',
@@ -551,8 +519,6 @@ define([
             uri: 'http://tao.dev/mockItemDefinition#123',
             itemState: {response: [{}]},
             itemResponse: {response: [{}]},
-            sendToken: '1234',
-            receiveToken: '4567',
             response: 'error',
             ajaxSuccess: false,
             success: false
@@ -572,8 +538,6 @@ define([
                 itemUri: caseData.uri
             });
 
-            var proxy, tokenHandler, result;
-
             assert.expect(10);
 
             proxyFactory.registerProvider('itemProxy', itemProxy);
@@ -581,26 +545,21 @@ define([
             $.mockjax([{
                 url: '/init*',
                 status: 200,
-                headers: {
-                    'X-CSRF-Token': caseData.receiveToken
-                },
                 responseText: {
                     success: true
                 }
             }, {
                 url: '/*',
                 status: caseData.ajaxSuccess ? 200 : 500,
-                headers: {
-                    'X-CSRF-Token': caseData.receiveToken
-                },
                 responseText: caseData.response,
                 response: function(settings) {
                     assert.equal(settings.url, expectedUrl, 'The proxy has called the right service');
                 }
             }]);
 
-            proxy = proxyFactory('itemProxy', initConfig);
-            tokenHandler = proxy.getTokenHandler();
+            const proxy = proxyFactory('itemProxy', initConfig);
+            const tokenHandler = proxy.getTokenHandler();
+            const tokenValue = 'test';
 
             proxy
                 .install()
@@ -608,7 +567,7 @@ define([
                     return tokenHandler.clearStore();
                 })
                 .then(function() {
-                    return proxy.getTokenHandler().setToken(caseData.sendToken);
+                    return proxy.getTokenHandler().setToken(tokenValue);
                 })
                 .then(function() {
                     return proxy.submitItem(caseData.uri, caseData.itemState, caseData.itemResponse);
@@ -631,7 +590,7 @@ define([
                         assert.deepEqual(response, caseData.itemResponse, 'The proxy has provided the response through the "submitItem" event');
                     });
 
-                    result = proxy.submitItem(caseData.uri, caseData.itemState, caseData.itemResponse);
+                    const result = proxy.submitItem(caseData.uri, caseData.itemState, caseData.itemResponse);
 
                     assert.equal(typeof result, 'object', 'The proxy.submitItem method has returned a promise');
 
@@ -649,7 +608,7 @@ define([
                 })
                 .then(function() {
                     return proxy.getTokenHandler().getToken().then(function(token) {
-                        assert.equal(token, caseData.receiveToken, 'The proxy must update the security token');
+                        assert.equal(token, tokenValue, 'The proxy must not use the security token');
                     });
                 })
                 .then(function() {
@@ -716,8 +675,6 @@ define([
                 itemUri: caseData.uri
             });
 
-            var proxy, tokenHandler, result;
-
             assert.expect(10);
 
             proxyFactory.registerProvider('itemProxy', itemProxy);
@@ -725,9 +682,6 @@ define([
             $.mockjax([{
                 url: '/init*',
                 status: 200,
-                headers: {
-                    'X-CSRF-Token': caseData.receiveToken
-                },
                 responseText: {
                     success: true
                 }
@@ -743,8 +697,8 @@ define([
                 }
             }]);
 
-            proxy = proxyFactory('itemProxy', initConfig);
-            tokenHandler = proxy.getTokenHandler();
+            const proxy = proxyFactory('itemProxy', initConfig);
+            const tokenHandler = proxy.getTokenHandler();
 
             proxy
                 .install()
@@ -775,7 +729,7 @@ define([
                         assert.deepEqual(params, caseData.params, 'The proxy has provided the params through the "callItemAction" event');
                     });
 
-                    result = proxy.callItemAction(caseData.uri, caseData.action, caseData.params);
+                    const result = proxy.callItemAction(caseData.uri, caseData.action, caseData.params);
 
                     assert.equal(typeof result, 'object', 'The proxy.callItemAction method has returned a promise');
 
