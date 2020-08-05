@@ -70,7 +70,7 @@ class Previewer extends ServiceModule
     /**
      * Initializes the delivery session
      */
-    public function init()
+    public function init(): void
     {
         $code = 200;
 
@@ -95,10 +95,8 @@ class Previewer extends ServiceModule
      * Provides the definition data and the state for a particular item
      *
      * @param taoItems_models_classes_ItemsService $itemsService
-     *
-     * @return void
      */
-    public function getItem(taoItems_models_classes_ItemsService $itemsService)
+    public function getItem(taoItems_models_classes_ItemsService $itemsService): void
     {
         $code = 200;
 
@@ -146,7 +144,8 @@ class Previewer extends ServiceModule
                 $lang = $this->getSession()->getDataLanguage();
 
                 if (!$itemsService->hasItemContent($item, $lang)) {
-                    return $this->returnJson($response, $code);
+                    $this->returnJson($response, $code);
+                    return;
                 }
 
                 $packer = new Packer($item, $lang);
