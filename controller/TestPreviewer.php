@@ -27,6 +27,7 @@ use InvalidArgumentException;
 use oat\tao\model\http\HttpJsonResponseTrait;
 use oat\taoQtiTestPreviewer\models\test\service\TestPreviewer as TestPreviewerService;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewRequest;
+use oat\taoQtiTestPreviewer\models\testRunnerConfiguration\TestPreviewerConfigurationService;
 use tao_actions_ServiceModule;
 use Throwable;
 
@@ -46,10 +47,7 @@ class TestPreviewer extends tao_actions_ServiceModule
             $response = $this->getTestPreviewerService()
                 ->createPreview(new TestPreviewRequest($requestParams['testUri']));
 
-            $this->getResponseFormatter()
-                ->addHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-                ->addHeader('Pragma', 'no-cache')
-                ->addHeader('Expires', '0');
+            $this->setNoCacheHeaders();
 
             $this->setSuccessJsonResponse(
                 [
@@ -68,8 +66,39 @@ class TestPreviewer extends tao_actions_ServiceModule
         }
     }
 
+    public function getConfiguration(): void
+    {
+        try {
+            $this->setNoCacheHeaders();
+
+            $this->setSuccessJsonResponse(
+                $this->getTestPreviewerConfigurationService()->getTestRunnerConfiguration()
+            );
+        } catch (Throwable $exception) {
+            $message = $exception instanceof common_exception_UserReadableException
+                ? $exception->getUserMessage()
+                : $exception->getMessage();
+
+            $this->setErrorJsonResponse($message);
+        }
+    }
+
+    private function setNoCacheHeaders(): void
+    {
+        $this->getResponseFormatter()
+            ->addHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+            ->addHeader('Pragma', 'no-cache')
+            ->addHeader('Expires', '0');
+    }
+
+    private function getTestPreviewerConfigurationService(): TestPreviewerConfigurationService
+    {
+        return $this->getServiceLocator()->get(TestPreviewerConfigurationService::class);
+    }
+
     private function getTestPreviewerService(): TestPreviewerService
     {
         return $this->getServiceLocator()->get(TestPreviewerService::class);
     }
+
 }
