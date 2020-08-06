@@ -23,9 +23,11 @@ declare(strict_types=1);
 namespace unit\models\testRunnerConfiguration;
 
 use oat\generis\test\TestCase;
+use oat\taoQtiTest\models\runner\config\QtiRunnerConfig;
 use oat\taoQtiTestPreviewer\models\testRunnerConfiguration\TestPreviewerConfigObject;
 use oat\taoQtiTestPreviewer\models\testRunnerConfiguration\TestPreviewerConfigurationService;
 use oat\taoTests\models\runner\plugins\TestPluginService;
+use oat\taoTests\models\runner\providers\TestProviderService;
 
 class TestPreviewerConfigurationServiceTest extends TestCase
 {
@@ -41,20 +43,33 @@ class TestPreviewerConfigurationServiceTest extends TestCase
      * @var TestPluginService|\PHPUnit\Framework\MockObject\MockObject
      */
     private $testPluginService;
+    /**
+     * @var QtiRunnerConfig|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $qtiRunnerConfig;
+    /**
+     * @var TestProviderService|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $testProviderService;
 
 
     public function setUp(): void
     {
+        $this->testProviderService = $this->createMock(TestProviderService::class);
         $this->testPluginService = $this->createMock(TestPluginService::class);
+        $this->qtiRunnerConfig = $this->createMock(QtiRunnerConfig::class);
 
         $this->subject = new TestPreviewerConfigurationService();
-        $this->subject->setServiceLocator(
-            $this->getServiceLocatorMock(
-                [
-                    TestPluginService::SERVICE_ID => $this->testPluginService,
-                ]
-            )
+
+        $slm = $this->getServiceLocatorMock(
+            [
+                TestPluginService::SERVICE_ID => $this->testPluginService,
+                TestProviderService::SERVICE_ID => $this->testProviderService,
+                QtiRunnerConfig::SERVICE_ID => $this->qtiRunnerConfig,
+            ]
         );
+
+        $this->subject->setServiceLocator($slm);
     }
 
     public function testGetTestRunnerConfiguration(): void
