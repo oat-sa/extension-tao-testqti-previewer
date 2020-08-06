@@ -23,9 +23,11 @@ declare(strict_types=1);
 namespace unit\models\testRunnerConfiguration;
 
 use oat\generis\test\TestCase;
+use oat\tao\model\providers\ProviderModule;
 use oat\taoQtiTest\models\runner\config\QtiRunnerConfig;
 use oat\taoQtiTestPreviewer\models\testRunnerConfiguration\TestPreviewerConfigObject;
 use oat\taoQtiTestPreviewer\models\testRunnerConfiguration\TestPreviewerConfigurationService;
+use oat\taoTests\models\runner\plugins\TestPlugin;
 use oat\taoTests\models\runner\plugins\TestPluginService;
 use oat\taoTests\models\runner\providers\TestProviderService;
 
@@ -37,8 +39,7 @@ class TestPreviewerConfigurationServiceTest extends TestCase
      */
     private $subject;
 
-    private const providers = ['a' => 'b'];
-    private const options = ['c' => 'd'];
+    private const OPTIONS = ['c' => 'd'];
     /**
      * @var TestPluginService|\PHPUnit\Framework\MockObject\MockObject
      */
@@ -74,7 +75,37 @@ class TestPreviewerConfigurationServiceTest extends TestCase
 
     public function testGetTestRunnerConfiguration(): void
     {
-        $configurationSample = new TestPreviewerConfigObject(self::providers, self::options);
-        $this->assertEquals($this->subject->getTestRunnerConfiguration(), $configurationSample);
+        $this->qtiRunnerConfig->method('getConfig')->willReturn(self::OPTIONS);
+
+        $plugins = $this->getPlugins();
+        $providers = $this->getProviders();
+
+        $this->testPluginService->method('getAllPlugins')->willReturn($plugins);
+        $this->testProviderService->method('getAllProviders')->willReturn($providers);
+
+        $configurationSample = new TestPreviewerConfigObject(
+            ['category' => $providers, 'plugins' => $plugins,],
+            self::OPTIONS
+        );
+        $this->assertEquals(
+            $configurationSample,
+            $this->subject->getTestRunnerConfiguration()
+        );
+    }
+
+    private function getPlugins(): array
+    {
+        return [
+            new TestPlugin('id1', 'module', 'category', ['active' => true]),
+            new TestPlugin('id2', 'module', 'category', ['active' => true]),
+        ];
+    }
+
+    private function getProviders(): array
+    {
+        return [
+            new ProviderModule('idp1', 'module', 'category', ['active' => true]),
+            new ProviderModule('idp2', 'module', 'category', ['active' => true]),
+        ];
     }
 }

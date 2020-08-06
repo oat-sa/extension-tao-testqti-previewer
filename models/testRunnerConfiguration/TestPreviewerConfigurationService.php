@@ -23,7 +23,6 @@ declare(strict_types=1);
 namespace oat\taoQtiTestPreviewer\models\testRunnerConfiguration;
 
 use oat\oatbox\service\ConfigurableService;
-use oat\tao\model\plugins\PluginModule;
 use oat\taoQtiTest\models\runner\config\QtiRunnerConfig;
 use oat\taoTests\models\runner\plugins\TestPlugin;
 use oat\taoTests\models\runner\plugins\TestPluginService;
@@ -57,7 +56,7 @@ class TestPreviewerConfigurationService extends ConfigurableService
     }
 
     /**
-     * @return PluginModule[]
+     * @return TestPlugin[]
      */
     private function getTestRunnerActiveProviders(): array
     {
@@ -85,7 +84,7 @@ class TestPreviewerConfigurationService extends ConfigurableService
 
     private function getProviderService(): TestProviderService
     {
-        return $this->getServiceManager()->get(TestProviderService::SERVICE_ID);
+        return $this->getServiceLocator()->get(TestProviderService::SERVICE_ID);
     }
 
     private function getTestRunnerPluginService(): TestPluginService
@@ -95,6 +94,6 @@ class TestPreviewerConfigurationService extends ConfigurableService
 
     private function getTestRunnerConfigurationService(): QtiRunnerConfig
     {
-        return $this->getServiceManager()->get(QtiRunnerConfig::SERVICE_ID);
+        return $this->getServiceLocator()->get(QtiRunnerConfig::SERVICE_ID);
     }
 }
