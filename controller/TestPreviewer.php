@@ -100,5 +100,4 @@ class TestPreviewer extends tao_actions_ServiceModule
     {
         return $this->getServiceLocator()->get(TestPreviewerService::class);
     }
-
 }
