@@ -20,36 +20,37 @@
 
 declare(strict_types=1);
 
-namespace unit\models\testRunnerConfiguration;
+namespace unit\models\testConfiguration;
 
 use oat\generis\test\TestCase;
 use oat\tao\model\providers\ProviderModule;
 use oat\taoQtiTest\models\runner\config\QtiRunnerConfig;
-use oat\taoQtiTestPreviewer\models\testRunnerConfiguration\TestPreviewerConfigObject;
-use oat\taoQtiTestPreviewer\models\testRunnerConfiguration\TestPreviewerConfigurationService;
+use oat\taoQtiTestPreviewer\models\testConfiguration\service\TestPreviewerConfigurationService;
+use oat\taoQtiTestPreviewer\models\testConfiguration\TestPreviewerConfig;
 use oat\taoTests\models\runner\plugins\TestPlugin;
 use oat\taoTests\models\runner\plugins\TestPluginService;
 use oat\taoTests\models\runner\providers\TestProviderService;
+use PHPUnit\Framework\MockObject\MockObject;
 
 class TestPreviewerConfigurationServiceTest extends TestCase
 {
+
+    private const OPTIONS = ['c' => 'd'];
 
     /**
      * @var TestPreviewerConfigurationService
      */
     private $subject;
-
-    private const OPTIONS = ['c' => 'd'];
     /**
-     * @var TestPluginService|\PHPUnit\Framework\MockObject\MockObject
+     * @var TestPluginService|MockObject
      */
     private $testPluginService;
     /**
-     * @var QtiRunnerConfig|\PHPUnit\Framework\MockObject\MockObject
+     * @var QtiRunnerConfig|MockObject
      */
     private $qtiRunnerConfig;
     /**
-     * @var TestProviderService|\PHPUnit\Framework\MockObject\MockObject
+     * @var TestProviderService|MockObject
      */
     private $testProviderService;
 
@@ -83,7 +84,7 @@ class TestPreviewerConfigurationServiceTest extends TestCase
         $this->testPluginService->method('getAllPlugins')->willReturn($plugins);
         $this->testProviderService->method('getAllProviders')->willReturn($providers);
 
-        $configurationSample = new TestPreviewerConfigObject(
+        $configurationSample = new TestPreviewerConfig(
             ['category' => $providers, 'plugins' => $plugins,],
             self::OPTIONS
         );

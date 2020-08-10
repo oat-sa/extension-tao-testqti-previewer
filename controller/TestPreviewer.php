@@ -27,7 +27,7 @@ use InvalidArgumentException;
 use oat\tao\model\http\HttpJsonResponseTrait;
 use oat\taoQtiTestPreviewer\models\test\service\TestPreviewer as TestPreviewerService;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewRequest;
-use oat\taoQtiTestPreviewer\models\testRunnerConfiguration\TestPreviewerConfigurationService;
+use oat\taoQtiTestPreviewer\models\testConfiguration\service\TestPreviewerConfigurationService;
 use tao_actions_ServiceModule;
 use Throwable;
 
@@ -66,7 +66,7 @@ class TestPreviewer extends tao_actions_ServiceModule
         }
     }
 
-    public function getConfiguration(): void
+    public function configuration(): void
     {
         try {
             $this->setNoCacheHeaders();

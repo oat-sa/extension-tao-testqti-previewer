@@ -20,12 +20,12 @@
 
 declare(strict_types=1);
 
-namespace oat\taoQtiTestPreviewer\models\testRunnerConfiguration;
+namespace oat\taoQtiTestPreviewer\models\testConfiguration;
 
 use JsonSerializable;
 use oat\taoTests\models\runner\plugins\TestPluginService;
 
-class TestPreviewerConfigObject implements JsonSerializable
+class TestPreviewerConfig implements JsonSerializable
 {
     /** @var TestPluginService[] */
     private $providers;

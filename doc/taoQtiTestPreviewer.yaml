@@ -29,11 +29,11 @@ paths:
         '400':
           $ref: '#/components/responses/BadResponse'
 
-  /taoQtiTestPreviewer/TestPreviewer/getConfiguration:
+  /taoQtiTestPreviewer/TestPreviewer/configuration:
     get:
       responses:
         '200':
-          $ref: '#/components/responses/ConfigurationRespose'
+          $ref: '#/components/responses/ConfigurationResponse'
       summary: Returns current active configuration for testRunner
 
 
@@ -52,7 +52,7 @@ components:
           schema:
             $ref: '#/components/schemas/TestInit'
 
-    ConfigurationRespose:
+    ConfigurationResponse:
       description: Response with a prepared configuration of testRunner
       content:
         application/json:
@@ -274,7 +274,6 @@ components:
               type: array
               items:
                 type: object
-
             options:
               type: array
               items:

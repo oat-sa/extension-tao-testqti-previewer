@@ -20,36 +20,36 @@
 
 declare(strict_types=1);
 
-namespace unit\models\testRunnerConfiguration;
+namespace unit\models\testConfiguration;
 
 use oat\generis\test\TestCase;
-use oat\taoQtiTestPreviewer\models\testRunnerConfiguration\TestPreviewerConfigObject;
+use oat\taoQtiTestPreviewer\models\testConfiguration\TestPreviewerConfig;
 
-class TestTestPreviewConfigObject extends TestCase
+class TestTestPreviewConfig extends TestCase
 {
 
     /**
-     * @var TestPreviewerConfigObject
+     * @var TestPreviewerConfig
      */
     private $subject;
 
-    private const providers = ['a' => 'b'];
-    private const options = ['c' => 'd'];
+    private const PROVIDERS = ['a' => 'b'];
+    private const OPTIONS = ['c' => 'd'];
 
     public function setUp(): void
     {
-        $this->subject = new TestPreviewerConfigObject(self::providers, self::options);
+        $this->subject = new TestPreviewerConfig(self::PROVIDERS, self::OPTIONS);
     }
 
-    public function testGetConfig()
+    public function testGetConfig(): void
     {
-        $this->assertEquals($this->subject->getOptions(), self::options);
-        $this->assertEquals($this->subject->getProviders(), self::providers);
-        $this->assertEquals(json_encode($this->subject), $this->getSerilizedObject());
+        $this->assertEquals(self::OPTIONS, $this->subject->getOptions());
+        $this->assertEquals(self::PROVIDERS, $this->subject->getProviders());
+        $this->assertEquals($this->getSerializedObject(), json_encode($this->subject));
     }
 
-    private function getSerilizedObject()
+    private function getSerializedObject(): string
     {
-        return json_encode(['providers' => self::providers, 'options' => self::options]);
+        return json_encode(['providers' => self::PROVIDERS, 'options' => self::OPTIONS]);
     }
 }

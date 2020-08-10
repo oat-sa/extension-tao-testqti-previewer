@@ -20,23 +20,20 @@
 
 declare(strict_types=1);
 
-namespace oat\taoQtiTestPreviewer\models\testRunnerConfiguration;
+namespace oat\taoQtiTestPreviewer\models\testConfiguration\service;
 
 use oat\oatbox\service\ConfigurableService;
 use oat\taoQtiTest\models\runner\config\QtiRunnerConfig;
+use oat\taoQtiTestPreviewer\models\testConfiguration\TestPreviewerConfig;
 use oat\taoTests\models\runner\plugins\TestPlugin;
 use oat\taoTests\models\runner\plugins\TestPluginService;
 use oat\taoTests\models\runner\providers\TestProviderService;
 
 class TestPreviewerConfigurationService extends ConfigurableService
 {
-    public function getTestRunnerConfiguration(): TestPreviewerConfigObject
+    public function getTestRunnerConfiguration(): TestPreviewerConfig
     {
-        $providers = $this->getTestRunnerActiveProviders();
-
-        $options = $this->getTestRunnerOptions();
-
-        return new TestPreviewerConfigObject($providers, $options);
+        return new TestPreviewerConfig($this->getTestRunnerActiveProviders(), $this->getTestRunnerOptions());
     }
 
     /**
