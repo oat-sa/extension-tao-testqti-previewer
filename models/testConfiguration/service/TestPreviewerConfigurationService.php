@@ -24,59 +24,20 @@ namespace oat\taoQtiTestPreviewer\models\testConfiguration\service;
 
 use oat\oatbox\service\ConfigurableService;
 use oat\taoQtiTest\models\runner\config\QtiRunnerConfig;
+use oat\taoQtiTestPreviewer\models\testConfiguration\mapper\TestPreviewerConfigurationMapper;
 use oat\taoQtiTestPreviewer\models\testConfiguration\TestPreviewerConfig;
-use oat\taoTests\models\runner\plugins\TestPlugin;
 use oat\taoTests\models\runner\plugins\TestPluginService;
 use oat\taoTests\models\runner\providers\TestProviderService;
 
 class TestPreviewerConfigurationService extends ConfigurableService
 {
-    public function getTestRunnerConfiguration(): TestPreviewerConfig
+    public function getConfiguration(): TestPreviewerConfig
     {
-        return new TestPreviewerConfig($this->getTestRunnerActiveProviders(), $this->getTestRunnerOptions());
-    }
-
-    /**
-     * @return TestPluginService[]
-     */
-    private function getTestRunnerActivePlugins(): array
-    {
-        $result = [];
-
-        foreach ($this->getTestRunnerPluginService()->getAllPlugins() as $key => $plugin) {
-            if ($plugin instanceof TestPlugin && $plugin->isActive()) {
-                $result[$key] = $plugin;
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * @return TestPlugin[]
-     */
-    private function getTestRunnerActiveProviders(): array
-    {
-        $providers = [];
-        foreach ($this->getProviderService()->getAllProviders() as $provider) {
-            if ($provider->isActive()) {
-                $category = $provider->getCategory();
-                if (!isset($providers[$category])) {
-                    $providers[$category] = [];
-                }
-                $providers[$category][] = $provider;
-            }
-        }
-
-        $plugins = $this->getTestRunnerActivePlugins();
-        $providers['plugins'] = array_values($plugins);
-
-        return $providers;
-    }
-
-    private function getTestRunnerOptions(): array
-    {
-        return $this->getTestRunnerConfigurationService()->getConfig();
+        return $this->getMapper()->map(
+            $this->getProviderService()->getAllProviders(),
+            $this->getTestRunnerPluginService()->getAllPlugins(),
+            $this->getTestRunnerConfigurationService()->getConfig()
+        );
     }
 
     private function getProviderService(): TestProviderService
@@ -92,5 +53,10 @@ class TestPreviewerConfigurationService extends ConfigurableService
     private function getTestRunnerConfigurationService(): QtiRunnerConfig
     {
         return $this->getServiceLocator()->get(QtiRunnerConfig::SERVICE_ID);
+    }
+
+    private function getMapper(): TestPreviewerConfigurationMapper
+    {
+        return $this->getServiceLocator()->get(TestPreviewerConfigurationMapper::class);
     }
 }

@@ -90,7 +90,7 @@ class TestPreviewerConfigurationServiceTest extends TestCase
         );
         $this->assertEquals(
             $configurationSample,
-            $this->subject->getTestRunnerConfiguration()
+            $this->subject->getConfiguration()
         );
     }
 
