@@ -235,8 +235,7 @@ class TestPreviewMapperTest extends TestCase
         AssessmentItemRef $itemRef,
         TestPart $testPart,
         AssessmentSection $section
-    ): RouteItem
-    {
+    ): RouteItem {
         $routeItem = $this->createMock(RouteItem::class);
 
         $routeItem->method('getAssessmentItemRef')

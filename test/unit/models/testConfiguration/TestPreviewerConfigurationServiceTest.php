@@ -35,30 +35,32 @@ use PHPUnit\Framework\MockObject\MockObject;
 
 class TestPreviewerConfigurationServiceTest extends TestCase
 {
-
     private const OPTIONS = ['c' => 'd'];
 
-    /**
-     * @var TestPreviewerConfigurationService
-     */
-    private $subject;
     /**
      * @var TestPluginService|MockObject
      */
     private $testPluginService;
+
     /**
      * @var QtiRunnerConfig|MockObject
      */
     private $qtiRunnerConfig;
+
     /**
      * @var TestProviderService|MockObject
      */
     private $testProviderService;
+
     /**
      * @var TestPreviewerConfigurationMapper
      */
     private $testPreviewerConfigurationMapper;
 
+    /**
+     * @var TestPreviewerConfigurationService
+     */
+    private $subject;
 
     public function setUp(): void
     {
