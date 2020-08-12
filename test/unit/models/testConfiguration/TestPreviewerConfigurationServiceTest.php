@@ -25,6 +25,7 @@ namespace unit\models\testConfiguration;
 use oat\generis\test\TestCase;
 use oat\tao\model\providers\ProviderModule;
 use oat\taoQtiTest\models\runner\config\QtiRunnerConfig;
+use oat\taoQtiTestPreviewer\models\testConfiguration\mapper\TestPreviewerConfigurationMapper;
 use oat\taoQtiTestPreviewer\models\testConfiguration\service\TestPreviewerConfigurationService;
 use oat\taoQtiTestPreviewer\models\testConfiguration\TestPreviewerConfig;
 use oat\taoTests\models\runner\plugins\TestPlugin;
@@ -53,6 +54,10 @@ class TestPreviewerConfigurationServiceTest extends TestCase
      * @var TestProviderService|MockObject
      */
     private $testProviderService;
+    /**
+     * @var TestPreviewerConfigurationMapper
+     */
+    private $testPreviewerConfigurationMapper;
 
 
     public function setUp(): void
@@ -60,6 +65,7 @@ class TestPreviewerConfigurationServiceTest extends TestCase
         $this->testProviderService = $this->createMock(TestProviderService::class);
         $this->testPluginService = $this->createMock(TestPluginService::class);
         $this->qtiRunnerConfig = $this->createMock(QtiRunnerConfig::class);
+        $this->testPreviewerConfigurationMapper = new testPreviewerConfigurationMapper();
 
         $this->subject = new TestPreviewerConfigurationService();
 
@@ -68,6 +74,7 @@ class TestPreviewerConfigurationServiceTest extends TestCase
                 TestPluginService::SERVICE_ID => $this->testPluginService,
                 TestProviderService::SERVICE_ID => $this->testProviderService,
                 QtiRunnerConfig::SERVICE_ID => $this->qtiRunnerConfig,
+                TestPreviewerConfigurationMapper::class => $this->testPreviewerConfigurationMapper,
             ]
         );
 
@@ -90,7 +97,7 @@ class TestPreviewerConfigurationServiceTest extends TestCase
         );
         $this->assertEquals(
             $configurationSample,
-            $this->subject->getTestRunnerConfiguration()
+            $this->subject->getConfiguration()
         );
     }
 

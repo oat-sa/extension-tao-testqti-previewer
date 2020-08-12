@@ -72,7 +72,7 @@ class TestPreviewer extends tao_actions_ServiceModule
             $this->setNoCacheHeaders();
 
             $this->setSuccessJsonResponse(
-                $this->getTestPreviewerConfigurationService()->getTestRunnerConfiguration()
+                $this->getTestPreviewerConfigurationService()->getConfiguration()
             );
         } catch (Throwable $exception) {
             $message = $exception instanceof common_exception_UserReadableException
