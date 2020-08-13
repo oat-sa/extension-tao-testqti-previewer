@@ -27,14 +27,13 @@ use oat\taoQtiTestPreviewer\models\testConfiguration\TestPreviewerConfig;
 
 class TestTestPreviewConfig extends TestCase
 {
+    private const PROVIDERS = ['a' => 'b'];
+    private const OPTIONS = ['c' => 'd'];
 
     /**
      * @var TestPreviewerConfig
      */
     private $subject;
-
-    private const PROVIDERS = ['a' => 'b'];
-    private const OPTIONS = ['c' => 'd'];
 
     public function setUp(): void
     {
