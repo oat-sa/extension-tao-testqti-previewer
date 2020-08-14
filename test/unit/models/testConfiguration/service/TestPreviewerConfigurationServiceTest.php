@@ -20,7 +20,7 @@
 
 declare(strict_types=1);
 
-namespace unit\models\testConfiguration;
+namespace unit\models\testConfiguration\service;
 
 use oat\generis\test\TestCase;
 use oat\tao\model\providers\ProviderModule;
