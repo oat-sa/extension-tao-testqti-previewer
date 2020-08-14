@@ -57,7 +57,7 @@ class TestPreviewerConfigurationServiceTest extends TestCase
         $this->testProviderService = $this->createMock(TestProviderService::class);
         $this->testPluginService = $this->createMock(TestPluginService::class);
         $this->qtiRunnerConfig = $this->createMock(QtiRunnerConfig::class);
-        $this->testPreviewerConfigurationMapper = new testPreviewerConfigurationMapper();
+        $this->testPreviewerConfigurationMapper = new TestPreviewerConfigurationMapper();
 
         $this->subject = new TestPreviewerConfigurationService();
 
