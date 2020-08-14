@@ -25,7 +25,7 @@ namespace unit\models\testConfiguration;
 use oat\generis\test\TestCase;
 use oat\taoQtiTestPreviewer\models\testConfiguration\TestPreviewerConfig;
 
-class TestTestPreviewConfig extends TestCase
+class TestPreviewConfigTest extends TestCase
 {
     private const PROVIDERS = ['a' => 'b'];
     private const OPTIONS = ['c' => 'd'];
