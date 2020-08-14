@@ -35,7 +35,6 @@ class TestPreviewerConfigurationMapper extends ConfigurableService
      * @param PluginModule[] $plugins
      * @param mixed[] $options
      *
-     * @return TestPreviewerConfig
      */
     public function map(array $providerModules, array $plugins, array $options): TestPreviewerConfig
     {

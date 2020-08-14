@@ -30,9 +30,7 @@ class TestPreviewConfigTest extends TestCase
     private const PROVIDERS = ['a' => 'b'];
     private const OPTIONS = ['c' => 'd'];
 
-    /**
-     * @var TestPreviewerConfig
-     */
+    /** @var TestPreviewerConfig */
     private $subject;
 
     public function setUp(): void

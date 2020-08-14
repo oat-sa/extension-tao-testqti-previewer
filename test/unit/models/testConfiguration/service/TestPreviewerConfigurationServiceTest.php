@@ -37,29 +37,19 @@ class TestPreviewerConfigurationServiceTest extends TestCase
 {
     private const OPTIONS = ['c' => 'd'];
 
-    /**
-     * @var TestPluginService|MockObject
-     */
+    /** @var TestPluginService|MockObject */
     private $testPluginService;
 
-    /**
-     * @var QtiRunnerConfig|MockObject
-     */
+    /** @var QtiRunnerConfig|MockObject */
     private $qtiRunnerConfig;
 
-    /**
-     * @var TestProviderService|MockObject
-     */
+    /** @var TestProviderService|MockObject */
     private $testProviderService;
 
-    /**
-     * @var TestPreviewerConfigurationMapper
-     */
+    /** @var TestPreviewerConfigurationMapper */
     private $testPreviewerConfigurationMapper;
 
-    /**
-     * @var TestPreviewerConfigurationService
-     */
+    /** @var TestPreviewerConfigurationService */
     private $subject;
 
     public function setUp(): void
@@ -71,16 +61,16 @@ class TestPreviewerConfigurationServiceTest extends TestCase
 
         $this->subject = new TestPreviewerConfigurationService();
 
-        $slm = $this->getServiceLocatorMock(
-            [
-                TestPluginService::SERVICE_ID => $this->testPluginService,
-                TestProviderService::SERVICE_ID => $this->testProviderService,
-                QtiRunnerConfig::SERVICE_ID => $this->qtiRunnerConfig,
-                TestPreviewerConfigurationMapper::class => $this->testPreviewerConfigurationMapper,
-            ]
+        $this->subject->setServiceLocator(
+            $this->getServiceLocatorMock(
+                [
+                    TestPluginService::SERVICE_ID => $this->testPluginService,
+                    TestProviderService::SERVICE_ID => $this->testProviderService,
+                    QtiRunnerConfig::SERVICE_ID => $this->qtiRunnerConfig,
+                    TestPreviewerConfigurationMapper::class => $this->testPreviewerConfigurationMapper,
+                ]
+            )
         );
-
-        $this->subject->setServiceLocator($slm);
     }
 
     public function testGetTestRunnerConfiguration(): void

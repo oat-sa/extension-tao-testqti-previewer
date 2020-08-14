@@ -30,6 +30,7 @@ use oat\taoTests\models\runner\plugins\TestPlugin;
 
 class TestPreviewerConfigurationMapperTest extends TestCase
 {
+    /** @var TestPreviewerConfigurationMapper */
     private $subject;
 
     protected function setUp(): void

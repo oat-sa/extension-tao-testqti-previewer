@@ -29,6 +29,7 @@ class TestPreviewerConfig implements JsonSerializable
 {
     /** @var TestPlugin[] */
     private $providers;
+
     /** @var array */
     private $options;
 
