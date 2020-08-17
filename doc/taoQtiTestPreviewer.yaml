@@ -28,6 +28,15 @@ paths:
           $ref: '#/components/responses/InitResponse'
         '400':
           $ref: '#/components/responses/BadResponse'
+
+  /taoQtiTestPreviewer/TestPreviewer/configuration:
+    get:
+      responses:
+        '200':
+          $ref: '#/components/responses/ConfigurationResponse'
+      summary: Returns current active configuration for testRunner
+
+
 components:
   securitySchemes:
     cookieAuth:
@@ -42,6 +51,13 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/TestInit'
+
+    ConfigurationResponse:
+      description: Response with a prepared configuration of testRunner
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Configuration'
 
     BadResponse:
       description: If something went wrong
@@ -245,3 +261,20 @@ components:
         questionsViewed:
           type: integer
           example: 19
+
+    Configuration:
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            providers:
+              type: array
+              items:
+                type: object
+            options:
+              type: array
+              items:
+                type: object
