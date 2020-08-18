@@ -34,16 +34,6 @@ define(['lodash', 'core/logger', 'taoQtiTestPreviewer/previewer/component/qtiTes
      */
     const defaultPlugins = [
         {
-            module: 'taoQtiTestPreviewer/previewer/plugins/controls/close',
-            bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-            category: 'controls'
-        },
-        {
-            module: 'taoQtiTestPreviewer/previewer/plugins/tools/scale/scale',
-            bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-            category: 'tools'
-        },
-        {
             module: 'taoQtiTest/runner/plugins/tools/itemThemeSwitcher/itemThemeSwitcher',
             bundle: 'taoQtiTest/loader/testPlugins.min',
             category: 'tools'

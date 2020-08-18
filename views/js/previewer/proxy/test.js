@@ -25,13 +25,45 @@ define([
     'core/promiseQueue',
     'core/request',
     'util/url',
-], function (promiseQueue, request, urlUtil) {
+    'taoQtiTest/runner/helpers/map'
+], function (promiseQueue, request, urlUtil, mapHelper) {
     'use strict';
 
     const serviceControllerInit = 'TestPreviewer';
     const serviceControllerGetItem = 'Previewer';
 
     const serviceExtension = 'taoQtiTestPreviewer';
+
+    /**
+     * The possible states of the test session,
+     * coming from the test context
+     * (this state comes from the backend)
+     */
+    const testSessionStates = Object.freeze({
+        initial: 0,
+        interacting: 1,
+        modalFeedback: 2,
+        suspended: 3,
+        closed: 4
+    });
+    /**
+     * Finds ids of testPart, section and item in testMap for a given item position
+     * @param {Object} testMap
+     * @param {Number} position item position
+     * @returns {Object} object containing testPartId, sectionId, itemIdentifier
+     */
+    function findIds(testMap, position) {
+        for (let testPartId in testMap.parts) {
+            for (let sectionId in testMap.parts[testPartId].sections) {
+                for (let itemIdentifier in testMap.parts[testPartId].sections[sectionId].items) {
+                    if (testMap.parts[testPartId].sections[sectionId].items[itemIdentifier].position === position) {
+                        return { testPartId, sectionId, itemIdentifier };
+                    }
+                }
+            }
+        }
+        return {};
+    }
     /**
      * QTI proxy definition
      * Related to remote services calls
@@ -56,12 +88,25 @@ define([
          * @returns {Promise} - Returns a promise. The proxy will be fully initialized on resolve.
          *                      Any error will be provided if rejected.
          */
-        init: function init(configs, { testUri }) {
+        init: function init(configs) {
             return request( {
                 url: urlUtil.route('init', serviceControllerInit, serviceExtension),
-                data: { testUri }
+                data: { testUri: configs.options.testUri }
             })
-            .then(response => response.data);
+            .then(response => {
+                const data = response.data;
+                //the received map is not complete and should be "built"
+                this.builtTestMap = mapHelper.reindex(data.testMap);
+                data.testContext = {
+                    itemIdentifier: this.builtTestMap.jumps[0].identifier,
+                    itemPosition: 0,
+                    testPartId: this.builtTestMap.jumps[0].part,
+                    sectionId: this.builtTestMap.jumps[0].section,
+                    canMoveBackward: true,
+                    state: testSessionStates.initial
+                };
+                return data;
+            });
         },
 
         /**
@@ -79,15 +124,78 @@ define([
 
         /**
          * Gets an item definition by its URI, also gets its current state
-         * @param {String} itemUri - The URI of the item to get
+         * @param {String} itemIdentifier - The URI of the item to get
          * @returns {Promise} - Returns a promise. The item data will be provided on resolve.
          *                      Any error will be provided if rejected.
          */
-        getItem: function getItem(itemUri) {
+        getItem: function getItem(itemIdentifier) {
+            const itemUri = mapHelper.getItem(this.builtTestMap, itemIdentifier).uri;
             return request({
                 url: urlUtil.route('getItem', serviceControllerGetItem, serviceExtension),
-                data: { serviceCallId: 'previewer', itemUri }
+                data: { serviceCallId: 'previewer', itemUri}
+            })
+            .then(data => {
+                data.itemData = data.content;
+                return data;
             });
+        },
+
+        /**
+         * Call action on the test
+         * @param {string} itemIdentifier - the current item
+         * @param {string} action - the action id
+         * @param {Object} params
+         * @returns {Promise} resolves with the response
+         */
+        callItemAction(itemIdentifier, action, params = {}) {
+            const dataHolder = this.getDataHolder();
+            const testContext = dataHolder.get('testContext');
+            const testMap = dataHolder.get('testMap');
+            const actions = {
+                //simulate backend move action
+                move: () => {
+                    if (params.direction === 'next') {
+                        if (params.scope === 'testPart') {
+                            const testPartPosition = testMap.parts[testContext.testPartId].position;
+                            const nextPartsSorted = Object.values(testMap.parts)
+                                .filter(p => p.position > testPartPosition)
+                                .sort((a, b) => a.position - b.position);
+                            if (nextPartsSorted.length === 0) {
+                                testContext.state = testSessionStates.closed;
+                            } else {
+                                testContext.itemPosition = Math.min(testMap.stats.total - 1, nextPartsSorted[0].position);
+                            }
+                        } else {
+                            if (testContext.itemPosition + 1 >= testMap.stats.total) {
+                                testContext.state = testSessionStates.closed;
+                            } else {
+                                testContext.itemPosition = Math.min(testMap.stats.total - 1, testContext.itemPosition + 1);
+                            }
+                        }
+                    }
+                    if (params.direction === 'previous') {
+                        testContext.itemPosition = Math.max(0, testContext.itemPosition - 1);
+                    }
+                    if (params.direction === 'jump' && params.ref >= 0) {
+                        testContext.itemPosition = params.ref;
+                    }
+
+                    const ids = findIds(testMap, testContext.itemPosition);
+                    testContext.testPartId = ids.testPartId;
+                    testContext.sectionId = ids.sectionId;
+                    testContext.itemIdentifier = ids.itemIdentifier;
+
+                    return { testContext, testMap };
+                },
+
+                flagItem: () => Promise.resolve()
+            };
+            // Alias move as skip, for Sandbox purposes
+            actions.skip = actions.move;
+
+            if (typeof actions[action] === 'function') {
+                return actions[action]();
+            }
         }
     };
 });
