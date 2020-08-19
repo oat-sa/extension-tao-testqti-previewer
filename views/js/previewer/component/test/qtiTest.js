@@ -83,11 +83,12 @@ define([
                 this.setState('fullpage', fullPage);
                 this.setState('readonly', readOnly);
                 this.setState('hideactionbars', hideActionBars);
-                // clone logo to preview
-                $('#tao-main-logo').clone().appendTo(".previewer-component header");
             })
             .on('ready', function(runner) {
-                runner.on('destroy', () => this.destroy() );
+                runner.on('destroy', () => this.destroy());
+                // clone logo to preview
+                $('#tao-main-logo').clone().appendTo('.previewer-component header');
+                $('footer').clone().appendTo('.previewer-component');
             })
             .on('error', function (err) {
                 this.trigger('error', err);
