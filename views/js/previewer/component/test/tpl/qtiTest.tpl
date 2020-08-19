@@ -23,12 +23,6 @@
                           <span class="text">{{__ "Logout"}}</span>
                       </a>
                   </li>
-                  <li class="infoControl sep-before hidden" data-control="exit">
-                      <a role="button" href="#">
-                          <span class="icon-logout"></span>
-                          <span class="text">{{__ "Logout"}}</span>
-                      </a>
-                  </li>
               </ul>
           </div>
       </nav>

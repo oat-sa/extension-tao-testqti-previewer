@@ -86,12 +86,9 @@ define([
             })
             .on('ready', function(runner) {
                 runner.on('destroy', () => this.destroy());
-                // clone logo to preview
+                // clone logo and footer to preview
                 $('#tao-main-logo').clone().appendTo('.previewer-component header');
                 $('footer').clone().appendTo('.previewer-component');
-            })
-            .on('error', function (err) {
-                this.trigger('error', err);
             });
     };
 });
