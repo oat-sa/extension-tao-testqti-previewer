@@ -53,14 +53,9 @@ define([
      * @returns {Object} object containing testPartId, sectionId, itemIdentifier
      */
     function findIds(testMap, position) {
-        for (let testPartId in testMap.parts) {
-            for (let sectionId in testMap.parts[testPartId].sections) {
-                for (let itemIdentifier in testMap.parts[testPartId].sections[sectionId].items) {
-                    if (testMap.parts[testPartId].sections[sectionId].items[itemIdentifier].position === position) {
-                        return { testPartId, sectionId, itemIdentifier };
-                    }
-                }
-            }
+        const item = mapHelper.getJump(testMap, position);
+        if (item) {
+            return { testPartId: item.part, sectionId: item.section, itemIdentifier: item.identifier};
         }
         return {};
     }

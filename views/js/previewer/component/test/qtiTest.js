@@ -22,8 +22,8 @@ define([
     'context',
     'jquery',
     'taoTests/runner/runnerComponent',
-    'tpl!taoQtiTestPreviewer/previewer/component/tpl/qtiTest',
-    'css!taoQtiTestPreviewer/previewer/component/css/qtiTest',
+    'tpl!taoQtiTestPreviewer/previewer/component/test/tpl/qtiTest',
+    'css!taoQtiTestPreviewer/previewer/component/test/css/qtiTest',
     'css!taoQtiTestCss/new-test-runner'
 ], function (context, $, runnerComponentFactory, runnerTpl) {
     'use strict';
