@@ -20,11 +20,12 @@
  */
 define([
     'context',
+    'jquery',
     'taoTests/runner/runnerComponent',
     'tpl!taoQtiTestPreviewer/previewer/component/tpl/qtiTest',
     'css!taoQtiTestPreviewer/previewer/component/css/qtiTest',
     'css!taoQtiTestCss/new-test-runner'
-], function (context, runnerComponentFactory, runnerTpl) {
+], function (context, $, runnerComponentFactory, runnerTpl) {
     'use strict';
 
     /**
@@ -82,6 +83,8 @@ define([
                 this.setState('fullpage', fullPage);
                 this.setState('readonly', readOnly);
                 this.setState('hideactionbars', hideActionBars);
+                // clone logo to preview
+                $('#tao-main-logo').clone().appendTo(".previewer-component header");
             })
             .on('ready', function(runner) {
                 runner.on('destroy', () => this.destroy() );

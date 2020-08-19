@@ -1,8 +1,5 @@
 <div class="previewer-component">
   <header role="menubar" class="dark-bar clearfix">
-    <span class="lft">
-        <img src="/tao/views/img/tao-logo.png" alt="TAO Logo" id="tao-main-logo">
-    </span>
       <div class="lft title-box"></div>
       <nav role="menu" class="rgt">
           <!-- snippet: dark bar left menu -->
