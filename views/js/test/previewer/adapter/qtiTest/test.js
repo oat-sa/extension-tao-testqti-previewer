@@ -13,19 +13,20 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2018 (original work) Open Assessment Technologies SA ;
+ * Copyright (c) 2020 (original work) Open Assessment Technologies SA ;
  */
 
 /**
- * @author Jean-Sébastien Conan <jean-sebastien@taotesting.com>
+ * @author Hanna Dzmitryieva <hanna@taotesting.com>
  */
 define([
 
     'jquery',
-    'taoQtiTestPreviewer/previewer/adapter/item/qtiItem',
-    'json!taoQtiItem/test/samples/json/space-shuttle.json',
+    'taoQtiTestPreviewer/previewer/adapter/test/qtiTest',
+    'json!taoQtiTestPreviewer/test/samples/json/initTestPreview.json',
+    'json!taoQtiTestPreviewer/test/samples/json/itemData.json',
     'lib/jquery.mockjax/jquery.mockjax'
-], function($, previewerAdapter, itemData) {
+], function($, previewerAdapter, initTestPreview, itemData) {
     'use strict';
 
     QUnit.module('API');
@@ -48,12 +49,7 @@ define([
     QUnit.test('integration', function(assert) {
         var ready = assert.async();
         var serviceCallId = 'previewer';
-        var itemRef = {
-            resultId: 'http://ce.tao/tao.rdf#i15265414071682172',
-            itemDefinition: 'item-2',
-            deliveryUri: 'http://ce.tao/tao.rdf#i15265411295469108'
-        };
-        var state = {'RESPONSE': {'response': {'base': {'identifier': 'Atlantis'}}}};
+        var testUri = '35';
         var configInteractive = {
             serviceCallId: serviceCallId,
             fullPage: true
@@ -64,57 +60,21 @@ define([
             readOnly: true
         };
 
+
         function displayPreviewer(config) {
             $.mockjax.clear();
 
             $.mockjax({
-                url: '/init*',
-                responseText: {
-                    success: true
-                }
+                url: '*/init',
+                responseText: initTestPreview
             });
 
             $.mockjax({
-                url: '/getItem*',
-                responseText: {
-                    success: true,
-                    content: {
-                        type: 'qti',
-                        data: itemData
-                    },
-                    baseUrl: '',
-                    state: {}
-                }
+                url: '*/getItem',
+                responseText: itemData
             });
 
-            $.mockjax({
-                url: '*/asset',
-                responseText: ""
-            });
-
-            return previewerAdapter.init(itemRef, state, config)
-                .before('ready', function(e, runner) {
-                    runner
-                        .before('submititem', function() {
-                            $.mockjax({
-                                url: '/submitItem*',
-                                responseText: {
-                                    success: true,
-                                    displayFeedback: true,
-                                    itemSession: {
-                                        SCORE: {
-                                            base: {
-                                                float: 0
-                                            }
-                                        }
-                                    }
-                                }
-                            });
-                        })
-                        .after('submititem', function() {
-                            $.mockjax.clear();
-                        });
-                });
+            return previewerAdapter.init(testUri, config);
         }
 
         assert.expect(1);
