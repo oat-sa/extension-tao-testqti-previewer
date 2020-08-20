@@ -79,7 +79,7 @@ define([
         /**
          * Initializes the proxy
          * @param {Object} configs - configuration from proxy
-         * @param {String} testUri - The identifier of the test
+         * @param {String} configs.testUri - The identifier of the test
          * @returns {Promise} - Returns a promise. The proxy will be fully initialized on resolve.
          *                      Any error will be provided if rejected.
          */
@@ -142,7 +142,7 @@ define([
          * @param {Object} params
          * @returns {Promise} resolves with the response
          */
-        callItemAction(itemIdentifier, action, params = {}) {
+        callItemAction: function callItemAction(itemIdentifier, action, params = {}) {
             const dataHolder = this.getDataHolder();
             const testContext = dataHolder.get('testContext');
             const testMap = dataHolder.get('testMap');
@@ -185,12 +185,21 @@ define([
 
                 flagItem: () => Promise.resolve()
             };
-            // Alias move as skip, for Sandbox purposes
             actions.skip = actions.move;
 
             if (typeof actions[action] === 'function') {
                 return actions[action]();
             }
-        }
+        },
+
+        /**
+         * Calls an action related to the test
+         * @returns {Promise} - Returns a promise. The result of the request will be provided on resolve.
+         *                      Any error will be provided if rejected.
+         */
+        callTestAction: function callTestAction() {
+            // the method must return a promise
+            return Promise.resolve();
+        },
     };
 });

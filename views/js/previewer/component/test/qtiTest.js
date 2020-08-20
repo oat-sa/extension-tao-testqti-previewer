@@ -88,7 +88,7 @@ define([
                 runner.on('destroy', () => this.destroy());
                 // clone logo and footer to preview
                 $('#tao-main-logo').clone().appendTo('.previewer-component header');
-                $('footer').clone().appendTo('.previewer-component');
+                $('body > footer').clone().appendTo('.previewer-component');
             });
     };
 });
