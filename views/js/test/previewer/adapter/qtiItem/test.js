@@ -87,11 +87,6 @@ define([
                 }
             });
 
-            $.mockjax({
-                url: '*/asset',
-                responseText: ""
-            });
-
             return previewerAdapter.init(itemRef, state, config)
                 .before('ready', function(e, runner) {
                     runner
