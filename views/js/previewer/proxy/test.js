@@ -79,7 +79,7 @@ define([
         /**
          * Initializes the proxy
          * @param {Object} configs - configuration from proxy
-         * @param {String} configs.testUri - The identifier of the test
+         * @param {String} configs.options.testUri - The identifier of the test
          * @returns {Promise} - Returns a promise. The proxy will be fully initialized on resolve.
          *                      Any error will be provided if rejected.
          */
