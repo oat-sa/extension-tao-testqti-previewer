@@ -83,7 +83,7 @@ define([
          * @returns {Promise} - Returns a promise. The proxy will be fully initialized on resolve.
          *                      Any error will be provided if rejected.
          */
-        init: function init(configs) {
+        init(configs) {
             return request( {
                 url: urlUtil.route('init', serviceControllerInit, serviceExtension),
                 data: { testUri: configs.options.testUri }
