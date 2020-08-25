@@ -47,6 +47,11 @@ define(['lodash', 'core/logger', 'taoQtiTestPreviewer/previewer/component/test/q
             module: 'taoQtiTest/runner/plugins/navigation/next',
             bundle: 'taoQtiTest/loader/testPlugins.min',
             category: 'navigation'
+        },
+        {
+            module: 'taoQtiTestPreviewer/previewer/plugins/content/cloneLogoInTestPreview',
+            bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+            category: 'content'
         }
     ];
 

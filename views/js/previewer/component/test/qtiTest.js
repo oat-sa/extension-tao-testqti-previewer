@@ -86,8 +86,6 @@ define([
             })
             .on('ready', function(runner) {
                 runner.on('destroy', () => this.destroy());
-                // clone logo to preview - because logo source + class + styles can be customized by client extension
-                $('#tao-main-logo').clone().appendTo('.previewer-component header');
             });
     };
 });
