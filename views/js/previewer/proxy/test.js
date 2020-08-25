@@ -143,7 +143,7 @@ define([
          * @param {Object} params
          * @returns {Promise} resolves with the response
          */
-        callItemAction: function callItemAction(itemIdentifier, action, params = {}) {
+        callItemAction(itemIdentifier, action, params = {}) {
             const dataHolder = this.getDataHolder();
             const testContext = dataHolder.get('testContext');
             const testMap = dataHolder.get('testMap');
