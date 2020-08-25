@@ -92,11 +92,12 @@ define([
                 const data = response.data;
                 //the received map is not complete and should be "built"
                 this.builtTestMap = mapHelper.reindex(data.testMap);
+                const  firstItem = this.builtTestMap.jumps[0] || {};
                 data.testContext = {
-                    itemIdentifier: this.builtTestMap.jumps[0].identifier,
+                    itemIdentifier: firstItem.identifier,
                     itemPosition: 0,
-                    testPartId: this.builtTestMap.jumps[0].part,
-                    sectionId: this.builtTestMap.jumps[0].section,
+                    testPartId: firstItem.part,
+                    sectionId: firstItem.section,
                     canMoveBackward: true,
                     state: testSessionStates.initial
                 };
