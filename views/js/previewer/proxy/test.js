@@ -126,6 +126,9 @@ define([
          */
         getItem(itemIdentifier) {
             const { uri } = mapHelper.getItem(this.builtTestMap, itemIdentifier) || {};
+            if (!uri) {
+                throw new Error(`There is no item ${itemIdentifier} in the testMap!`);
+            }
             return request({
                 url: urlUtil.route('getItem', serviceControllerGetItem, serviceExtension),
                 data: { serviceCallId: 'previewer', itemUri: uri}
