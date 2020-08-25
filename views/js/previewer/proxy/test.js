@@ -198,7 +198,7 @@ define([
          * @returns {Promise} - Returns a promise. The result of the request will be provided on resolve.
          *                      Any error will be provided if rejected.
          */
-        callTestAction: function callTestAction() {
+        callTestAction() {
             // the method must return a promise
             return Promise.resolve();
         },
