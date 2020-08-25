@@ -124,7 +124,7 @@ define([
          * @returns {Promise} - Returns a promise. The item data will be provided on resolve.
          *                      Any error will be provided if rejected.
          */
-        getItem: function getItem(itemIdentifier) {
+        getItem(itemIdentifier) {
             const itemUri = mapHelper.getItem(this.builtTestMap, itemIdentifier).uri;
             return request({
                 url: urlUtil.route('getItem', serviceControllerGetItem, serviceExtension),
