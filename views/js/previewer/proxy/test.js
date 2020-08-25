@@ -70,7 +70,7 @@ define([
         /**
          * Installs the proxy
          */
-        install: function install() {
+        install() {
             /**
              * A promise queue to ensure requests run sequentially
              */
@@ -110,7 +110,7 @@ define([
          * @returns {Promise} - Returns a promise. The proxy will be fully uninstalled on resolve.
          *                      Any error will be provided if rejected.
          */
-        destroy: function destroy() {
+        destroy() {
             // no request, just a resources cleaning
             this.queue = null;
 
@@ -125,10 +125,10 @@ define([
          *                      Any error will be provided if rejected.
          */
         getItem(itemIdentifier) {
-            const itemUri = mapHelper.getItem(this.builtTestMap, itemIdentifier).uri;
+            const { uri } = mapHelper.getItem(this.builtTestMap, itemIdentifier) || {};
             return request({
                 url: urlUtil.route('getItem', serviceControllerGetItem, serviceExtension),
-                data: { serviceCallId: 'previewer', itemUri}
+                data: { serviceCallId: 'previewer', itemUri: uri}
             })
             .then(data => {
                 data.itemData = data.content;
