@@ -20,10 +20,12 @@
  */
 define([
     'context',
-    'taoQtiTestPreviewer/previewer/runner',
-    'taoQtiTest/runner/helpers/map',
-    'css!taoQtiTestPreviewer/previewer/provider/item/css/item'
-], function (context, previewerFactory, mapHelper) {
+    'jquery',
+    'taoTests/runner/runnerComponent',
+    'tpl!taoQtiTestPreviewer/previewer/component/test/tpl/qtiTest',
+    'css!taoQtiTestPreviewer/previewer/component/test/css/qtiTest',
+    'css!taoQtiTestCss/new-test-runner'
+], function (context, $, runnerComponentFactory, runnerTpl) {
     'use strict';
 
     /**
@@ -34,18 +36,17 @@ define([
      * @param {Object[]} [config.plugins] - Additional plugins to load
      * @param {String} [config.fullPage] - Force the previewer to occupy the full window.
      * @param {String} [config.readOnly] - Do not allow to modify the previewed item.
-     * @param {Function} [template] - An optional template for the component
      * @returns {previewer}
      */
-    return function qtiTestPreviewerFactory(container, config = {}, template = null) {
+    return function qtiTestPreviewerFactory(container, config = {}) {
         const testRunnerConfig = {
             testDefinition: 'test-container',
             serviceCallId: 'previewer',
             providers: {
                 runner: {
-                    id: 'qtiItemPreviewer',
-                    module: 'taoQtiTestPreviewer/previewer/provider/item/item',
-                    bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+                    id: 'qti',
+                    module: 'taoQtiTest/runner/provider/qti',
+                    bundle: 'taoQtiTest/loader/taoQtiTestRunner.min',
                     category: 'runner'
                 },
                 proxy: {
@@ -67,40 +68,24 @@ define([
                 readOnly: config.readOnly,
                 fullPage: config.fullPage,
                 plugins: config.plugins,
-                hideActionBars: config.hideActionBars
+                hideActionBars: config.hideActionBars,
+                testUri: config.testUri
             },
-            proxyProvider: 'qtiTestPreviewerProxy',
-            testUri: config.testUri
+            proxyProvider: 'qtiTestPreviewerProxy'
         };
 
         //extra context config
         testRunnerConfig.loadFromBundle = !!context.bundle;
 
-        return previewerFactory(container, testRunnerConfig, template).on('ready', runner => {
-            // use testMap to display first item (position: 0)
-            const dataHolder = runner.getDataHolder();
-            const testMap = dataHolder.get('testMap');
-            const item = mapHelper.getItemAt(testMap, 0);
-            const loadItem = position => {
-                const textContext = dataHolder.get('testContext');
-                const newPosition = textContext.itemPosition + position;
-                const newItem = mapHelper.getItemAt(testMap, newPosition);
-                if (newItem && newItem.uri) {
-                    textContext.itemIdentifier = testMap.jumps[newPosition].identifier;
-                    textContext.itemPosition = newPosition;
-                    textContext.testPartId = testMap.jumps[newPosition].part;
-                    textContext.sectionId = testMap.jumps[newPosition].section;
-                    dataHolder.set('testContext', textContext);
-                    return runner.loadItem(newItem.uri);
-                }
-                runner.trigger('finish leave');
-            };
-            runner.on('nav-next', () => loadItem(1));
-            runner.on('nav-previous', () => loadItem(-1));
-            if (item && item.uri) {
-                return runner.loadItem(item.uri);
-            }
-            runner.trigger('enabletools enablenav');
-        });
+        return runnerComponentFactory(container, testRunnerConfig, runnerTpl)
+            .on('render', function() {
+                const { fullPage, readOnly, hideActionBars } = this.getConfig().options;
+                this.setState('fullpage', fullPage);
+                this.setState('readonly', readOnly);
+                this.setState('hideactionbars', hideActionBars);
+            })
+            .on('ready', function(runner) {
+                runner.on('destroy', () => this.destroy());
+            });
     };
 });

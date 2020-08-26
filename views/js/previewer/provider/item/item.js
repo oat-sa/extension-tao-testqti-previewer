@@ -34,8 +34,7 @@ define([
     'taoQtiTest/runner/config/assetManager',
     'taoItems/assets/strategies',
     'taoQtiItem/qtiCommonRenderer/helpers/container',
-    'tpl!taoQtiTestPreviewer/previewer/provider/item/tpl/item',
-    'taoQtiTest/runner/helpers/map'
+    'tpl!taoQtiTestPreviewer/previewer/provider/item/tpl/item'
 ], function (
     $,
     _,
@@ -49,8 +48,7 @@ define([
     assetManagerFactory,
     assetStrategies,
     containerHelper,
-    layoutTpl,
-    mapHelper
+    layoutTpl
 ) {
     'use strict';
 
@@ -218,52 +216,11 @@ define([
                     this.destroy();
                 });
 
-            /**
-             * Convenience function to load the current item/section/testPart from the testMap
-             * @returns {Object?} the current item/section/testPart if any or falsy
-             */
-            this.getFromContext = key => {
-                const testContext = this.getTestContext();
-                const testMap     = this.getTestMap();
-
-                if (testContext && testMap && testContext[key]) {
-                    switch (key) {
-                        case 'itemIdentifier':
-                            return mapHelper.getItem(testMap, testContext[key]);
-                        case 'sectionId':
-                            return mapHelper.getSection(testMap, testContext[key]);
-                        case 'testPartId':
-                            return mapHelper.getPart(testMap, testContext[key]);
-                        default:
-                            throw `Unknown test context key ${key} provided.`;
-                    }
-                }
-            }
-
-            this.getCurrentItem = () => this.getFromContext('itemIdentifier');
-            this.getCurrentSection = () => this.getFromContext('sectionId');
-            this.getCurrentPart = () => this.getFromContext('testPartId');
-
-            const {testUri} = this.getConfig();
             return this.getProxy()
-                .init({testUri})
+                .init()
                 .then(data => {
                     dataHolder.set('itemIdentifier', data.itemIdentifier);
                     dataHolder.set('itemData', data.itemData);
-                    if (_.isPlainObject(data.testMap)) {
-                        //the received map is not complete and should be "built"
-                        const builtTestMap = mapHelper.reindex(data.testMap);
-                        if (builtTestMap) {
-                            dataHolder.set('testMap', builtTestMap);
-                            dataHolder.set('testContext', {
-                                itemIdentifier: builtTestMap.jumps[0].identifier,
-                                itemPosition: 0,
-                                testPartId: builtTestMap.jumps[0].part,
-                                sectionId: builtTestMap.jumps[0].section,
-                                canMoveBackward: true
-                            });
-                        }
-                    }
                 });
         },
 

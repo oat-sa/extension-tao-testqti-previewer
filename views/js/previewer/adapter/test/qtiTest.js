@@ -18,7 +18,7 @@
 /**
  * @author Hanna Dzmitryieva <hanna@taotesting.com>
  */
-define(['lodash', 'core/logger', 'taoQtiTestPreviewer/previewer/component/qtiTest', 'ui/feedback'], function (
+define(['lodash', 'core/logger', 'taoQtiTestPreviewer/previewer/component/test/qtiTest', 'ui/feedback'], function (
     _,
     loggerFactory,
     qtiTestPreviewerFactory,
@@ -33,16 +33,6 @@ define(['lodash', 'core/logger', 'taoQtiTestPreviewer/previewer/component/qtiTes
      * @type {Object[]}
      */
     const defaultPlugins = [
-        {
-            module: 'taoQtiTestPreviewer/previewer/plugins/controls/close',
-            bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-            category: 'controls'
-        },
-        {
-            module: 'taoQtiTestPreviewer/previewer/plugins/tools/scale/scale',
-            bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-            category: 'tools'
-        },
         {
             module: 'taoQtiTest/runner/plugins/tools/itemThemeSwitcher/itemThemeSwitcher',
             bundle: 'taoQtiTest/loader/testPlugins.min',
@@ -59,8 +49,8 @@ define(['lodash', 'core/logger', 'taoQtiTestPreviewer/previewer/component/qtiTes
             category: 'navigation'
         },
         {
-            module: 'taoQtiItem/qtiCreator/plugins/content/changeTracker',
-            bundle: 'taoQtiItem/loader/taoQtiItem.min',
+            module: 'taoQtiTestPreviewer/previewer/plugins/content/cloneLogoInTestPreview',
+            bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
             category: 'content'
         }
     ];
