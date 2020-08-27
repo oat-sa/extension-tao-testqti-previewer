@@ -59,7 +59,7 @@ define([
     //store the current execution context of the common renderer (preview)
     let _$previousContext = null;
     function setContext($context){
-        _$previousContext = $context;
+        _$previousContext = containerHelper.getContext();
         containerHelper.setContext($context);
     }
     function restoreContext(){
@@ -332,15 +332,15 @@ define([
 
             // prevent the item to be displayed while test runner is destroying
             if (this.itemRunner) {
-                this.itemRunner.clear();
+                this.itemRunner
+                    .on('clear', restoreContext)
+                    .clear();
             }
             this.itemRunner = null;
 
             if (areaBroker) {
                 areaBroker.getToolbox().destroy();
             }
-
-            restoreContext();
         }
     };
 });
