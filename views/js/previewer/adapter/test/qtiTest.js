@@ -59,7 +59,7 @@ define(['lodash', 'core/logger', 'taoQtiTestPreviewer/previewer/component/test/q
      * Wraps the test previewer in order to be loaded by the taoItems previewer factory
      */
     return {
-        name: 'qtiTests',
+        name: 'qtiTest',
 
         /**
          * Builds and shows the test previewer

@@ -37,7 +37,7 @@ define(['jquery', 'taoTests/runner/plugin'], function ($, pluginFactory) {
 
             testRunner.after('ready', () => {
                 // clone logo to preview - because logo source + class + styles can be customized by client extension
-                $('#tao-main-logo').clone().appendTo('.previewer-component header');
+                $('#tao-main-logo').clone().appendTo('.previewer-test-component header');
             });
         }
     });

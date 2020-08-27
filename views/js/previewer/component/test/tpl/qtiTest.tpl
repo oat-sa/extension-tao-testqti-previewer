@@ -1,4 +1,4 @@
-<div class="previewer-component">
+<div class="previewer-test-component">
   <header role="menubar" class="dark-bar clearfix">
       <div class="lft title-box"></div>
       <nav role="menu" class="rgt">

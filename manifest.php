@@ -21,6 +21,7 @@
 
 use oat\taoQtiTestPreviewer\scripts\update\Updater;
 use oat\taoQtiTestPreviewer\scripts\install\RegisterPreviewers;
+use oat\taoQtiTestPreviewer\scripts\install\RegisterTestPreviewer;
 
 return [
     'name' => 'taoQtiTestPreviewer',
@@ -44,7 +45,8 @@ return [
     ],
     'install' => [
         'php' => [
-            RegisterPreviewers::class
+            RegisterPreviewers::class,
+            RegisterTestPreviewer::class
         ],
         'rdf' => [
             __DIR__ . '/install/ontology/previewerRole.rdf',
