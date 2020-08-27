@@ -64,7 +64,7 @@ define([
     }
     function restoreContext(){
         containerHelper.setContext(_$previousContext);
-         _$previousContext = null;
+        _$previousContext = null;
     }
     /**
      * A Test runner provider to be registered against the runner
