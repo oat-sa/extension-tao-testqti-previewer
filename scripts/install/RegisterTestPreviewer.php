@@ -18,6 +18,9 @@
  *               
  * 
  */
+
+ // !!!TODO - should be to rely on the taoTest extension 
+ // to supply the API to manage the provider registration and management instead of directly write into the registry
 namespace oat\taoQtiTestPreviewer\scripts\install;
 
 use oat\oatbox\extension\InstallAction;
