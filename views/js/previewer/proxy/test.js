@@ -131,7 +131,8 @@ define([
             }
             return request({
                 url: urlUtil.route('getItem', serviceControllerGetItem, serviceExtension),
-                data: { serviceCallId: 'previewer', itemUri: uri}
+                data: { serviceCallId: 'previewer', itemUri: uri},
+                noToken: true
             })
             .then(data => {
                 data.itemData = data.content;
