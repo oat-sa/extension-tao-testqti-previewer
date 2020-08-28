@@ -8,6 +8,7 @@
         <script type="text/javascript" src="js/lib/qunit/qunit.js"></script>
         <script type="text/javascript" src="js/lib/require.js"></script>
         <script type="text/javascript" src="js/lib/qunit/qunit-parameterize.js"></script>
+        <script type="text/javascript" src="js/lib/blanket/blanket.min.js" data-cover-flag="branchTracking" data-cover-only="previewer/proxy/test.js"></script>
 
         <script  type="text/javascript">
 
@@ -18,14 +19,13 @@
             require(['/tao/ClientConfig/config'], function(){
                 // mock Client Config data:
                 requirejs.config({
-                    "config": {
-                        "core/tokenHandler" : {
-                        }
+                    "config": { 
+                        
                     }
                 });
 
                 //load the test
-                require(['taoQtiTestPreviewer/test/previewer/proxy/item/test'], function(){
+                require(['taoQtiTestPreviewer/test/previewer/proxy/test/test'], function(){
 
                     //Tests loaded, run tests
                     QUnit.start();

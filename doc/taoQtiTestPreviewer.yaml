@@ -1,0 +1,280 @@
+openapi: 3.0.1
+info:
+  title: taoTestPreview API
+  description: Stands for TAO test Previewer API.
+  version: 1.0.0
+servers:
+  - url: '{server}'
+    variables:
+      server:
+        default: https://community.docker.localhost/
+security:
+  - cookieAuth: []
+paths:
+  /taoQtiTestPreviewer/TestPreviewer/init:
+    get:
+      parameters:
+        - in: query
+          name: testUri
+          schema:
+            type: string
+          required: true
+          example: 'https%3A%2F%2Fcommunity.docker.localhost%2Fontologies%2Ftao.rdf%23i5efb42fced1ce7064796c08b38ee176'
+          description: Url encoded test identifier
+
+      summary: Returns a test map
+      responses:
+        '200':
+          $ref: '#/components/responses/InitResponse'
+        '400':
+          $ref: '#/components/responses/BadResponse'
+
+  /taoQtiTestPreviewer/TestPreviewer/configuration:
+    get:
+      responses:
+        '200':
+          $ref: '#/components/responses/ConfigurationResponse'
+      summary: Returns current active configuration for testRunner
+
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: tao_community
+
+  responses:
+    InitResponse:
+      description: Good response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TestInit'
+
+    ConfigurationResponse:
+      description: Response with a prepared configuration of testRunner
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Configuration'
+
+    BadResponse:
+      description: If something went wrong
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    TestInit:
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            success:
+              type: boolean
+              example: true
+            testData:
+              $ref: '#/components/schemas/TestData'
+            testContext:
+              $ref: '#/components/schemas/TestContext'
+            testMap:
+              $ref: '#/components/schemas/TestMap'
+            toolStates:
+              description: the current tools states
+              type: array
+              items:
+                type: integer
+            lastStoreId:
+              description: Checks the storeId request parameter and returns the last store id if set, false otherwise
+              type: string
+            messages:
+              type: array
+              items:
+                type: integer
+
+    TestData:
+      description: test definition data
+      deprecated: true
+      type: object
+      properties:
+        title:
+          type: string
+        identifier:
+          type: string
+        className:
+          type: string
+        toolName:
+          type: string
+        exclusivelyLinear:
+          type: boolean
+        hasTimeLimits:
+          type: boolean
+        states:
+          type: object
+        itemStates:
+          type: object
+        config:
+          type: object
+
+    TestContext:
+      description: test context object
+      type: object
+
+    TestMap:
+      description: the map of the test items
+      properties:
+        scope:
+          type: string
+          example: test
+        parts:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/TestPartElement'
+        title:
+          type: string
+          example: My awsame MathTest
+        identifier:
+          type: string
+        className:
+          type: string
+        toolName:
+          type: string
+          example: tao
+        exclusivelyLinear:
+          type: boolean
+          example: false
+        hasTimeLimits:
+          type: boolean
+        stats:
+          $ref: '#/components/schemas/StatsBlock'
+
+    ItemElement:
+      allOf:
+        - $ref: '#/components/schemas/EntryBaseElement'
+        - type: object
+          properties:
+            occurrence:
+              type: integer
+              example: 0
+            remainingAttempts:
+              type: integer
+              example: -1
+            answered:
+              type: boolean
+              example: false
+            flagged:
+              type: boolean
+              example: false
+            viewed:
+              type: boolean
+              example: false
+            categories:
+              type: array
+              items:
+                type: string
+                example:
+                  - x-tao-option-reviewScreen
+                  - x-tao-option-markReview
+            uri:
+              type: string
+              example: 'https:\/\/community.docker.localhost\/ontologies\/tao.rdf#i5efb4307b48d370fb46778476db6eb9'
+            informational:
+              type: boolean
+              example: false
+
+    SectionElement:
+      allOf:
+        - $ref: '#/components/schemas/EntryBaseElement'
+        - type: object
+          properties:
+            isCatAdaptive:
+              type: boolean
+              example: false
+            timeConstraint:
+              example: null
+            items:
+              type: object
+              additionalProperties:
+                $ref: '#/components/schemas/ItemElement'
+            stats:
+              $ref: '#/components/schemas/StatsBlock'
+
+    TestPartElement:
+      allOf:
+        - $ref: '#/components/schemas/EntryBaseElement'
+        - type: object
+          properties:
+            isLinear:
+              type: boolean
+            timeConstraint:
+              example: null
+            sections:
+              type: object
+              additionalProperties:
+                $ref: '#/components/schemas/SectionElement'
+
+    EntryBaseElement:
+      properties:
+        id:
+          type: string
+          example: i-4
+        label:
+          type: string
+          example: Showcase label
+        position:
+          type: integer
+          example: 20
+
+    ErrorResponse:
+      properties:
+        success:
+          type: boolean
+          example: false
+        code:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: Internal error occured
+
+    StatsBlock:
+      properties:
+        questions:
+          type: integer
+          example: 11
+        answered:
+          type: integer
+          example: 0
+        flagged:
+          type: integer
+          example: 3
+        viewed:
+          type: integer
+          example: 5
+        total:
+          type: integer
+          example: 99
+        questionsViewed:
+          type: integer
+          example: 19
+
+    Configuration:
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            providers:
+              type: array
+              items:
+                type: object
+            options:
+              type: array
+              items:
+                type: object
