@@ -26,9 +26,9 @@ use common_Exception as Exception;
 use common_report_Report as Report;
 use oat\oatbox\extension\InstallAction;
 use oat\tao\model\modules\DynamicModule;
-use oat\taoTests\models\preview\TestPreviewerRegistryService;
 use common_exception_InconsistentData as InconsistentData;
 use oat\oatbox\service\exception\InvalidServiceManagerException;
+use oat\taoTests\models\preview\TestPreviewerRegistryServiceInterface;
 
 /**
  * Class RegisterTestPreviewer
@@ -38,7 +38,7 @@ use oat\oatbox\service\exception\InvalidServiceManagerException;
 class RegisterTestPreviewer extends InstallAction
 {
     /**
-     * @param $params
+     * @param array $params
      *
      * @throws InconsistentData
      * @throws InvalidServiceManagerException
@@ -48,8 +48,10 @@ class RegisterTestPreviewer extends InstallAction
      */
     public function __invoke($params)
     {
-        /** @var TestPreviewerRegistryService $testPreviewerService */
-        $testPreviewerService = $this->getServiceManager()->get(TestPreviewerRegistryService::SERVICE_ID);
+        /** @var TestPreviewerRegistryServiceInterface $testPreviewerService */
+        $testPreviewerService = $this->getServiceManager()->get(
+            TestPreviewerRegistryServiceInterface::SERVICE_ID
+        );
         $testPreviewerService->registerAdapter(DynamicModule::fromArray([
             'id' => 'qtiTest',
             'module' => 'taoQtiTestPreviewer/previewer/adapter/test/qtiTest',
