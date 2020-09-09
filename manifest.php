@@ -34,7 +34,7 @@ return [
         'generis'      => '>=12.15.0',
         'tao'          => '>=45.2.0',
         'taoTests'     => '>=14.5.0',
-        'taoItems'     => '>=10.2.0',
+        'taoItems'     => '>=10.12.0',
         'taoQtiTest'   => '>=29.0.0',
         'taoQtiItem'   => '>=23.1.0',
         'taoOutcomeUi' => '>=6.0.0'
