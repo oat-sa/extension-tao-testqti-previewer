@@ -22,13 +22,14 @@
 use oat\taoQtiTestPreviewer\scripts\update\Updater;
 use oat\taoQtiTestPreviewer\scripts\install\RegisterPreviewers;
 use oat\taoQtiTestPreviewer\scripts\install\RegisterTestPreviewer;
+use oat\taoItems\model\ontology\ItemAuthorRole;
 
 return [
     'name' => 'taoQtiTestPreviewer',
     'label' => 'extension-tao-testqti-previewer',
     'description' => 'extension that provides QTI test previewer',
     'license'     => 'GPL-2.0',
-    'version' => '2.19.1',
+    'version' => '2.19.2',
     'author' => 'Open Assessment Technologies SA',
     'requires' => [
         'generis'      => '>=12.15.0',
@@ -42,6 +43,7 @@ return [
     'managementRole' => 'http://www.tao.lu/Ontologies/TAOTest.rdf#TaoQtiTestPreviewerRole',
     'acl' => [
         ['grant', 'http://www.tao.lu/Ontologies/TAOTest.rdf#TaoQtiTestPreviewerRole', ['ext' => 'taoQtiTestPreviewer']],
+        ['grant', ItemAuthorRole::INSTANCE_URI, ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer']],
     ],
     'install' => [
         'php' => [
