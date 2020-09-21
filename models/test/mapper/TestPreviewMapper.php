@@ -97,7 +97,7 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
                     'answered' => 0,
                     'flagged' => false,
                     'viewed' => false,
-                    'categories' => [],
+                    'categories' => $itemRef->getCategories()->getArrayCopy(),
                 ];
 
                 if ($checkInformational) {
