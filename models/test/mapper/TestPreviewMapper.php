@@ -80,7 +80,7 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
                 $sectionId = $section->getIdentifier();
                 $itemId = $itemRef->getIdentifier();
 
-                if ($lastSection != $sectionId) {
+                if ($lastSection !== $sectionId) {
                     $offsetSection = 0;
                     $lastSection = $sectionId;
                 }
