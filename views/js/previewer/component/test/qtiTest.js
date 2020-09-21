@@ -36,7 +36,8 @@ define([
      * @param {Object[]} [config.plugins] - Additional plugins to load
      * @param {String} [config.fullPage] - Force the previewer to occupy the full window.
      * @param {String} [config.readOnly] - Do not allow to modify the previewed item.
-     * @returns {previewer}
+     *
+     * @returns {runner}
      */
     return function qtiTestPreviewerFactory(container, config = {}) {
         const testRunnerConfig = {
