@@ -18,8 +18,15 @@
 /**
  * @author Hanna Dzmitryieva <hanna@taotesting.com>
  */
-define(['lodash', 'core/logger', 'taoQtiTestPreviewer/previewer/component/test/qtiTest', 'ui/feedback'], function (
+define([
+    'lodash',
+    'core/promiseQueue',
+    'core/logger',
+    'taoQtiTestPreviewer/previewer/component/test/qtiTest',
+    'ui/feedback'
+], function (
     _,
+    promiseQueue,
     loggerFactory,
     qtiTestPreviewerFactory,
     feedback
@@ -61,6 +68,10 @@ define(['lodash', 'core/logger', 'taoQtiTestPreviewer/previewer/component/test/q
     return {
         name: 'qtiTest',
 
+        install() {
+            this.queue = promiseQueue();
+        },
+
         /**
          * Builds and shows the test previewer
          *
@@ -80,6 +91,12 @@ define(['lodash', 'core/logger', 'taoQtiTestPreviewer/previewer/component/test/q
                 }
                 logger.error(err);
             });
-        }
+        },
+
+        destroy() {
+            this.queue = null;
+
+            return Promise.resolve();
+        },
     };
 });
