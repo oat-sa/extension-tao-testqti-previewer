@@ -59,7 +59,7 @@ class TestPreviewMapperTest extends TestCase
 
     public function testMapEmptyTest(): void
     {
-        $this->assertEquals(
+        static::assertEquals(
             new TestPreviewMap(
                 [
                     'scope' => 'test',
@@ -85,7 +85,7 @@ class TestPreviewMapperTest extends TestCase
 
         $this->expectsItemResource('itemUri', 'testLabel');
 
-        $this->assertEquals(
+        static::assertEquals(
             new TestPreviewMap(
                 [
                     'scope' => 'test',
