@@ -46,9 +46,7 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
         $routeItems = $route->getAllRouteItems();
         $checkInformational = $config->get(TestPreviewConfig::CHECK_INFORMATIONAL);
         $forceInformationalTitles = $config->get(TestPreviewConfig::REVIEW_FORCE_INFORMATION_TITLE);
-        $displaySubsectionTitle = $config->get(TestPreviewConfig::REVIEW_DISPLAY_SUBSECTION_TITLE) === null
-            ? true
-            : $config->get(TestPreviewConfig::REVIEW_DISPLAY_SUBSECTION_TITLE);
+        $displaySubsectionTitle = $config->get(TestPreviewConfig::REVIEW_DISPLAY_SUBSECTION_TITLE) ?? true;
 
         $map['title'] = $test->getTitle();
         $map['identifier'] = $test->getIdentifier();
