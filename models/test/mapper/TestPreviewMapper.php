@@ -26,8 +26,8 @@ use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewConfig;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewMap;
+use qtism\data\AssessmentItemRef;
 use qtism\data\AssessmentTest;
-use qtism\data\IAssessmentItem;
 use qtism\data\NavigationMode;
 use qtism\runtime\tests\Route;
 use qtism\runtime\tests\RouteItem;
@@ -61,10 +61,7 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
 
         /** @var RouteItem $routeItem */
         foreach ($routeItems as $routeItem) {
-            $itemRefs = $this->getRouteItemAssessmentItemRefs($routeItem);
-
-            /** @var IAssessmentItem $itemRef */
-            foreach ($itemRefs as $itemRef) {
+            foreach ($this->getRouteItemAssessmentItemRefs($routeItem) as $itemRef) {
                 $occurrence = $routeItem->getOccurence();
 
                 $isItemInformational = true; //@TODO Implement this as a feature
@@ -186,6 +183,11 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
         $target['stats']['total']++;
     }
 
+    /**
+     * @param RouteItem $routeItem
+     *
+     * @return AssessmentItemRef[]
+     */
     private function getRouteItemAssessmentItemRefs(RouteItem $routeItem): array
     {
         return [
