@@ -27,7 +27,8 @@
   },
   "minimum-stability": "dev",
   "require": {
-    "oat-sa/oatbox-extension-installer": "~1.1||dev-master"
+    "oat-sa/oatbox-extension-installer": "~1.1||dev-master",
+    "qtism/qtism": "~0"
   },
   "autoload": {
     "psr-4": {
@@ -35,4 +36,3 @@
     }
   }
 }
-

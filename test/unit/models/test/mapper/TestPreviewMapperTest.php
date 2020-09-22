@@ -29,6 +29,7 @@ use oat\taoQtiTestPreviewer\models\test\mapper\TestPreviewMapper;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewConfig;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewMap;
 use PHPUnit\Framework\MockObject\MockObject;
+use qtism\common\collections\StringCollection;
 use qtism\data\AssessmentItemRef;
 use qtism\data\AssessmentSection;
 use qtism\data\AssessmentTest;
@@ -59,7 +60,7 @@ class TestPreviewMapperTest extends TestCase
 
     public function testMapEmptyTest(): void
     {
-        $this->assertEquals(
+        static::assertEquals(
             new TestPreviewMap(
                 [
                     'scope' => 'test',
@@ -78,14 +79,20 @@ class TestPreviewMapperTest extends TestCase
 
     public function testMapFullTest(): void
     {
-        $testPart = $this->expectsTestPart('partId');
-        $section = $this->expectSection('sectionId', 'sectionTitle');
-        $itemRef = $this->expectsItemRef('itemUri', 'itemId');
+        $itemId       = 'itemId';
+        $sectionTitle = 'sectionTitle';
+        $categories   = [
+            'x-tao-test',
+        ];
+
+        $testPart  = $this->expectsTestPart('partId');
+        $section   = $this->expectSection('sectionId',  $sectionTitle);
+        $itemRef   = $this->expectsItemRef('itemUri', $itemId, $categories);
         $routeItem = $this->expectRouteItem($itemRef, $testPart, $section);
 
         $this->expectsItemResource('itemUri', 'testLabel');
 
-        $this->assertEquals(
+        static::assertEquals(
             new TestPreviewMap(
                 [
                     'scope' => 'test',
@@ -98,12 +105,12 @@ class TestPreviewMapperTest extends TestCase
                             'sections' => [
                                 'sectionId' => [
                                     'id' => 'sectionId',
-                                    'label' => 'sectionTitle',
+                                    'label' => $sectionTitle,
                                     'isCatAdaptive' => false,
                                     'position' => 0,
                                     'items' => [
                                         'itemId' => [
-                                            'id' => 'itemId',
+                                            'id' => $itemId,
                                             'uri' => 'itemUri',
                                             'label' => 'testLabel',
                                             'position' => 0,
@@ -112,7 +119,7 @@ class TestPreviewMapperTest extends TestCase
                                             'answered' => 0,
                                             'flagged' => false,
                                             'viewed' => false,
-                                            'categories' => [],
+                                            'categories' => $categories,
                                         ],
                                     ],
                                     'stats' => [
@@ -170,7 +177,7 @@ class TestPreviewMapperTest extends TestCase
         return $itemResource;
     }
 
-    private function expectsItemRef(string $itemUri, string $itemId): AssessmentItemRef
+    private function expectsItemRef(string $itemUri, string $itemId, array $categories): AssessmentItemRef
     {
         $itemRef = $this->createMock(AssessmentItemRef::class);
 
@@ -179,6 +186,11 @@ class TestPreviewMapperTest extends TestCase
 
         $itemRef->method('getIdentifier')
             ->willReturn($itemId);
+
+        $itemRef->method('getCategories')
+            ->willReturn(
+                new StringCollection($categories)
+            );
 
         return $itemRef;
     }
