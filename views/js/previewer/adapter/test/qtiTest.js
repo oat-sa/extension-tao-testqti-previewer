@@ -21,17 +21,25 @@
 define([
     'lodash',
     'core/promiseQueue',
+    'core/request',
+    'util/url',
     'core/logger',
     'taoQtiTestPreviewer/previewer/component/test/qtiTest',
     'ui/feedback'
 ], function (
     _,
     promiseQueue,
+    request,
+    urlUtil,
     loggerFactory,
     qtiTestPreviewerFactory,
     feedback
 ) {
     'use strict';
+
+    const taoExtension = 'taoQtiTestPreviewer';
+
+    const testPreviewerController = 'TestPreviewer';
 
     const logger = loggerFactory('taoQtiTestPreviewer/previewer');
 
@@ -62,6 +70,23 @@ define([
         }
     ];
 
+    const transformConfiguration = config => {
+        const plugins = Array.isArray(config.plugins) ? config.plugins : [];
+        const {view, readOnly, fullPage, hideActionBars} = config;
+        const options = _.omit({view, readOnly, fullPage, hideActionBars}, _.isUndefined);
+
+        return request({
+            url: urlUtil.route('configuration', testPreviewerController, taoExtension),
+        }).then(response => {
+            const configuration = response.data;
+
+            configuration.providers.plugins = (configuration.providers.plugins || defaultPlugins).concat(plugins);
+            _.assign(configuration.options, options);
+
+            return configuration;
+        });
+    };
+
     /**
      * Wraps the test previewer in order to be loaded by the taoItems previewer factory
      */
@@ -83,13 +108,14 @@ define([
          * @returns {Object}
          */
         init(testUri, config = {}) {
-            config.testUri = testUri;
-            config.plugins = Array.isArray(config.plugins) ? [...defaultPlugins, ...config.plugins] : defaultPlugins;
-            return qtiTestPreviewerFactory(window.document.body, config).on('error', function (err) {
-                if (!_.isUndefined(err.message)) {
-                    feedback().error(err.message);
-                }
-                logger.error(err);
+            return transformConfiguration(config).then(config => {
+                config.options.testUri = testUri;
+                return qtiTestPreviewerFactory(window.document.body, config).on('error', function (err) {
+                    if (!_.isUndefined(err.message)) {
+                        feedback().error(err.message);
+                    }
+                    logger.error(err);
+                });
             });
         },
 

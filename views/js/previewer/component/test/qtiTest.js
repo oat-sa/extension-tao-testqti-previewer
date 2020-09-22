@@ -32,51 +32,26 @@ define([
      * Builds a test runner to preview test
      * @param {jQuery|HTMLElement|String} container - The container in which renders the component
      * @param {Object} [config] - The testRunner options
-     * @param {String} [config.testUri] - The test URI
-     * @param {Object[]} [config.plugins] - Additional plugins to load
-     * @param {String} [config.fullPage] - Force the previewer to occupy the full window.
-     * @param {String} [config.readOnly] - Do not allow to modify the previewed item.
      *
      * @returns {runner}
      */
     return function qtiTestPreviewerFactory(container, config = {}) {
         const testRunnerConfig = {
-            testDefinition: 'test-container',
-            serviceCallId: 'previewer',
-            providers: {
-                runner: {
-                    id: 'qti',
-                    module: 'taoQtiTest/runner/provider/qti',
-                    bundle: 'taoQtiTest/loader/taoQtiTestRunner.min',
-                    category: 'runner'
-                },
-                proxy: {
-                    id: 'qtiTestPreviewerProxy',
-                    module: 'taoQtiTestPreviewer/previewer/proxy/test',
-                    bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-                    category: 'proxy'
-                },
-                communicator: {
-                    id: 'request',
-                    module: 'core/communicator/request',
-                    bundle: 'loader/vendor.min',
-                    category: 'communicator'
-                },
-                plugins: config.plugins || []
-            },
-            options: {
-                view: config.view,
-                readOnly: config.readOnly,
-                fullPage: config.fullPage,
-                plugins: config.plugins,
-                hideActionBars: config.hideActionBars,
-                testUri: config.testUri
-            },
-            proxyProvider: 'qtiTestPreviewerProxy'
+            ...config,
+            ...{
+                testDefinition: 'test-container',
+                serviceCallId: 'previewer',
+                proxyProvider: 'qtiTestPreviewerProxy',
+                loadFromBundle: !!context.bundle,
+            }
         };
 
-        //extra context config
-        testRunnerConfig.loadFromBundle = !!context.bundle;
+        testRunnerConfig.providers.proxy = [{
+            id: 'qtiTestPreviewerProxy',
+            module: 'taoQtiTestPreviewer/previewer/proxy/test',
+            bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+            category: 'proxy'
+        }];
 
         return runnerComponentFactory(container, testRunnerConfig, runnerTpl)
             .on('render', function() {
