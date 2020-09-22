@@ -36,7 +36,9 @@ module.exports = function(grunt) {
                         name : 'qtiPreviewer',
                         babel : true,
                         include : [
-                            'taoQtiTestPreviewer/previewer/**/*'
+                            'taoQtiTestPreviewer/previewer/**/*',
+                            'taoQtiTestPreviewer/previewer/adapter/test/qtiTest',
+                            'taoQtiTestPreviewer/previewer/component/test/qtiTest'
                         ],
                         dependencies : [
                             'taoItems/loader/taoItemsRunner.min',

@@ -1,0 +1,64 @@
+{
+    "success": true,
+    "data": {
+        "success": true,
+        "testData": [],
+        "testContext": [],
+        "testMap": {
+            "scope": "test",
+            "parts": {
+                "testPart-1": {
+                    "id": "testPart-1",
+                    "label": "testPart-1",
+                    "position": 0,
+                    "isLinear": true,
+                    "sections": {
+                        "assessmentSection-1": {
+                            "id": "assessmentSection-1",
+                            "label": "Section 1",
+                            "isCatAdaptive": false,
+                            "position": 0,
+                            "items": {
+                                "item-1": {
+                                    "id": "item-1",
+                                    "uri": "http://tao.dev/tao.dev.rdf#i5f3e164dc51eb13274ab190efe3e944f4b",
+                                    "label": "Item 26",
+                                    "position": 0,
+                                    "occurrence": 0,
+                                    "remainingAttempts": 0,
+                                    "answered": 0,
+                                    "flagged": false,
+                                    "viewed": false,
+                                    "categories": []
+                                }
+                            },
+                            "stats": {
+                                "questions": 1,
+                                "answered": 0,
+                                "flagged": 0,
+                                "viewed": 0,
+                                "total": 1,
+                                "questionsViewed": 0
+                            }
+                        }
+                    },
+                    "stats": {
+                        "questions": 1,
+                        "answered": 0,
+                        "flagged": 0,
+                        "viewed": 0,
+                        "total": 1,
+                        "questionsViewed": 0
+                    }
+                }
+            },
+            "title": "Test 16",
+            "identifier": "Test16",
+            "className": "assessmentTest",
+            "toolName": "tao",
+            "exclusivelyLinear": true,
+            "hasTimeLimits": false,
+            "stats": { "questions": 1, "answered": 0, "flagged": 0, "viewed": 0, "total": 1, "questionsViewed": 0 }
+        }
+    }
+}

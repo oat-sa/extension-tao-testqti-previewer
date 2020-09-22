@@ -20,9 +20,22 @@
             //load the config
             require(['/tao/ClientConfig/config'], function(){
                 requirejs.config({
-                    "config": {
-                        "core/request" : {
+                    'config': {
+                        'core/request' : {
                             'noToken' : true
+                        },
+                        'ui/themes': {
+                            'items': {
+                                'base': '/css/style.css',
+                                'default': 'blue',
+                                'available': [
+                                    {
+                                        'id': 'blue',
+                                        'path': '/css/style.css',
+                                        'name': 'Blue'
+                                    }
+                                ]
+                            },
                         }
                     }
                 });

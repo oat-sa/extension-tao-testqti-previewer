@@ -24,7 +24,7 @@ define([
     'ui/hider',
     'taoQtiTestPreviewer/previewer/runner',
     'taoQtiTestPreviewer/previewer/plugins/content/enhancedReadOnlyMode',
-    'json!taoQtiItem/test/samples/json/formated-card.json',
+    'json!taoQtiTestPreviewer/test/samples/json/formated-card.json',
     'lib/jquery.mockjax/jquery.mockjax',
     'css!taoQtiTestPreviewer/previewer/provider/item/css/item'
 ], function (
