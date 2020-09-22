@@ -49,21 +49,6 @@ define([
      */
     const defaultPlugins = [
         {
-            module: 'taoQtiTest/runner/plugins/tools/itemThemeSwitcher/itemThemeSwitcher',
-            bundle: 'taoQtiTest/loader/testPlugins.min',
-            category: 'tools'
-        },
-        {
-            module: 'taoQtiTest/runner/plugins/navigation/previous',
-            bundle: 'taoQtiTest/loader/testPlugins.min',
-            category: 'navigation'
-        },
-        {
-            module: 'taoQtiTest/runner/plugins/navigation/next',
-            bundle: 'taoQtiTest/loader/testPlugins.min',
-            category: 'navigation'
-        },
-        {
             module: 'taoQtiTestPreviewer/previewer/plugins/content/cloneLogoInTestPreview',
             bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
             category: 'content'
@@ -71,7 +56,7 @@ define([
     ];
 
     const transformConfiguration = config => {
-        const plugins = Array.isArray(config.plugins) ? config.plugins : [];
+        const plugins = Array.isArray(config.plugins) ? [...defaultPlugins, ...config.plugins] : defaultPlugins;
         const {view, readOnly, fullPage, hideActionBars} = config;
         const options = _.omit({view, readOnly, fullPage, hideActionBars}, _.isUndefined);
 
@@ -80,7 +65,7 @@ define([
         }).then(response => {
             const configuration = response.data;
 
-            configuration.providers.plugins = (configuration.providers.plugins || defaultPlugins).concat(plugins);
+            configuration.providers.plugins = [...configuration.providers.plugins, ...plugins];
             _.assign(configuration.options, options);
 
             return configuration;
