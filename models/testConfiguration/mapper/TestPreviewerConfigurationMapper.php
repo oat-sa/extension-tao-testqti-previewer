@@ -56,10 +56,6 @@ class TestPreviewerConfigurationMapper extends ConfigurableService
             if ($provider->isActive()) {
                 $category = $provider->getCategory();
 
-                if (!isset($providers[$category])) {
-                    $providers[$category] = [];
-                }
-
                 $providers[$category][] = $provider;
             }
         }
