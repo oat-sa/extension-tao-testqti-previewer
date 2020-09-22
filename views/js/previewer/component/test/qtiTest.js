@@ -20,12 +20,13 @@
  */
 define([
     'context',
-    'jquery',
+    'lodash',
+    'layout/loading-bar',
     'taoTests/runner/runnerComponent',
     'tpl!taoQtiTestPreviewer/previewer/component/test/tpl/qtiTest',
     'css!taoQtiTestPreviewer/previewer/component/test/css/qtiTest',
     'css!taoQtiTestCss/new-test-runner'
-], function (context, $, runnerComponentFactory, runnerTpl) {
+], function (context, __, loadingBar, runnerComponentFactory, runnerTpl) {
     'use strict';
 
     /**
@@ -36,15 +37,15 @@ define([
      * @returns {runner}
      */
     return function qtiTestPreviewerFactory(container, config = {}) {
-        const testRunnerConfig = {
-            ...config,
-            ...{
+        const testRunnerConfig = __.defaults(
+            {
                 testDefinition: 'test-container',
                 serviceCallId: 'previewer',
                 proxyProvider: 'qtiTestPreviewerProxy',
                 loadFromBundle: !!context.bundle,
-            }
-        };
+            },
+            config
+        );
 
         testRunnerConfig.providers.proxy = [{
             id: 'qtiTestPreviewerProxy',
@@ -61,7 +62,11 @@ define([
                 this.setState('hideactionbars', hideActionBars);
             })
             .on('ready', function(runner) {
-                runner.on('destroy', () => this.destroy());
+                runner.on('destroy', () => {
+                    // stop loading bar - started in plugin loading
+                    loadingBar.stop();
+                    this.destroy();
+                });
             });
     };
 });
