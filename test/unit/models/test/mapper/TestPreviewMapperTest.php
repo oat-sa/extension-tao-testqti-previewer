@@ -108,7 +108,7 @@ class TestPreviewMapperTest extends TestCase
                                             'label' => 'testLabel',
                                             'position' => 0,
                                             'occurrence' => null,
-                                            'remainingAttempts' => 0,
+                                            'remainingAttempts' => -1,
                                             'answered' => 0,
                                             'flagged' => false,
                                             'viewed' => false,

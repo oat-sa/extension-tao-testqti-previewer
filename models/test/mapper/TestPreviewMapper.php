@@ -98,7 +98,7 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
                     'label' => $this->getItemLabel($itemUri),
                     'position' => $offset,
                     'occurrence' => $occurrence,
-                    'remainingAttempts' => 0,
+                    'remainingAttempts' => -1,
                     'answered' => 0,
                     'flagged' => false,
                     'viewed' => false,
