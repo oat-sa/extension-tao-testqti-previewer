@@ -26,8 +26,8 @@ use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewConfig;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewMap;
+use qtism\data\AssessmentItemRef;
 use qtism\data\AssessmentTest;
-use qtism\data\IAssessmentItem;
 use qtism\data\NavigationMode;
 use qtism\runtime\tests\Route;
 use qtism\runtime\tests\RouteItem;
@@ -46,9 +46,7 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
         $routeItems = $route->getAllRouteItems();
         $checkInformational = $config->get(TestPreviewConfig::CHECK_INFORMATIONAL);
         $forceInformationalTitles = $config->get(TestPreviewConfig::REVIEW_FORCE_INFORMATION_TITLE);
-        $displaySubsectionTitle = $config->get(TestPreviewConfig::REVIEW_DISPLAY_SUBSECTION_TITLE) === null
-            ? true
-            : $config->get(TestPreviewConfig::REVIEW_DISPLAY_SUBSECTION_TITLE);
+        $displaySubsectionTitle = $config->get(TestPreviewConfig::REVIEW_DISPLAY_SUBSECTION_TITLE) ?? true;
 
         $map['title'] = $test->getTitle();
         $map['identifier'] = $test->getIdentifier();
@@ -63,10 +61,7 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
 
         /** @var RouteItem $routeItem */
         foreach ($routeItems as $routeItem) {
-            $itemRefs = $this->getRouteItemAssessmentItemRefs($routeItem);
-
-            /** @var IAssessmentItem $itemRef */
-            foreach ($itemRefs as $itemRef) {
+            foreach ($this->getRouteItemAssessmentItemRefs($routeItem) as $itemRef) {
                 $occurrence = $routeItem->getOccurence();
 
                 $isItemInformational = true; //@TODO Implement this as a feature
@@ -85,7 +80,7 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
                 $sectionId = $section->getIdentifier();
                 $itemId = $itemRef->getIdentifier();
 
-                if ($lastSection != $sectionId) {
+                if ($lastSection !== $sectionId) {
                     $offsetSection = 0;
                     $lastSection = $sectionId;
                 }
@@ -98,11 +93,11 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
                     'label' => $this->getItemLabel($itemUri),
                     'position' => $offset,
                     'occurrence' => $occurrence,
-                    'remainingAttempts' => 0,
+                    'remainingAttempts' => -1,
                     'answered' => 0,
                     'flagged' => false,
                     'viewed' => false,
-                    'categories' => [],
+                    'categories' => $itemRef->getCategories()->getArrayCopy(),
                 ];
 
                 if ($checkInformational) {
@@ -188,6 +183,11 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
         $target['stats']['total']++;
     }
 
+    /**
+     * @param RouteItem $routeItem
+     *
+     * @return AssessmentItemRef[]
+     */
     private function getRouteItemAssessmentItemRefs(RouteItem $routeItem): array
     {
         return [
