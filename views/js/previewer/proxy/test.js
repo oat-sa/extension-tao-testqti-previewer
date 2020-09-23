@@ -136,6 +136,7 @@ define([
             })
             .then(data => {
                 data.itemData = data.content;
+                data.itemIdentifier = data.content.data.identifier;
                 return data;
             });
         },
