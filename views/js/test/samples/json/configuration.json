@@ -1,0 +1,664 @@
+  {
+    "success": true,
+    "data": {
+      "providers": {
+        "runner": [
+          {
+            "id": "qti",
+            "module": "taoQtiTest\/runner\/provider\/qti",
+            "bundle": "taoQtiTest\/loader\/taoQtiTestRunner.min",
+            "position": null,
+            "name": "QTI runner",
+            "description": "QTI implementation of the test runner",
+            "category": "runner",
+            "active": true,
+            "tags": [
+              "core",
+              "qti",
+              "runner"
+            ]
+          }
+        ],
+        "communicator": [
+          {
+            "id": "request",
+            "module": "core\/communicator\/request",
+            "bundle": null,
+            "position": null,
+            "name": "request communicator",
+            "description": "",
+            "category": "communicator",
+            "active": true,
+            "tags": []
+          },
+          {
+            "id": "poll",
+            "module": "core\/communicator\/poll",
+            "bundle": null,
+            "position": null,
+            "name": "poll communicator",
+            "description": "",
+            "category": "communicator",
+            "active": true,
+            "tags": []
+          }
+        ],
+        "proxy": [
+          {
+            "id": "qtiServiceProxy",
+            "module": "taoQtiTest\/runner\/proxy\/qtiServiceProxy",
+            "bundle": "taoQtiTest\/loader\/taoQtiTestRunner.min",
+            "position": null,
+            "name": "",
+            "description": "",
+            "category": "proxy",
+            "active": true,
+            "tags": []
+          }
+        ],
+        "plugins": [
+          {
+            "id": "rubricBlock",
+            "module": "taoQtiTest\/runner\/plugins\/content\/rubricBlock\/rubricBlock",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Rubric Block",
+            "description": "Display test rubric blocks",
+            "category": "content",
+            "active": true,
+            "tags": [
+              "core",
+              "qti"
+            ]
+          },
+          {
+            "id": "overlay",
+            "module": "taoQtiTest\/runner\/plugins\/content\/overlay\/overlay",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Overlay",
+            "description": "Add an overlay over items when disabled",
+            "category": "content",
+            "active": true,
+            "tags": [
+              "core",
+              "technical",
+              "required"
+            ]
+          },
+          {
+            "id": "dialog",
+            "module": "taoQtiTest\/runner\/plugins\/content\/dialog\/dialog",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Dialog",
+            "description": "Display popups that require user interactions",
+            "category": "content",
+            "active": true,
+            "tags": [
+              "core",
+              "technical",
+              "required"
+            ]
+          },
+          {
+            "id": "feedback",
+            "module": "taoQtiTest\/runner\/plugins\/content\/feedback\/feedback",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Feedback",
+            "description": "Display notifications into feedback popups",
+            "category": "content",
+            "active": true,
+            "tags": [
+              "core",
+              "technical",
+              "required"
+            ]
+          },
+          {
+            "id": "exitMessages",
+            "module": "taoQtiTest\/runner\/plugins\/content\/dialog\/exitMessages",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Exit Messages",
+            "description": "Display messages when a test taker leaves the test",
+            "category": "content",
+            "active": true,
+            "tags": [
+              "core"
+            ]
+          },
+          {
+            "id": "loading",
+            "module": "taoQtiTest\/runner\/plugins\/content\/loading\/loading",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Loading bar",
+            "description": "Show a loading bar when the test is loading",
+            "category": "content",
+            "active": true,
+            "tags": [
+              "core"
+            ]
+          },
+          {
+            "id": "title",
+            "module": "taoQtiTest\/runner\/plugins\/controls\/title\/title",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Title indicator",
+            "description": "Display the title of current test element",
+            "category": "controls",
+            "active": true,
+            "tags": [
+              "core"
+            ]
+          },
+          {
+            "id": "modalFeedback",
+            "module": "taoQtiTest\/runner\/plugins\/content\/modalFeedback\/modalFeedback",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "QTI modal feedbacks",
+            "description": "Display Qti modalFeedback element",
+            "category": "content",
+            "active": true,
+            "tags": [
+              "core",
+              "qti",
+              "required"
+            ]
+          },
+          {
+            "id": "keyNavigation",
+            "module": "taoQtiTest\/runner\/plugins\/content\/accessibility\/keyNavigation\/plugin",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Keyboard Navigation",
+            "description": "Provide a way to navigate within the test runner with the keyboard",
+            "category": "content",
+            "active": true,
+            "tags": [
+              "core",
+              "qti"
+            ]
+          },
+          {
+            "id": "collapser",
+            "module": "taoQtiTest\/runner\/plugins\/content\/responsiveness\/collapser",
+            "bundle": null,
+            "position": null,
+            "name": "Collapser",
+            "description": "Reduce the size of the tools when the available space is not enough",
+            "category": "content",
+            "active": true,
+            "tags": [
+              "core"
+            ]
+          },
+          {
+            "id": "focusOnFirstField",
+            "module": "taoQtiTest\/runner\/plugins\/content\/accessibility\/focusOnFirstField",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Focus on first form field",
+            "description": "Sets focus on first form field",
+            "category": "content",
+            "active": true,
+            "tags": []
+          },
+          {
+            "id": "timer",
+            "module": "taoQtiTest\/runner\/plugins\/controls\/timer\/plugin",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Timer indicator",
+            "description": "Add countdown when remaining time",
+            "category": "controls",
+            "active": true,
+            "tags": [
+              "core",
+              "qti"
+            ]
+          },
+          {
+            "id": "progressbar",
+            "module": "taoQtiTest\/runner\/plugins\/controls\/progressbar\/progressbar",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Progress indicator",
+            "description": "Display the current progression within the test",
+            "category": "controls",
+            "active": true,
+            "tags": [
+              "core"
+            ]
+          },
+          {
+            "id": "duration",
+            "module": "taoQtiTest\/runner\/plugins\/controls\/duration\/duration",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Duration record",
+            "description": "Record accurately time spent by the test taker",
+            "category": "controls",
+            "active": true,
+            "tags": [
+              "core",
+              "technical",
+              "required"
+            ]
+          },
+          {
+            "id": "connectivity",
+            "module": "taoQtiTest\/runner\/plugins\/controls\/connectivity\/connectivity",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Connectivity check",
+            "description": "Pause the test when the network loose the connection",
+            "category": "controls",
+            "active": true,
+            "tags": [
+              "core",
+              "technical"
+            ]
+          },
+          {
+            "id": "testState",
+            "module": "taoQtiTest\/runner\/plugins\/controls\/testState\/testState",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Test state",
+            "description": "Manage test state",
+            "category": "controls",
+            "active": true,
+            "tags": [
+              "core",
+              "technical",
+              "required"
+            ]
+          },
+          {
+            "id": "review",
+            "module": "taoQtiTest\/runner\/plugins\/navigation\/review\/review",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Navigation and review panel",
+            "description": "Enable a panel to handle navigation and item reviews",
+            "category": "navigation",
+            "active": true,
+            "tags": [
+              "core"
+            ]
+          },
+          {
+            "id": "previous",
+            "module": "taoQtiTest\/runner\/plugins\/navigation\/previous",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Previous button",
+            "description": "Enable to move backward",
+            "category": "navigation",
+            "active": true,
+            "tags": [
+              "core",
+              "qti",
+              "required"
+            ]
+          },
+          {
+            "id": "next",
+            "module": "taoQtiTest\/runner\/plugins\/navigation\/next",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Next button",
+            "description": "Enable to move forward",
+            "category": "navigation",
+            "active": true,
+            "tags": [
+              "core",
+              "qti",
+              "required"
+            ]
+          },
+          {
+            "id": "nextSection",
+            "module": "taoQtiTest\/runner\/plugins\/navigation\/nextSection",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Next section button",
+            "description": "Enable to move to the next available section",
+            "category": "navigation",
+            "active": true,
+            "tags": [
+              "core",
+              "qti"
+            ]
+          },
+          {
+            "id": "skip",
+            "module": "taoQtiTest\/runner\/plugins\/navigation\/skip",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Skip button",
+            "description": "Skip the current item",
+            "category": "navigation",
+            "active": true,
+            "tags": [
+              "core",
+              "qti"
+            ]
+          },
+          {
+            "id": "allowSkipping",
+            "module": "taoQtiTest\/runner\/plugins\/navigation\/allowSkipping",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Allow Skipping",
+            "description": "Prevent submission of default\/null responses",
+            "category": "navigation",
+            "active": true,
+            "tags": [
+              "core",
+              "qti"
+            ]
+          },
+          {
+            "id": "validateResponses",
+            "module": "taoQtiTest\/runner\/plugins\/navigation\/validateResponses",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Validate Responses",
+            "description": "Prevent submission of invalid responses",
+            "category": "navigation",
+            "active": true,
+            "tags": [
+              "core",
+              "qti"
+            ]
+          },
+          {
+            "id": "comment",
+            "module": "taoQtiTest\/runner\/plugins\/tools\/comment\/comment",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Comment tool",
+            "description": "Allow test taker to comment an item",
+            "category": "tools",
+            "active": true,
+            "tags": [
+              "core",
+              "qti"
+            ]
+          },
+          {
+            "id": "calculator",
+            "module": "taoQtiTest\/runner\/plugins\/tools\/calculator",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Caculator tool",
+            "description": "Gives the student access to a basic calculator",
+            "category": "tools",
+            "active": true,
+            "tags": [
+              "core"
+            ]
+          },
+          {
+            "id": "zoom",
+            "module": "taoQtiTest\/runner\/plugins\/tools\/zoom",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Zoom",
+            "description": "Zoom in and out the item content",
+            "category": "tools",
+            "active": true,
+            "tags": [
+              "core"
+            ]
+          },
+          {
+            "id": "highlighter",
+            "module": "taoQtiTest\/runner\/plugins\/tools\/highlighter\/plugin",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Text Highlighter",
+            "description": "Allows the test taker to highlight text",
+            "category": "tools",
+            "active": true,
+            "tags": []
+          },
+          {
+            "id": "magnifier",
+            "module": "taoQtiTest\/runner\/plugins\/tools\/magnifier\/magnifier",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Magnifier",
+            "description": "Gives student access to a magnification tool",
+            "category": "tools",
+            "active": true,
+            "tags": []
+          },
+          {
+            "id": "lineReader",
+            "module": "taoQtiTest\/runner\/plugins\/tools\/lineReader\/plugin",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Line Reader",
+            "description": "Display a customisable mask with a customisable hole in it!",
+            "category": "tools",
+            "active": true,
+            "tags": []
+          },
+          {
+            "id": "answerMasking",
+            "module": "taoQtiTest\/runner\/plugins\/tools\/answerMasking\/plugin",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Answer Masking",
+            "description": "Hide all answers of a choice interaction and allow revealing them",
+            "category": "tools",
+            "active": true,
+            "tags": []
+          },
+          {
+            "id": "eliminator",
+            "module": "taoQtiTest\/runner\/plugins\/tools\/answerElimination\/eliminator",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Eliminate choices",
+            "description": "Allows student to eliminate choices",
+            "category": "tools",
+            "active": true,
+            "tags": []
+          },
+          {
+            "id": "area-masking",
+            "module": "taoQtiTest\/runner\/plugins\/tools\/areaMasking\/areaMasking",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "Area Masking",
+            "description": "Mask areas of the item",
+            "category": "tools",
+            "active": true,
+            "tags": []
+          },
+          {
+            "id": "apiptts",
+            "module": "taoQtiTest\/runner\/plugins\/tools\/apipTextToSpeech\/plugin",
+            "bundle": "taoQtiTest\/loader\/testPlugins.min",
+            "position": null,
+            "name": "APIP Text To Speech",
+            "description": "Allow Test-taker to playback media files associated according to APIP protocol to item content.",
+            "category": "tools",
+            "active": true,
+            "tags": []
+          }
+        ]
+      },
+      "options": {
+        "timerWarning": {
+          "assessmentItemRef": null,
+          "assessmentSection": null,
+          "testPart": null,
+          "assessmentTest": null
+        },
+        "timerWarningForScreenreader": null,
+        "catEngineWarning": null,
+        "progressIndicator": {
+          "type": "percentage",
+          "renderer": "percentage",
+          "scope": "test",
+          "forced": false,
+          "showLabel": true,
+          "showTotal": true,
+          "categories": []
+        },
+        "review": {
+          "enabled": true,
+          "scope": "test",
+          "useTitle": true,
+          "forceTitle": false,
+          "forceInformationalTitle": false,
+          "showLegend": true,
+          "defaultOpen": true,
+          "itemTitle": "Item %d",
+          "informationalItemTitle": "Instructions",
+          "preventsUnseen": true,
+          "canCollapse": false,
+          "displaySubsectionTitle": true,
+          "allowSkipahead": false
+        },
+        "exitButton": false,
+        "nextSection": false,
+        "plugins": {
+          "answer-masking": {
+            "restoreStateOnToggle": true,
+            "restoreStateOnMove": true
+          },
+          "validateResponses": {
+            "validateOnPreviousMove": true
+          },
+          "overlay": {
+            "full": false
+          },
+          "collapser": {
+            "collapseTools": true,
+            "collapseNavigation": false,
+            "collapseInOrder": false,
+            "hover": false,
+            "collapseOrder": []
+          },
+          "magnifier": {
+            "zoomMin": 2,
+            "zoomMax": 8,
+            "zoomStep": 0.5
+          },
+          "calculator": {
+            "template": "",
+            "degree": true
+          },
+          "dialog": {
+            "alert": {
+              "focus": "navigable-modal-body"
+            },
+            "confirm": {
+              "focus": "navigable-modal-body"
+            }
+          },
+          "keyNavigation": {
+            "contentNavigatorType": "default"
+          },
+          "answerCache": {
+            "allAttempts": false
+          },
+          "sessionHeartbeat": {
+            "interval": "900",
+            "action": "up"
+          }
+        },
+        "security": {
+          "csrfToken": true
+        },
+        "timer": {
+          "target": "server",
+          "resetAfterResume": false,
+          "keepUpToTimeout": false,
+          "restoreTimerFromClient": false
+        },
+        "enableAllowSkipping": true,
+        "enableValidateResponses": true,
+        "checkInformational": true,
+        "enableUnansweredItemsWarning": true,
+        "allowShortcuts": true,
+        "shortcuts": {
+          "calculator": {
+            "toggle": "C"
+          },
+          "zoom": {
+            "in": "I",
+            "out": "O"
+          },
+          "comment": {
+            "toggle": "A"
+          },
+          "itemThemeSwitcher": {
+            "toggle": "T"
+          },
+          "review": {
+            "toggle": "R",
+            "flag": "M"
+          },
+          "keyNavigation": {
+            "previous": "Shift+Tab",
+            "next": "Tab"
+          },
+          "next": {
+            "trigger": "J",
+            "triggerAccessibility": "Alt+Shift+N"
+          },
+          "previous": {
+            "trigger": "K",
+            "triggerAccessibility": "Alt+Shift+P"
+          },
+          "dialog": [],
+          "magnifier": {
+            "toggle": "L",
+            "in": "Shift+I",
+            "out": "Shift+O",
+            "close": "esc"
+          },
+          "highlighter": {
+            "toggle": "Shift+U"
+          },
+          "area-masking": {
+            "toggle": "Y"
+          },
+          "line-reader": {
+            "toggle": "G"
+          },
+          "answer-masking": {
+            "toggle": "D"
+          },
+          "apiptts": {
+            "enterTogglePlayback": "Enter",
+            "togglePlayback": "P",
+            "spaceTogglePlayback": "Space"
+          },
+          "jumplinks": {
+            "goToQuestion": "Alt+Shift+Q",
+            "goToTop": "Alt+Shift+T"
+          }
+        },
+        "itemCaching": {
+          "enabled": false,
+          "amount": 3
+        },
+        "guidedNavigation": false,
+        "toolStateServerStorage": [],
+        "forceEnableLinearNextItemWarning": false,
+        "enableLinearNextItemWarningCheckbox": true
+      }
+    }
+  }
