@@ -161,6 +161,14 @@ define([
                         showResponses(__('Output data'), responses.itemSession);
                         showConsole();
                     }
+
+                    if (responses.displayFeedback && responses.feedbacks) {
+                        testRunner.itemRunner.renderFeedbacks(responses.feedbacks, responses.itemSession, function(
+                            queue
+                        ) {
+                            testRunner.trigger('modalFeedbacks', queue);
+                        });
+                    }
                 })
                 .on('enablenav', () => {
                     this.enable();
