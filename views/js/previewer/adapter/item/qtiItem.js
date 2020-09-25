@@ -52,6 +52,10 @@ define([
         module: 'taoQtiTestPreviewer/previewer/plugins/content/enhancedReadOnlyMode',
         bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
         category: 'content'
+    }, {
+        module: 'taoQtiTest/runner/plugins/content/modalFeedback/modalFeedback',
+        bundle: 'taoQtiTest/loader/testPlugins.min',
+        category: 'content'
     }];
 
     /**
