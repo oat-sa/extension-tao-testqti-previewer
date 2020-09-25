@@ -23,10 +23,11 @@ define([
 
     'jquery',
     'taoQtiTestPreviewer/previewer/adapter/test/qtiTest',
+    'json!taoQtiTestPreviewer/test/samples/json/configuration.json',
     'json!taoQtiTestPreviewer/test/samples/json/initTestPreview.json',
     'json!taoQtiTestPreviewer/test/samples/json/itemData.json',
     'lib/jquery.mockjax/jquery.mockjax'
-], function($, previewerAdapter, initTestPreview, itemData) {
+], function($, previewerAdapter, configuration, initTestPreview, itemData) {
     'use strict';
 
     QUnit.module('API');
@@ -65,6 +66,11 @@ define([
             $.mockjax.clear();
 
             $.mockjax({
+                url: '*/configuration',
+                responseText: configuration
+            });
+
+            $.mockjax({
                 url: '*/init',
                 responseText: initTestPreview
             });
@@ -80,12 +86,13 @@ define([
         assert.expect(1);
 
         displayPreviewer(configReadOnly)
-            .before('ready', function(e, runner) {
-                runner.after('renderitem.runnerComponent', function() {
-                    assert.ok(true, 'The previewer has been rendered');
-                    ready();
-                });
-            });
+            .then(displayPreviewer =>
+                displayPreviewer.before('ready', function (e, runner) {
+                    runner.after('renderitem.runnerComponent', function () {
+                        assert.ok(true, 'The previewer has been rendered');
+                        ready();
+                    });
+                }));
 
         $('#show-interactive').on('click', function(e) {
             e.preventDefault();

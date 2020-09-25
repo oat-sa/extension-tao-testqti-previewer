@@ -18,13 +18,28 @@
 /**
  * @author Hanna Dzmitryieva <hanna@taotesting.com>
  */
-define(['lodash', 'core/logger', 'taoQtiTestPreviewer/previewer/component/test/qtiTest', 'ui/feedback'], function (
+define([
+    'lodash',
+    'core/promiseQueue',
+    'core/request',
+    'util/url',
+    'core/logger',
+    'taoQtiTestPreviewer/previewer/component/test/qtiTest',
+    'ui/feedback'
+], function (
     _,
+    promiseQueue,
+    request,
+    urlUtil,
     loggerFactory,
     qtiTestPreviewerFactory,
     feedback
 ) {
     'use strict';
+
+    const taoExtension = 'taoQtiTestPreviewer';
+
+    const testPreviewerController = 'TestPreviewer';
 
     const logger = loggerFactory('taoQtiTestPreviewer/previewer');
 
@@ -34,32 +49,38 @@ define(['lodash', 'core/logger', 'taoQtiTestPreviewer/previewer/component/test/q
      */
     const defaultPlugins = [
         {
-            module: 'taoQtiTest/runner/plugins/tools/itemThemeSwitcher/itemThemeSwitcher',
-            bundle: 'taoQtiTest/loader/testPlugins.min',
-            category: 'tools'
-        },
-        {
-            module: 'taoQtiTest/runner/plugins/navigation/previous',
-            bundle: 'taoQtiTest/loader/testPlugins.min',
-            category: 'navigation'
-        },
-        {
-            module: 'taoQtiTest/runner/plugins/navigation/next',
-            bundle: 'taoQtiTest/loader/testPlugins.min',
-            category: 'navigation'
-        },
-        {
             module: 'taoQtiTestPreviewer/previewer/plugins/content/cloneLogoInTestPreview',
             bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
             category: 'content'
         }
     ];
 
+    const transformConfiguration = config => {
+        const plugins = Array.isArray(config.plugins) ? [...defaultPlugins, ...config.plugins] : defaultPlugins;
+        const {view, readOnly, fullPage, hideActionBars} = config;
+        const options = _.omit({view, readOnly, fullPage, hideActionBars}, _.isUndefined);
+
+        return request({
+            url: urlUtil.route('configuration', testPreviewerController, taoExtension),
+        }).then(response => {
+            const configuration = response.data;
+
+            configuration.providers.plugins = [...configuration.providers.plugins, ...plugins];
+            _.assign(configuration.options, options);
+
+            return configuration;
+        });
+    };
+
     /**
      * Wraps the test previewer in order to be loaded by the taoItems previewer factory
      */
     return {
         name: 'qtiTest',
+
+        install() {
+            this.queue = promiseQueue();
+        },
 
         /**
          * Builds and shows the test previewer
@@ -72,14 +93,21 @@ define(['lodash', 'core/logger', 'taoQtiTestPreviewer/previewer/component/test/q
          * @returns {Object}
          */
         init(testUri, config = {}) {
-            config.testUri = testUri;
-            config.plugins = Array.isArray(config.plugins) ? [...defaultPlugins, ...config.plugins] : defaultPlugins;
-            return qtiTestPreviewerFactory(window.document.body, config).on('error', function (err) {
-                if (!_.isUndefined(err.message)) {
-                    feedback().error(err.message);
-                }
-                logger.error(err);
+            return transformConfiguration(config).then(config => {
+                config.options.testUri = testUri;
+                return qtiTestPreviewerFactory(window.document.body, config).on('error', function (err) {
+                    if (!_.isUndefined(err.message)) {
+                        feedback().error(err.message);
+                    }
+                    logger.error(err);
+                });
             });
-        }
+        },
+
+        destroy() {
+            this.queue = null;
+
+            return Promise.resolve();
+        },
     };
 });

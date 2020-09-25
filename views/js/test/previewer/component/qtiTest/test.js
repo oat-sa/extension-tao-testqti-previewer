@@ -23,10 +23,11 @@ define([
     'jquery',
     'lodash',
     'taoQtiTestPreviewer/previewer/component/test/qtiTest',
+    'json!taoQtiTestPreviewer/test/samples/json/configuration.json',
     'json!taoQtiTestPreviewer/test/samples/json/initTestPreview.json',
     'json!taoQtiTestPreviewer/test/samples/json/itemData.json',
     'lib/jquery.mockjax/jquery.mockjax'
-], function($, _, qtiTestPreviewerFactory, initTestPreview, itemData) {
+], function($, _, qtiTestPreviewerFactory, configuration, initTestPreview, itemData) {
     'use strict';
 
     QUnit.module('API');
@@ -40,31 +41,11 @@ define([
         $.mockjax.clear();
     });
 
-    const plugins = [
-        {
-            module: 'taoQtiTest/runner/plugins/tools/itemThemeSwitcher/itemThemeSwitcher',
-            bundle: 'taoQtiTest/loader/testPlugins.min',
-            category: 'tools'
-        },
-        {
-            module: 'taoQtiTest/runner/plugins/navigation/previous',
-            bundle: 'taoQtiTest/loader/testPlugins.min',
-            category: 'navigation'
-        },
-        {
-            module: 'taoQtiTest/runner/plugins/navigation/next',
-            bundle: 'taoQtiTest/loader/testPlugins.min',
-            category: 'navigation'
-        }
-    ];
     QUnit.test('module', assert =>  {
         const ready = assert.async();
-        const config = {
-            plugins
-        };
 
-        const previewer1 = qtiTestPreviewerFactory('#fixture-api', config);
-        const previewer2 = qtiTestPreviewerFactory('#fixture-api', config);
+        const previewer1 = qtiTestPreviewerFactory('#fixture-api', configuration.data);
+        const previewer2 = qtiTestPreviewerFactory('#fixture-api', configuration.data);
 
         assert.expect(4);
         $.mockjax({
@@ -104,15 +85,12 @@ define([
     }]).test('render test ', (data, assert) =>  {
         const ready = assert.async();
         const $container = $('#fixture-render');
-        const config = {
-            plugins
-        };
 
         assert.expect(1);
 
         $.mockjax(data.mock);
 
-        qtiTestPreviewerFactory($container, config)
+        qtiTestPreviewerFactory($container, configuration.data)
             .on('error', function(err) {
                 assert.ok(false, 'An error has occurred');
                 assert.pushResult({
@@ -131,16 +109,17 @@ define([
 
     QUnit.test('config', assert => {
         const ready = assert.async();
-        const config = {
+        const config = configuration.data;
+
+        _.assign(config.options, {
             view: 'scorer',
             readOnly: true,
             fullPage: true,
             hideActionBars: true,
-            plugins
-        };
+        });
 
         const previewerWithOptions = qtiTestPreviewerFactory('#fixture-api', config);
-        const previewerWithoutOptions = qtiTestPreviewerFactory('#fixture-api', { plugins });
+        const previewerWithoutOptions = qtiTestPreviewerFactory('#fixture-api', configuration.data);
 
         assert.expect(2);
         $.mockjax({
@@ -164,12 +143,12 @@ define([
         }).then(([runnerWithOptions, runnerWithoutOptions]) => {
             assert.deepEqual(
                 runnerWithOptions.getConfig().options,
-                { view: 'scorer', readOnly: true, fullPage: true, plugins: plugins, hideActionBars: true, testUri: undefined },
+                config.options,
                 'The previewer factory set options using config'
             );
             assert.deepEqual(
                 runnerWithoutOptions.getConfig().options,
-                { view: undefined,readOnly: undefined, fullPage: undefined, plugins: plugins, hideActionBars: undefined, testUri: undefined },
+                configuration.data.options,
                 'The previewer factory leave options undefined if config empty'
             );
 
@@ -180,7 +159,6 @@ define([
     QUnit.test('destroy', assert =>  {
         const ready = assert.async();
         const $container = $('#fixture-destroy');
-        const config = { plugins };
 
         assert.expect(2);
 
@@ -194,7 +172,7 @@ define([
             responseText: itemData
         });
 
-        qtiTestPreviewerFactory($container, config)
+        qtiTestPreviewerFactory($container, configuration.data)
             .on('error', function(err) {
                 assert.ok(false, 'An error has occurred');
                 assert.pushResult({
@@ -218,7 +196,6 @@ define([
     QUnit.test('Visual test', function (assert) {
         const ready = assert.async();
         const $container = $('#visual-test');
-        const config = { plugins };
 
         assert.expect(1);
 
@@ -232,7 +209,7 @@ define([
             responseText: itemData
         });
 
-        qtiTestPreviewerFactory($container, config)
+        qtiTestPreviewerFactory($container, configuration.data)
             .on('error', function(err) {
                 assert.ok(false, 'An error has occurred');
                 assert.pushResult({

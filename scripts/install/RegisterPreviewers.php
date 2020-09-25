@@ -15,16 +15,21 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2018 (original work) Open Assessment Technologies SA;
+ * Copyright (c) 2018-2020 (original work) Open Assessment Technologies SA;
  */
+
+declare(strict_types=1);
 
 namespace oat\taoQtiTestPreviewer\scripts\install;
 
+use common_Exception as Exception;
 use common_report_Report as Report;
 use oat\oatbox\extension\InstallAction;
 use oat\tao\model\modules\DynamicModule;
-use oat\taoItems\model\preview\ItemPreviewerService;
 use oat\taoOutcomeUi\model\ResultsViewerService;
+use oat\oatbox\service\exception\InvalidServiceManagerException;
+use common_exception_InconsistentData as InconsistentDataException;
+use oat\taoItems\model\preview\ItemPreviewerRegistryServiceInterface;
 
 /**
  * Installation action that registers the test runner providers
@@ -33,8 +38,7 @@ use oat\taoOutcomeUi\model\ResultsViewerService;
  */
 class RegisterPreviewers extends InstallAction
 {
-
-    public static $providers = [
+    private const PROVIDERS = [
         'previewer' => [
             [
                 'id' => 'qtiItem',
@@ -44,29 +48,42 @@ class RegisterPreviewers extends InstallAction
                 'description' => 'QTI implementation of the item previewer',
                 'category' => 'previewer',
                 'active' => true,
-                'tags' => [ 'core', 'qti', 'previewer' ]
-            ]
-        ]
+                'tags' => ['core', 'qti', 'previewer'],
+            ],
+        ],
     ];
 
+    /**
+     * @param array $params
+     *
+     * @throws Exception
+     * @throws InconsistentDataException
+     * @throws InvalidServiceManagerException
+     *
+     * @return Report
+     */
     public function __invoke($params)
     {
-        $registry = $this->getServiceLocator()->get(ItemPreviewerService::SERVICE_ID);
-        
+        $serviceManager = $this->getServiceManager();
+
+        /** @var ItemPreviewerRegistryServiceInterface $registry */
+        $registry = $serviceManager->get(ItemPreviewerRegistryServiceInterface::SERVICE_ID);
+
         $count = 0;
 
-        foreach (self::$providers as $categoryProviders) {
+        foreach (self::PROVIDERS as $categoryProviders) {
             foreach ($categoryProviders as $providerData) {
                 if ($registry->registerAdapter(DynamicModule::fromArray($providerData))) {
-                    $count++;
+                    ++$count;
                 }
             }
         }
 
-        $service = $this->getServiceManager()->get(ResultsViewerService::SERVICE_ID);
+        /** @var ResultsViewerService $service */
+        $service = $serviceManager->get(ResultsViewerService::SERVICE_ID);
         $service->setDefaultItemType('qtiItem');
-        $this->getServiceManager()->register(ResultsViewerService::SERVICE_ID, $service);
+        $serviceManager->register(ResultsViewerService::SERVICE_ID, $service);
 
-        return new Report(Report::TYPE_SUCCESS, $count .  ' providers registered.');
+        return Report::createSuccess($count . ' providers registered.');
     }
 }
