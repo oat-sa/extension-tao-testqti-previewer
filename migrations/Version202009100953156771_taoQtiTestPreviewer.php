@@ -34,9 +34,9 @@ final class Version202009100953156771_taoQtiTestPreviewer extends AbstractMigrat
 
     public function down(Schema $schema): void
     {
-        AclProxy::applyRule(
+        AclProxy::revokeRule(
             new AccessRule(
-                AccessRule::DENY,
+                AccessRule::GRANT,
                 ItemAuthorRole::INSTANCE_URI,
                 ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer']
             )
