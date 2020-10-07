@@ -4,6 +4,10 @@
 
     display: flex;
     justify-content: flex-end;
+    position: absolute;
+    width: 100%;
+    top: 0.5rem;
+    z-index: 20;
 
     & .highlighter-tray {
         border-radius: 8px;

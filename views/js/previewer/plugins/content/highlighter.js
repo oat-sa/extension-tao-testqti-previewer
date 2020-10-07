@@ -43,6 +43,17 @@ define([
         return allRanges;
     }
 
+    function highlight(highlighter, selection) {
+        highlighter.highlightRanges(getAllRanges(selection));
+        //Sending the highlighIndex to parent so that it can be saved on MS side
+        parent.postMessage({ event: 'indexUpdated', payload: highlighter.getHighlightIndex() }, '*');
+    }
+
+    function clearHighlights(highlighter, selection) {
+        highlighter.clearHighlights();
+        parent.postMessage({ event: 'indexUpdated', payload: highlighter.getHighlightIndex() }, '*');
+    }
+
     return pluginFactory({
         name: 'highlighter',
 
@@ -71,14 +82,16 @@ define([
                 if (e.data.event === 'setIndex') {
                     // Applying any highlighIndex received from parent
                     self.highlighter.highlightFromIndex(e.data.payload);
-                } else if (e.data.event === 'hide') {
-                    self.$hightlighterTray.hide();
-                } else if (e.data.event === 'show') {
-                    self.$hightlighterTray.show();
+                } else if (self.$highlighterTray) {
+                    if (e.data.event === 'hide') {
+                        self.hide();
+                    } else if (e.data.event === 'show') {
+                        self.show();
+                    }
                 }
             });
 
-            this.$element = $(
+            this.$highlight = $(
                 buttonTpl({
                     control: 'highlight',
                     title: __('Highlight'),
@@ -98,31 +111,26 @@ define([
                 })
             );
 
-            this.$hightlighterTray = $(
+            this.$highlighterTray = $(
                 highlighterTrayTpl({
                     label: __('highlighter')
                 })
             );
+            //hide highlighter menu by default
+            hider.hide(this.$highlighterTray);
 
             testRunner.after('renderitem', function () {
-                console.log('after render item fired ');
                 parent.postMessage({ event: 'rendered' }, '*');
             });
 
-            this.$element.on('click', function (e) {
+            this.$highlight.on('click', function (e) {
                 e.preventDefault();
-
-                self.highlighter.highlightRanges(getAllRanges(self.selection));
-                //Sending the highlighIndex to parent so that it can be saved on MS side
-                parent.postMessage({ event: 'indexUpdated', payload: self.highlighter.getHighlightIndex() }, '*');
+                highlight(self.highlighter, self.selection);
             });
 
             this.$clear.on('click', function (e) {
                 e.preventDefault();
-
-                self.highlighter.clearHighlights();
-                //Sending the highlighIndex to parent so that it can be saved on MS side
-                parent.postMessage({ event: 'indexUpdated', payload: self.highlighter.getHighlightIndex() }, '*');
+                clearHighlights(self.highlighter, self.selection);
             });
         },
 
@@ -132,38 +140,45 @@ define([
         render: function render() {
             var self = this;
 
-            //attach the element to the navigation area
             var $navigation = this.getAreaBroker().getArea('context');
-            $navigation.append(this.$element);
+            $navigation.append(this.$highlight);
             $navigation.append(this.$clear);
 
             var $container = this.getAreaBroker().getArea('contentWrapper');
-            $container.append(this.$hightlighterTray);
+            $container.append(this.$highlighterTray);
 
             var $eraser = $container.find('button.icon-eraser');
             $eraser.on('click', function (e) {
                 e.preventDefault();
-
-                self.highlighter.clearHighlights();
-                //Sending the highlighIndex to parent so that it can be saved on MS side
-                parent.postMessage({ event: 'indexUpdated', payload: self.highlighter.getHighlightIndex() }, '*');
+                clearHighlights(self.highlighter, self.selection);
             });
 
             var $color = $container.find('.color-button');
             $color.on('click', function (e) {
                 e.preventDefault();
-
-                self.highlighter.highlightRanges(getAllRanges(self.selection));
-                //Sending the highlighIndex to parent so that it can be saved on MS side
-                parent.postMessage({ event: 'indexUpdated', payload: self.highlighter.getHighlightIndex() }, '*');
+                highlight(self.highlighter, self.selection);
             });
+        },
+
+        /**
+         * Show the highlighter tray
+         */
+        show() {
+            hider.show(this.$highlighterTray);
+        },
+
+        /**
+         * Hide the highlighter tray
+         */
+        hide() {
+            hider.hide(this.$highlighterTray);
         },
 
         /**
          * Called during the runner's destroy phase
          */
         destroy: function destroy() {
-            this.$element.remove();
+            this.$highlight.remove();
         }
     });
 });
