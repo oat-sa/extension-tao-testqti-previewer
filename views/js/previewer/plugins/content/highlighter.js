@@ -27,10 +27,21 @@ define([
     'i18n',
     'ui/hider',
     'taoTests/runner/plugin',
+    'tpl!taoQtiTestPreviewer/previewer/plugins/content/tpl/highlighter-tray',
     'tpl!taoQtiTest/runner/plugins/templates/button',
-    'ui/highlighter'
-], function ($, _, __, hider, pluginFactory, buttonTpl, highlighterFactory) {
+    'ui/highlighter',
+    'css!taoQtiTestPreviewer/previewer/plugins/content/css/highlighterTray.css'
+], function ($, _, __, hider, pluginFactory,  highlighterTrayTpl, buttonTpl, highlighterFactory) {
     'use strict';
+
+    function getAllRanges(selection) {
+        var i, allRanges = [];
+
+        for (i = 0; i < selection.rangeCount; i++) {
+            allRanges.push(selection.getRangeAt(i));
+        }
+        return allRanges;
+    }
 
     return pluginFactory({
         name: 'highlighter',
@@ -43,13 +54,13 @@ define([
             var testRunner = this.getTestRunner();
 
             if (!window.getSelection) throw new Error('Browser does not support getSelection()');
-            const selection = window.getSelection();
+            self.selection = window.getSelection();
 
             var eventMethod = window.addEventListener ? 'addEventListener' : 'attachEvent';
             var eventer = window[eventMethod];
             var messageEvent = eventMethod === 'attachEvent' ? 'onmessage' : 'message';
 
-            var highlighter = highlighterFactory({
+            self.highlighter = highlighterFactory({
                 className: 'txt-user-highlight',
                 containerSelector: '.qti-itemBody',
                 containersBlackList: [],
@@ -59,7 +70,11 @@ define([
             eventer(messageEvent, function (e) {
                 if (e.data.event === 'setIndex') {
                     // Applying any highlighIndex received from parent
-                    highlighter.highlightFromIndex(e.data.payload);
+                    self.highlighter.highlightFromIndex(e.data.payload);
+                } else if (e.data.event === 'hide') {
+                    self.$hightlighterTray.hide();
+                } else if (e.data.event === 'show') {
+                    self.$hightlighterTray.show();
                 }
             });
 
@@ -83,45 +98,31 @@ define([
                 })
             );
 
-            this.$element.on('click', function (e) {
-                e.preventDefault();
-                if (self.getState('enabled') !== false) {
-                    self.disable();
-                    testRunner.trigger('finish');
-                }
-            });
+            this.$hightlighterTray = $(
+                highlighterTrayTpl({
+                    label: __('highlighter')
+                })
+            );
 
             testRunner.after('renderitem', function () {
                 console.log('after render item fired ');
                 parent.postMessage({ event: 'rendered' }, '*');
             });
 
-            const getAllRanges = () => {
-                var i,
-                    allRanges = [];
-
-                for (i = 0; i < selection.rangeCount; i++) {
-                    allRanges.push(selection.getRangeAt(i));
-                }
-                return allRanges;
-            };
-
             this.$element.on('click', function (e) {
                 e.preventDefault();
 
-                //coming from highlighter.js lib
-                highlighter.highlightRanges(getAllRanges());
+                self.highlighter.highlightRanges(getAllRanges(self.selection));
                 //Sending the highlighIndex to parent so that it can be saved on MS side
-                parent.postMessage({ event: 'indexUpdated', payload: highlighter.getHighlightIndex() }, '*');
+                parent.postMessage({ event: 'indexUpdated', payload: self.highlighter.getHighlightIndex() }, '*');
             });
 
             this.$clear.on('click', function (e) {
                 e.preventDefault();
 
-                //coming from highlighter.js lib
-                highlighter.clearHighlights();
+                self.highlighter.clearHighlights();
                 //Sending the highlighIndex to parent so that it can be saved on MS side
-                parent.postMessage({ event: 'indexUpdated', payload: highlighter.getHighlightIndex() }, '*');
+                parent.postMessage({ event: 'indexUpdated', payload: self.highlighter.getHighlightIndex() }, '*');
             });
         },
 
@@ -129,10 +130,33 @@ define([
          * Called during the runner's render phase
          */
         render: function render() {
+            var self = this;
+
             //attach the element to the navigation area
-            var $container = this.getAreaBroker().getArea('context');
-            $container.append(this.$element);
-            $container.append(this.$clear);
+            var $navigation = this.getAreaBroker().getArea('context');
+            $navigation.append(this.$element);
+            $navigation.append(this.$clear);
+
+            var $container = this.getAreaBroker().getArea('contentWrapper');
+            $container.append(this.$hightlighterTray);
+
+            var $eraser = $container.find('button.icon-eraser');
+            $eraser.on('click', function (e) {
+                e.preventDefault();
+
+                self.highlighter.clearHighlights();
+                //Sending the highlighIndex to parent so that it can be saved on MS side
+                parent.postMessage({ event: 'indexUpdated', payload: self.highlighter.getHighlightIndex() }, '*');
+            });
+
+            var $color = $container.find('.color-button');
+            $color.on('click', function (e) {
+                e.preventDefault();
+
+                self.highlighter.highlightRanges(getAllRanges(self.selection));
+                //Sending the highlighIndex to parent so that it can be saved on MS side
+                parent.postMessage({ event: 'indexUpdated', payload: self.highlighter.getHighlightIndex() }, '*');
+            });
         },
 
         /**
