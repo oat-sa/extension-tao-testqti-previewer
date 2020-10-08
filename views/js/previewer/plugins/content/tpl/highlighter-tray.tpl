@@ -10,6 +10,6 @@
         <div class="color-item">
             <input class="color-button pink-color" type="button"/>
         </div>
-        <button class="icon icon-eraser" type="button"></button>
+        <button class="icon icon-eraser"></button>
     </div>
 </div>
