@@ -248,6 +248,9 @@ define([
             receiveToken: '4567',
             response: {
                 content: {
+                    data: {
+                        identifier: 'item-1'
+                    },
                     interactions: [{}]
                 },
                 itemState: {
