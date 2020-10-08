@@ -1,18 +1,17 @@
 .highlighter-container {
+    --highlighter-tray-width: 30rem;
     --color-button-size: 16px;
     --color-button-hover-size: 24px;
 
-    display: flex;
-    justify-content: flex-end;
     position: absolute;
-    width: 100%;
-    top: 0.5rem;
-    z-index: 20;
+    top: 0.75rem;
+    left: calc(100% - var(--highlighter-tray-width) - 3rem);
+    z-index: 1;
 
     & .highlighter-tray {
         border-radius: 8px;
         padding: 1rem;
-        width: 30rem;
+        width: var(--highlighter-tray-width);
         height: 4.5rem;
         margin-right: 30px;
         display: flex;

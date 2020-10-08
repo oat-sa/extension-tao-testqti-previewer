@@ -34,15 +34,6 @@ define([
 ], function ($, _, __, hider, pluginFactory,  highlighterTrayTpl, buttonTpl, highlighterFactory) {
     'use strict';
 
-    function getAllRanges(selection) {
-        var i, allRanges = [];
-
-        for (i = 0; i < selection.rangeCount; i++) {
-            allRanges.push(selection.getRangeAt(i));
-        }
-        return allRanges;
-    }
-
     function highlight(highlighter, selection) {
         highlighter.highlightRanges(getAllRanges(selection));
         //Sending the highlighIndex to parent so that it can be saved on MS side
@@ -52,6 +43,15 @@ define([
     function clearHighlights(highlighter, selection) {
         highlighter.clearHighlights();
         parent.postMessage({ event: 'indexUpdated', payload: highlighter.getHighlightIndex() }, '*');
+    }
+
+    function getAllRanges(selection) {
+        var i, allRanges = [];
+
+        for (i = 0; i < selection.rangeCount; i++) {
+            allRanges.push(selection.getRangeAt(i));
+        }
+        return allRanges;
     }
 
     return pluginFactory({
