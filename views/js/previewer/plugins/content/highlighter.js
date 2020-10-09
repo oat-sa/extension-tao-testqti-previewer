@@ -38,7 +38,7 @@ define([
         parent.postMessage({ event: 'indexUpdated', payload: highlighter.getHighlightIndex() }, '*');
     }
 
-    function clearHighlights(highlighter, selection) {
+    function clearHighlights(highlighter) {
         highlighter.clearHighlights();
         parent.postMessage({ event: 'indexUpdated', payload: highlighter.getHighlightIndex() }, '*');
     }
@@ -63,20 +63,13 @@ define([
             var testRunner = this.getTestRunner();
 
             if (!window.getSelection) throw new Error('Browser does not support getSelection()');
-            self.selection = window.getSelection();
+            this.selection = window.getSelection();
 
-            var eventMethod = window.addEventListener ? 'addEventListener' : 'attachEvent';
-            var eventer = window[eventMethod];
-            var messageEvent = eventMethod === 'attachEvent' ? 'onmessage' : 'message';
+            var addListenerMethod = window.addEventListener ? 'addEventListener' : 'attachEvent';
+            var addListener = window[addListenerMethod];
+            var messageEvent = addListenerMethod === 'attachEvent' ? 'onmessage' : 'message';
 
-            self.highlighter = highlighterFactory({
-                className: 'txt-user-highlight',
-                containerSelector: '.qti-itemBody',
-                containersBlackList: [],
-                clearOnClick: true
-            });
-
-            eventer(messageEvent, function (e) {
+            this.eventListener = function eventListener(e) {
                 if (e.data.event === 'setIndex') {
                     // Applying any highlighIndex received from parent
                     self.highlighter.highlightFromIndex(e.data.payload);
@@ -87,7 +80,17 @@ define([
                         self.show();
                     }
                 }
+            };
+
+
+            this.highlighter = highlighterFactory({
+                className: 'txt-user-highlight',
+                containerSelector: '.qti-itemBody',
+                containersBlackList: [],
+                clearOnClick: true
             });
+
+            addListener(messageEvent, this.eventListener);
 
             this.$highlight = $(
                 buttonTpl({
@@ -177,6 +180,11 @@ define([
          */
         destroy: function destroy() {
             this.$highlight.remove();
+
+            var removeListenerMethod = window.removeEventListener ? 'removeEventListener' : 'detachEvent';
+            var removeListener = window[removeListenerMethod];
+            var messageEvent = window.removeEventListener === 'detachEvent' ? 'onmessage' : 'message';
+            removeListener(messageEvent, this.eventListener);
         }
     });
 });
