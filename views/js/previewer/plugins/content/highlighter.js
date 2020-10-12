@@ -21,7 +21,6 @@
  */
 define([
     'jquery',
-    'lodash',
     'i18n',
     'ui/hider',
     'taoTests/runner/plugin',
@@ -29,7 +28,7 @@ define([
     'tpl!taoQtiTest/runner/plugins/templates/button',
     'ui/highlighter',
     'css!taoQtiTestPreviewer/previewer/plugins/content/css/highlighterTray.css'
-], function ($, _, __, hider, pluginFactory,  highlighterTrayTpl, buttonTpl, highlighterFactory) {
+], function ($, __, hider, pluginFactory, highlighterTrayTpl, buttonTpl, highlighterFactory) {
     'use strict';
 
     function highlight(highlighter, selection) {
@@ -44,9 +43,9 @@ define([
     }
 
     function getAllRanges(selection) {
-        var i, allRanges = [];
+        const allRanges = [];
 
-        for (i = 0; i < selection.rangeCount; i++) {
+        for (let i = 0; i < selection.rangeCount; i++) {
             allRanges.push(selection.getRangeAt(i));
         }
         return allRanges;
@@ -58,30 +57,30 @@ define([
         /**
          * Initialize the plugin (called during runner's init)
          */
-        init: function init() {
-            var self = this;
-            var testRunner = this.getTestRunner();
+        init() {
+            const testRunner = this.getTestRunner();
 
-            if (!window.getSelection) throw new Error('Browser does not support getSelection()');
+            if (!window.getSelection) {
+                throw new Error('Browser does not support getSelection()');
+            }
             this.selection = window.getSelection();
 
-            var addListenerMethod = window.addEventListener ? 'addEventListener' : 'attachEvent';
-            var addListener = window[addListenerMethod];
-            var messageEvent = addListenerMethod === 'attachEvent' ? 'onmessage' : 'message';
+            const addListenerMethod = window.addEventListener ? 'addEventListener' : 'attachEvent';
+            const addListener = window[addListenerMethod];
+            const messageEvent = addListenerMethod === 'attachEvent' ? 'onmessage' : 'message';
 
-            this.eventListener = function eventListener(e) {
+            this.eventListener = e => {
                 if (e.data.event === 'setIndex') {
                     // Applying any highlighIndex received from parent
-                    self.highlighter.highlightFromIndex(e.data.payload);
-                } else if (self.$highlighterTray) {
+                    this.highlighter.highlightFromIndex(e.data.payload);
+                } else if (this.$highlighterTray) {
                     if (e.data.event === 'hide') {
-                        self.hide();
+                        this.hide();
                     } else if (e.data.event === 'show') {
-                        self.show();
+                        this.show();
                     }
                 }
             };
-
 
             this.highlighter = highlighterFactory({
                 className: 'txt-user-highlight',
@@ -91,26 +90,6 @@ define([
             });
 
             addListener(messageEvent, this.eventListener);
-
-            this.$highlight = $(
-                buttonTpl({
-                    control: 'highlight',
-                    title: __('Highlight'),
-                    icon: 'edit',
-                    text: __('Highlight'),
-                    className: 'context-action'
-                })
-            );
-
-            this.$clear = $(
-                buttonTpl({
-                    control: 'highlight',
-                    title: __('Clear Highlights'),
-                    icon: 'close',
-                    text: __('Clear Highlights'),
-                    className: 'context-action'
-                })
-            );
 
             this.$highlighterTray = $(
                 highlighterTrayTpl({
@@ -123,41 +102,25 @@ define([
             testRunner.after('renderitem', function () {
                 parent.postMessage({ event: 'rendered' }, '*');
             });
-
-            this.$highlight.on('click', function (e) {
-                e.preventDefault();
-                highlight(self.highlighter, self.selection);
-            });
-
-            this.$clear.on('click', function (e) {
-                e.preventDefault();
-                clearHighlights(self.highlighter, self.selection);
-            });
         },
 
         /**
          * Called during the runner's render phase
          */
-        render: function render() {
-            var self = this;
-
-            var $navigation = this.getAreaBroker().getArea('context');
-            $navigation.append(this.$highlight);
-            $navigation.append(this.$clear);
-
-            var $container = this.getAreaBroker().getArea('contentWrapper');
+        render() {
+            const $container = this.getAreaBroker().getArea('contentWrapper');
             $container.append(this.$highlighterTray);
 
-            var $eraser = $container.find('button.icon-eraser');
-            $eraser.on('click', function (e) {
+            const $eraser = $container.find('button.icon-eraser');
+            $eraser.on('click', e => {
                 e.preventDefault();
-                clearHighlights(self.highlighter, self.selection);
+                clearHighlights(this.highlighter, this.selection);
             });
 
-            var $color = $container.find('.color-button');
-            $color.on('click', function (e) {
+            const $color = $container.find('.color-button');
+            $color.on('click', e => {
                 e.preventDefault();
-                highlight(self.highlighter, self.selection);
+                highlight(this.highlighter, this.selection);
             });
         },
 
@@ -178,12 +141,12 @@ define([
         /**
          * Called during the runner's destroy phase
          */
-        destroy: function destroy() {
-            this.$highlight.remove();
+        destroy() {
+            this.$highlighterTray.remove();
 
-            var removeListenerMethod = window.removeEventListener ? 'removeEventListener' : 'detachEvent';
-            var removeListener = window[removeListenerMethod];
-            var messageEvent = window.removeEventListener === 'detachEvent' ? 'onmessage' : 'message';
+            const removeListenerMethod = window.removeEventListener ? 'removeEventListener' : 'detachEvent';
+            const removeListener = window[removeListenerMethod];
+            const messageEvent = window.removeEventListener === 'detachEvent' ? 'onmessage' : 'message';
             removeListener(messageEvent, this.eventListener);
         }
     });
