@@ -5,20 +5,24 @@
     $blueHighlightColor: #A3D7FF;
 
     --highlighter-tray-width: 30rem;
+    --highlighter-tray-height: 4.5rem;
+    --highlighter-offset: 30px;
     --color-button-size: 16px;
     --color-button-hover-size: 24px;
 
-    position: absolute;
-    top: 0.75rem;
-    left: calc(100% - var(--highlighter-tray-width) - 30px);
+    position: relative;
+    min-height: var(--highlighter-tray-height);
+    height: var(--highlighter-tray-height);
+    left: calc(100% - var(--highlighter-tray-width) - var(--highlighter-offset));
+    top: calc(var(--highlighter-offset) / 2);
     z-index: 1;
 
     & .highlighter-tray {
         border-radius: 8px;
         padding: 1rem;
         width: var(--highlighter-tray-width);
-        height: 4.5rem;
-        margin-right: 30px;
+        height: 100%;
+        margin-right: var(--highlighter-offset);
         display: flex;
         align-items: center;
         justify-content: space-between;

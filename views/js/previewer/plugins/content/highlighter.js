@@ -34,12 +34,13 @@ define([
     function highlight(highlighter, selection) {
         highlighter.highlightRanges(getAllRanges(selection));
         //Sending the highlighIndex to parent so that it can be saved on MS side
-        parent.postMessage({ event: 'indexUpdated', payload: highlighter.getHighlightIndex() }, '*');
+        selection.removeAllRanges();
+        window.parent.postMessage({ event: 'indexUpdated', payload: highlighter.getHighlightIndex() }, '*');
     }
 
     function clearHighlights(highlighter) {
         highlighter.clearHighlights();
-        parent.postMessage({ event: 'indexUpdated', payload: highlighter.getHighlightIndex() }, '*');
+        window.parent.postMessage({ event: 'indexUpdated', payload: highlighter.getHighlightIndex() }, '*');
     }
 
     function getAllRanges(selection) {
@@ -65,10 +66,6 @@ define([
             }
             this.selection = window.getSelection();
 
-            const addListenerMethod = window.addEventListener ? 'addEventListener' : 'attachEvent';
-            const addListener = window[addListenerMethod];
-            const messageEvent = addListenerMethod === 'attachEvent' ? 'onmessage' : 'message';
-
             this.eventListener = e => {
                 if (e.data.event === 'setIndex') {
                     // Applying any highlighIndex received from parent
@@ -85,22 +82,19 @@ define([
             this.highlighter = highlighterFactory({
                 className: 'txt-user-highlight',
                 containerSelector: '.qti-itemBody',
-                containersBlackList: [],
-                clearOnClick: true
+                containersBlackList: []
             });
 
-            addListener(messageEvent, this.eventListener);
+            window.addEventListener('message', this.eventListener);
 
             this.$highlighterTray = $(
                 highlighterTrayTpl({
                     label: __('highlighter')
                 })
             );
-            //hide highlighter menu by default
-            hider.hide(this.$highlighterTray);
 
             testRunner.after('renderitem', function () {
-                parent.postMessage({ event: 'rendered' }, '*');
+                window.parent.postMessage({ event: 'rendered' }, '*');
             });
         },
 
@@ -110,6 +104,9 @@ define([
         render() {
             const $container = this.getAreaBroker().getArea('contentWrapper');
             $container.append(this.$highlighterTray);
+
+            //hide highlighter menu by default
+            this.hide();
 
             const $eraser = $container.find('button.icon-eraser');
             $eraser.on('click', e => {
@@ -128,14 +125,16 @@ define([
          * Show the highlighter tray
          */
         show() {
-            hider.show(this.$highlighterTray);
+            const $container = this.getAreaBroker().getArea('contentWrapper');
+            hider.show($container.find('.highlighter-tray'));
         },
 
         /**
          * Hide the highlighter tray
          */
         hide() {
-            hider.hide(this.$highlighterTray);
+            const $container = this.getAreaBroker().getArea('contentWrapper');
+            hider.hide($container.find('.highlighter-tray'));
         },
 
         /**
@@ -143,11 +142,7 @@ define([
          */
         destroy() {
             this.$highlighterTray.remove();
-
-            const removeListenerMethod = window.removeEventListener ? 'removeEventListener' : 'detachEvent';
-            const removeListener = window[removeListenerMethod];
-            const messageEvent = window.removeEventListener === 'detachEvent' ? 'onmessage' : 'message';
-            removeListener(messageEvent, this.eventListener);
+            window.removeEventListener('message', this.eventListener);
         }
     });
 });
