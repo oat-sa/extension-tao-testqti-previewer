@@ -23,10 +23,12 @@ define([
     'lodash',
     'layout/loading-bar',
     'taoTests/runner/runnerComponent',
+    'taoQtiTest/runner/config/assetManager',
+    'taoItems/assets/strategies',
     'tpl!taoQtiTestPreviewer/previewer/component/test/tpl/qtiTest',
     'css!taoQtiTestPreviewer/previewer/component/test/css/qtiTest',
     'css!taoQtiTestCss/new-test-runner'
-], function (context, __, loadingBar, runnerComponentFactory, runnerTpl) {
+], function (context, __, loadingBar, runnerComponentFactory, assetManagerFactory, assetStrategies, runnerTpl) {
     'use strict';
 
     /**
@@ -53,6 +55,10 @@ define([
             bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
             category: 'proxy'
         }];
+
+        //the asset manager should support taomedia strategy
+        const assetManager = assetManagerFactory(testRunnerConfig.serviceCallId);
+        assetManager.prependStrategy(assetStrategies.taomedia);
 
         return runnerComponentFactory(container, testRunnerConfig, runnerTpl)
             .on('render', function() {
