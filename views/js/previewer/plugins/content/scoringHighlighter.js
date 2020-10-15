@@ -25,10 +25,9 @@ define([
     'ui/hider',
     'taoTests/runner/plugin',
     'tpl!taoQtiTestPreviewer/previewer/plugins/content/tpl/highlighter-tray',
-    'tpl!taoQtiTest/runner/plugins/templates/button',
     'ui/highlighter',
     'css!taoQtiTestPreviewer/previewer/plugins/content/css/highlighterTray.css'
-], function ($, __, hider, pluginFactory, highlighterTrayTpl, buttonTpl, highlighterFactory) {
+], function ($, __, hider, pluginFactory, highlighterTrayTpl, highlighterFactory) {
     'use strict';
 
     function highlight(highlighter, selection) {
