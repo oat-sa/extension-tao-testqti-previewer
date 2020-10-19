@@ -84,6 +84,9 @@
         -ms-flex: 1 1 0%;
         flex: 1 1 0%;
 
+        display: flex;
+        flex-direction: column;
+
         overflow: auto;
 
         padding: 0;

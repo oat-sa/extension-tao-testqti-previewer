@@ -21,10 +21,10 @@
  *
  * @author Jean-Sébastien Conan <jean-sebastien@taotesting.com>
  */
-define([
-    'taoTests/runner/runnerComponent',
-    'tpl!taoQtiTestPreviewer/previewer/runner'
-], function (runnerComponentFactory, runnerTpl) {
+define(['taoTests/runner/runnerComponent', 'tpl!taoQtiTestPreviewer/previewer/runner'], function (
+    runnerComponentFactory,
+    runnerTpl
+) {
     'use strict';
 
     /**
@@ -42,16 +42,16 @@ define([
      * @returns {previewer}
      */
     return function previewerFactory(container, config = {}, template = null) {
-
         return runnerComponentFactory(container, config, template || runnerTpl)
-            .on('render', function() {
+            .on('render', function () {
                 const { fullPage, readOnly, hideActionBars } = this.getConfig().options;
+
                 this.setState('fullpage', fullPage);
                 this.setState('readonly', readOnly);
                 this.setState('hideactionbars', hideActionBars);
             })
-            .on('ready', function(runner) {
-                runner.on('destroy', () => this.destroy() );
+            .on('ready', function (runner) {
+                runner.on('destroy', () => this.destroy());
             });
     };
 });
