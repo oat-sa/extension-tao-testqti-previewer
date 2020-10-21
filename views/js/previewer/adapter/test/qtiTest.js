@@ -93,9 +93,9 @@ define([
          * @returns {Object}
          */
         init(testUri, config = {}) {
-            return transformConfiguration(config).then(config => {
-                config.options.testUri = testUri;
-                return qtiTestPreviewerFactory(window.document.body, config).on('error', function (err) {
+            return transformConfiguration(config).then(testPreviewConfig => {
+                testPreviewConfig.options.testUri = testUri;
+                return qtiTestPreviewerFactory(window.document.body, testPreviewConfig).on('error', function (err) {
                     if (!_.isUndefined(err.message)) {
                         feedback().error(err.message);
                     }
