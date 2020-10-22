@@ -22,6 +22,7 @@ declare(strict_types=1);
 
 namespace oat\taoQtiTestPreviewer\models\test\mapper;
 
+use common_Exception as Exception;
 use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewConfig;
@@ -31,10 +32,14 @@ use qtism\data\AssessmentTest;
 use qtism\data\NavigationMode;
 use qtism\runtime\tests\Route;
 use qtism\runtime\tests\RouteItem;
+use oat\taoQtiItem\model\qti\Service;
 
 class TestPreviewMapper extends ConfigurableService implements TestPreviewMapperInterface
 {
     use OntologyAwareTrait;
+
+    /** @var Service */
+    private $service;
 
     public function map(AssessmentTest $test, Route $route, TestPreviewConfig $config): TestPreviewMap
     {
@@ -101,6 +106,11 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
                 ];
 
                 if ($checkInformational) {
+                    $isItemInformational = in_array(
+                        'x-tao-itemusage-informational',
+                        $itemInfos['categories'],
+                        true
+                    );
                     $itemInfos['informational'] = $isItemInformational;
                 }
 
@@ -195,8 +205,30 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
         ];
     }
 
+    /**
+     * @param string $itemUri
+     *
+     * @return string
+     */
     private function getItemLabel(string $itemUri): string
     {
-        return $this->getResource($itemUri)->getLabel();
+        $resource = $this->getResource($itemUri);
+        $item = $this->getService()->getDataItemByRdfItem($resource);
+
+        return $item !== null
+            ? $item->getAttributeValue('title')
+            : $resource->getLabel();
+    }
+
+    /**
+     * @return Service
+     */
+    private function getService(): Service
+    {
+        if (!isset($this->service)) {
+            $this->service = $this->getServiceLocator()->get(Service::class);
+        }
+
+        return $this->service;
     }
 }

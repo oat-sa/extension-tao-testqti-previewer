@@ -25,6 +25,7 @@ namespace oat\taoQtiTestPreviewer\controller;
 use common_exception_UserReadableException;
 use InvalidArgumentException;
 use oat\tao\model\http\HttpJsonResponseTrait;
+use oat\taoQtiTestPreviewer\models\test\TestPreviewConfig;
 use oat\taoQtiTestPreviewer\models\test\service\TestPreviewer as TestPreviewerService;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewRequest;
 use oat\taoQtiTestPreviewer\models\testConfiguration\service\TestPreviewerConfigurationService;
@@ -45,7 +46,9 @@ class TestPreviewer extends tao_actions_ServiceModule
             }
 
             $response = $this->getTestPreviewerService()
-                ->createPreview(new TestPreviewRequest($requestParams['testUri']));
+                ->createPreview(new TestPreviewRequest($requestParams['testUri'], new TestPreviewConfig([
+                    TestPreviewConfig::CHECK_INFORMATIONAL => true,
+                ])));
 
             $this->setNoCacheHeaders();
 
