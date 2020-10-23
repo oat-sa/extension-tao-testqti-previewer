@@ -25,6 +25,7 @@ namespace oat\taoQtiTestPreviewer\controller;
 use common_exception_UserReadableException;
 use InvalidArgumentException;
 use oat\tao\model\http\HttpJsonResponseTrait;
+use oat\taoQtiTestPreviewer\models\test\TestPreviewConfig;
 use oat\taoQtiTestPreviewer\models\test\service\TestPreviewer as TestPreviewerService;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewRequest;
 use oat\taoQtiTestPreviewer\models\testConfiguration\service\TestPreviewerConfigurationService;
@@ -44,8 +45,11 @@ class TestPreviewer extends tao_actions_ServiceModule
                 throw  new InvalidArgumentException('Required `testUri` param is missing ');
             }
 
-            $response = $this->getTestPreviewerService()
-                ->createPreview(new TestPreviewRequest($requestParams['testUri']));
+            $testPreviewRequest = new TestPreviewRequest(
+                $requestParams['testUri'],
+                new TestPreviewConfig([TestPreviewConfig::CHECK_INFORMATIONAL => true])
+            );
+            $response = $this->getTestPreviewerService()->createPreview($testPreviewRequest);
 
             $this->setNoCacheHeaders();
 

@@ -25,6 +25,7 @@ namespace oat\taoQtiTestPreviewer\test\unit\models\test\factory;
 use core_kernel_classes_Resource;
 use oat\generis\model\data\Ontology;
 use oat\generis\test\TestCase;
+use oat\taoQtiItem\model\qti\Service;
 use oat\taoQtiTestPreviewer\models\test\mapper\TestPreviewMapper;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewConfig;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewMap;
@@ -52,7 +53,8 @@ class TestPreviewMapperTest extends TestCase
         $this->subject->setServiceLocator(
             $this->getServiceLocatorMock(
                 [
-                    Ontology::SERVICE_ID => $this->ontology
+                    Ontology::SERVICE_ID => $this->ontology,
+                    Service::class => $this->createMock(Service::class),
                 ]
             )
         );
