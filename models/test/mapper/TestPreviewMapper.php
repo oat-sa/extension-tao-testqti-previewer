@@ -49,7 +49,7 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
         ];
 
         $routeItems = $route->getAllRouteItems();
-        $checkInformational = $config->get(TestPreviewConfig::CHECK_INFORMATIONAL);
+        $checkForInformationalItem = $config->get(TestPreviewConfig::CHECK_INFORMATIONAL);
         $forceInformationalTitles = $config->get(TestPreviewConfig::REVIEW_FORCE_INFORMATION_TITLE);
         $displaySubsectionTitle = $config->get(TestPreviewConfig::REVIEW_DISPLAY_SUBSECTION_TITLE) ?? true;
 
@@ -68,8 +68,6 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
         foreach ($routeItems as $routeItem) {
             foreach ($this->getRouteItemAssessmentItemRefs($routeItem) as $itemRef) {
                 $occurrence = $routeItem->getOccurence();
-
-                $isItemInformational = true; //@TODO Implement this as a feature
 
                 $testPart = $routeItem->getTestPart();
                 $partId = $testPart->getIdentifier();
@@ -105,12 +103,10 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
                     'categories' => $itemRef->getCategories()->getArrayCopy(),
                 ];
 
-                if ($checkInformational) {
-                    $isItemInformational = in_array(
-                        'x-tao-itemusage-informational',
-                        $itemInfos['categories'],
-                        true
-                    );
+                $isItemInformational = true;
+
+                if ($checkForInformationalItem) {
+                    $isItemInformational = $this->isItemInformational($itemInfos['categories']);
                     $itemInfos['informational'] = $isItemInformational;
                 }
 
@@ -230,5 +226,15 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
         }
 
         return $this->service;
+    }
+
+    /**
+     * @param $categories
+     *
+     * @return bool
+     */
+    private function isItemInformational($categories): bool
+    {
+        return in_array('x-tao-itemusage-informational', $categories, true);
     }
 }
