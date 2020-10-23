@@ -22,6 +22,7 @@ declare(strict_types=1);
 
 namespace oat\taoQtiTestPreviewer\models\test\mapper;
 
+use common_Exception as Exception;
 use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewConfig;
@@ -31,10 +32,14 @@ use qtism\data\AssessmentTest;
 use qtism\data\NavigationMode;
 use qtism\runtime\tests\Route;
 use qtism\runtime\tests\RouteItem;
+use oat\taoQtiItem\model\qti\Service;
 
 class TestPreviewMapper extends ConfigurableService implements TestPreviewMapperInterface
 {
     use OntologyAwareTrait;
+
+    /** @var Service */
+    private $service;
 
     public function map(AssessmentTest $test, Route $route, TestPreviewConfig $config): TestPreviewMap
     {
@@ -44,7 +49,7 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
         ];
 
         $routeItems = $route->getAllRouteItems();
-        $checkInformational = $config->get(TestPreviewConfig::CHECK_INFORMATIONAL);
+        $checkForInformationalItem = $config->get(TestPreviewConfig::CHECK_INFORMATIONAL);
         $forceInformationalTitles = $config->get(TestPreviewConfig::REVIEW_FORCE_INFORMATION_TITLE);
         $displaySubsectionTitle = $config->get(TestPreviewConfig::REVIEW_DISPLAY_SUBSECTION_TITLE) ?? true;
 
@@ -63,8 +68,6 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
         foreach ($routeItems as $routeItem) {
             foreach ($this->getRouteItemAssessmentItemRefs($routeItem) as $itemRef) {
                 $occurrence = $routeItem->getOccurence();
-
-                $isItemInformational = true; //@TODO Implement this as a feature
 
                 $testPart = $routeItem->getTestPart();
                 $partId = $testPart->getIdentifier();
@@ -100,7 +103,10 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
                     'categories' => $itemRef->getCategories()->getArrayCopy(),
                 ];
 
-                if ($checkInformational) {
+                $isItemInformational = true;
+
+                if ($checkForInformationalItem) {
+                    $isItemInformational = $this->isItemInformational($itemInfos['categories']);
                     $itemInfos['informational'] = $isItemInformational;
                 }
 
@@ -195,8 +201,40 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
         ];
     }
 
+    /**
+     * @param string $itemUri
+     *
+     * @return string
+     */
     private function getItemLabel(string $itemUri): string
     {
-        return $this->getResource($itemUri)->getLabel();
+        $resource = $this->getResource($itemUri);
+        $item = $this->getService()->getDataItemByRdfItem($resource);
+
+        return $item !== null
+            ? $item->getAttributeValue('title')
+            : $resource->getLabel();
+    }
+
+    /**
+     * @return Service
+     */
+    private function getService(): Service
+    {
+        if (!isset($this->service)) {
+            $this->service = $this->getServiceLocator()->get(Service::class);
+        }
+
+        return $this->service;
+    }
+
+    /**
+     * @param $categories
+     *
+     * @return bool
+     */
+    private function isItemInformational($categories): bool
+    {
+        return in_array('x-tao-itemusage-informational', $categories, true);
     }
 }

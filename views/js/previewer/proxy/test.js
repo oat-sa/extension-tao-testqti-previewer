@@ -47,6 +47,20 @@ define([
         closed: 4
     });
     /**
+     * The possible states of an item session,
+     * coming from the test context
+     * (this state comes from the backend)
+     */
+    const itemSessionStates = Object.freeze({
+        initial: 0,
+        interacting: 1,
+        modalFeedback: 2,
+        suspended: 3,
+        closed: 4,
+        solution: 5,
+        review: 6
+    });
+    /**
      * Finds ids of testPart, section and item in testMap for a given item position
      * @param {Object} testMap
      * @param {Number} position item position
@@ -84,6 +98,7 @@ define([
          *                      Any error will be provided if rejected.
          */
         init(configs) {
+            this.itemStore = {};
             return request( {
                 url: urlUtil.route('init', serviceControllerInit, serviceExtension),
                 data: { testUri: configs.options.testUri }
@@ -114,6 +129,10 @@ define([
             // no request, just a resources cleaning
             this.queue = null;
 
+            if (this.itemStore) {
+                this.itemStore = null;
+            }
+
             // the method must return a promise
             return Promise.resolve();
         },
@@ -125,20 +144,28 @@ define([
          *                      Any error will be provided if rejected.
          */
         getItem(itemIdentifier) {
-            const { uri } = mapHelper.getItem(this.builtTestMap, itemIdentifier) || {};
-            if (!uri) {
-                throw new Error(`There is no item ${itemIdentifier} in the testMap!`);
+            if (itemIdentifier in this.itemStore) {
+                // Load item from store
+                return Promise.resolve(this.itemStore[itemIdentifier]);
+            } else {
+                // Load from server; Store in store
+                const { uri } = mapHelper.getItem(this.builtTestMap, itemIdentifier) || {};
+                if (!uri) {
+                    throw new Error(`There is no item ${itemIdentifier} in the testMap!`);
+                }
+                return request({
+                    url: urlUtil.route('getItem', serviceControllerGetItem, serviceExtension),
+                    data: { serviceCallId: 'previewer', itemUri: uri},
+                    noToken: true
+                })
+                .then(data => {
+                    data.itemData = data.content;
+                    data.itemIdentifier = data.content.data.identifier;
+                    data.itemState = {};
+                    this.itemStore[itemIdentifier] = data;
+                    return data;
+                });
             }
-            return request({
-                url: urlUtil.route('getItem', serviceControllerGetItem, serviceExtension),
-                data: { serviceCallId: 'previewer', itemUri: uri},
-                noToken: true
-            })
-            .then(data => {
-                data.itemData = data.content;
-                data.itemIdentifier = data.content.data.identifier;
-                return data;
-            });
         },
 
         /**
@@ -185,6 +212,7 @@ define([
                     testContext.testPartId = ids.testPartId;
                     testContext.sectionId = ids.sectionId;
                     testContext.itemIdentifier = ids.itemIdentifier;
+                    testContext.itemSessionState = itemSessionStates.initial;
 
                     return { testContext, testMap };
                 },
@@ -192,6 +220,11 @@ define([
                 flagItem: () => Promise.resolve()
             };
             actions.skip = actions.move;
+
+            if (params.itemState) {
+                // store itemState in itemStore
+                this.itemStore[itemIdentifier].itemState = params.itemState;
+            }
 
             if (typeof actions[action] === 'function') {
                 return actions[action]();

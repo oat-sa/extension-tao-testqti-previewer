@@ -386,7 +386,8 @@ define([
                 itemPosition: 1,
                 sectionId: 'assessmentSection-1',
                 state: 0,
-                testPartId: 'testPart-1'
+                testPartId: 'testPart-1',
+                itemSessionState: 0
             },
         }, {
             title: 'move jump',
@@ -402,7 +403,8 @@ define([
                 itemPosition: 1,
                 sectionId: 'assessmentSection-1',
                 state: 0,
-                testPartId: 'testPart-1'
+                testPartId: 'testPart-1',
+                itemSessionState: 0
             },
         }, {
             title: 'skip next',
@@ -417,7 +419,8 @@ define([
                 itemPosition: 1,
                 sectionId: 'assessmentSection-1',
                 state: 0,
-                testPartId: 'testPart-1'
+                testPartId: 'testPart-1',
+                itemSessionState: 0
             },
         }])
         .test('testProxy.callItemAction ', function(caseData, assert) {
