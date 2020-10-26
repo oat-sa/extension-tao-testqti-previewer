@@ -1,0 +1,9 @@
+{
+	"version": 3,
+	"file": "topBlock.css",
+	"sources": [
+		"../scss/topBlock.scss"
+	],
+	"names": [],
+	"mappings": "AAAA,AAAA,kBAAkB,AAAC,CACf,QAAQ,CAAE,KAAK,CACf,GAAG,CAAE,CAAC,CACN,IAAI,CAAE,GAAG,CACT,SAAS,CAAE,kBAAkB,CAC7B,OAAO,CAAE,KAAK,CACjB"
+}
