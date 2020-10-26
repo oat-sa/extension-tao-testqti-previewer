@@ -109,14 +109,20 @@ define([
                         });
                     })
                     .on('error', function (err) {
-                        topBlock.destroy();
+                        if (topBlock){
+                            topBlock.destroy();
+                            topBlock = null;
+                        }
                         if (!_.isUndefined(err.message)) {
                             feedback().error(err.message);
                         }
                         logger.error(err);
                     })
                     .on('destroy', () => {
-                        topBlock.destroy();
+                        if (topBlock){
+                            topBlock.destroy();
+                            topBlock = null;
+                        }
                     });
                 return previewComponent;
             });
