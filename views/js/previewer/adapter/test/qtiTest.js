@@ -25,7 +25,8 @@ define([
     'util/url',
     'core/logger',
     'taoQtiTestPreviewer/previewer/component/test/qtiTest',
-    'ui/feedback'
+    'ui/feedback',
+    'taoQtiTestPreviewer/previewer/component/topBlock/topBlock',
 ], function (
     _,
     promiseQueue,
@@ -33,7 +34,8 @@ define([
     urlUtil,
     loggerFactory,
     qtiTestPreviewerFactory,
-    feedback
+    feedback,
+    topBlockFactory
 ) {
     'use strict';
 
@@ -95,12 +97,28 @@ define([
         init(testUri, config = {}) {
             return transformConfiguration(config).then(testPreviewConfig => {
                 testPreviewConfig.options.testUri = testUri;
-                return qtiTestPreviewerFactory(window.document.body, testPreviewConfig).on('error', function (err) {
-                    if (!_.isUndefined(err.message)) {
-                        feedback().error(err.message);
-                    }
-                    logger.error(err);
-                });
+                let topBlock = null;
+                const previewComponent = qtiTestPreviewerFactory(window.document.body, testPreviewConfig)
+                    .on('ready', function (runner) {
+                        topBlock = topBlockFactory({
+                            renderTo: window.document.body,
+                            title: runner.getTestMap().title,
+                            onClose: () =>  {
+                                runner.trigger('exit');
+                            }
+                        });
+                    })
+                    .on('error', function (err) {
+                        topBlock.destroy();
+                        if (!_.isUndefined(err.message)) {
+                            feedback().error(err.message);
+                        }
+                        logger.error(err);
+                    })
+                    .on('destroy', () => {
+                        topBlock.destroy();
+                    });
+                return previewComponent;
             });
         },
 
