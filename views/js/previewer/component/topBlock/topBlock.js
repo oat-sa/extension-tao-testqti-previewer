@@ -10,7 +10,7 @@ define([
     'use strict';
 
     /**
-     * Builds a component
+     * Builds a topBlock component
      *
      * @param {JQuery} container
      * @param {Object} config
