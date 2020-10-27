@@ -100,13 +100,14 @@ define([
                 let topBlock = null;
                 const previewComponent = qtiTestPreviewerFactory(window.document.body, testPreviewConfig)
                     .on('ready', function (runner) {
-                        topBlock = topBlockFactory({
-                            renderTo: window.document.body,
-                            title: runner.getTestMap().title,
-                            onClose: () =>  {
-                                runner.trigger('exit');
-                            }
-                        });
+                        topBlock = topBlockFactory(
+                            window.document.body,
+                            {
+                                title: runner.getTestMap().title,
+                                onClose: () =>  {
+                                    runner.trigger('exit');
+                                }
+                            });
                     })
                     .on('error', function (err) {
                         if (topBlock){
