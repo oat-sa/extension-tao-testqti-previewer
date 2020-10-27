@@ -12,13 +12,19 @@ define([
     /**
      * Builds a component
      *
+     * @param {JQuery} container
      * @param {Object} config
+     * @param {String} config.title - the test title
+     * @param {Function} config.onClose - the callback function
      * @returns {component}
      * @fires ready - When the component is ready to work
      */
-    function topBlockFactory(config) {
+    function topBlockFactory(container, config) {
         const topBlock = componentFactory()
             .setTemplate(topBlockTpl)
+            .on('init', function(){
+                this.render(container);
+            })
             .on('render', function () {
                 const $info = $(topBlockDataTpl({
                     title: config.title
