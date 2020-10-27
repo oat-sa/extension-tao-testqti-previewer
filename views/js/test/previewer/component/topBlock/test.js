@@ -28,12 +28,18 @@ define([
 
     QUnit.module('API');
 
+    const configs = {
+        title: 'My Test',
+        onClose: () => {}
+    };
+    const $container = $('#qunit-fixture');
+
     QUnit.test('module', function(assert) {
         assert.expect(3);
 
         assert.equal(typeof topBlockFactory, 'function', 'The topBlock module exposes a function');
-        assert.equal(typeof topBlockFactory(), 'object', 'The topBlock factory produces an object');
-        assert.notStrictEqual(topBlockFactory(), topBlockFactory(), 'The topBlock factory provides a different object on each call');
+        assert.equal(typeof topBlockFactory($container, configs), 'object', 'The topBlock factory produces an object');
+        assert.notStrictEqual(topBlockFactory($container, configs), topBlockFactory($container, configs), 'The topBlock factory provides a different object on each call');
     });
 
     QUnit.cases
@@ -53,40 +59,40 @@ define([
         { name: 'setTemplate', title: 'setTemplate' }
     ])
     .test('component ', function(data, assert) {
-        var instance = topBlockFactory();
+        const instance = topBlockFactory($container, configs);
         assert.equal(
             typeof instance[data.name],
             'function',
-            'The topBlock instance exposes a "' + data.title + '" function'
+            `The topBlock instance exposes a "${data.title}" function`
         );
     });
 
     QUnit.cases
     .init([{ name: 'on', title: 'on' }, { name: 'off', title: 'off' }, { name: 'trigger', title: 'trigger' }])
     .test('eventifier ', function(data, assert) {
-        var instance = topBlockFactory();
+        const instance = topBlockFactory($container, configs);
         assert.equal(
             typeof instance[data.name],
             'function',
-            'The topBlock instance exposes a "' + data.title + '" function'
+            `The topBlock instance exposes a "${data.title}" function`
         );
     });
 
     QUnit.module('Behavior');
 
     QUnit.test('DOM rendering', function(assert) {
-        var ready = assert.async();
-        var $container = $('#qunit-fixture');
+        const ready = assert.async();
+        const $containerRender = $('#fixture-render');
 
         assert.expect(8);
 
-        const topBlock = topBlockFactory($container, {title: 'My Test', onClose: function() {
+        const topBlock = topBlockFactory($containerRender, {title: 'My Test', onClose: function() {
             assert.ok('true', 'The onClose has been invoked');
             topBlock.destroy();
             ready();
         },})
             .on('render', function() {
-                const $element = $('.top-block-preview', $container);
+                const $element = $('.top-block-preview', $containerRender);
 
                 assert.equal($element.length, 1, 'The container has the component root element');
                 assert.ok($element.hasClass('rendered'), 'The component root element has the rendered class');
@@ -105,7 +111,7 @@ define([
 
                 assert.deepEqual($element[0], this.getElement()[0], 'The element is the one bound to the component');
 
-                const $close = $('.close', $container);
+                const $close = $('.close', $containerRender);
                 $close.click();
             });
     });
