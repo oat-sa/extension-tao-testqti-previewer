@@ -1,14 +1,24 @@
 @import "inc/bootstrap";
+$borderGray: #E5E4E4;
+$collapserHeight: 30px;
+
 .top-block-preview {
     position: fixed;
     top: 0;
     left: 50%;
-    transform: translate(-50%, 0);
     z-index: 10000;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    &.open {
+        transform: translate(-50%, 0);
+        transition: transform .5s ease-out;
+    }
+    &.close {
+        transform: translate(-50%, calc(#{$collapserHeight} - 100%));
+        transition: transform .5s ease-out;
+    }
 }
 .top-block-preview-main {
     display: flex;
@@ -16,12 +26,13 @@
     background-color: $uiClickableDefaultBg;
     .btn-info {
         margin-left: 16px;
+        white-space: nowrap;
         .icon {
             padding-left: 9px;
             padding-right: 0;
         }
     }
-    border: solid 1px #E5E4E4;
+    border: solid 1px $borderGray;
 }
 .top-block-preview-info {
     display: flex;
@@ -34,17 +45,17 @@
 .top-block-preview-collapser {
     position: relative;
     width: 60px;
-    height: 30px;
+    height: $collapserHeight;
     background-color: $uiClickableDefaultBg;
-    border-bottom-left-radius: 30px;
-    border-bottom-right-radius: 30px;
+    border-bottom-left-radius: $collapserHeight;
+    border-bottom-right-radius: $collapserHeight;
     transform: translateY(-10px);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    border-left: solid 1px #E5E4E4;
-    border-right: solid 1px #E5E4E4;
+    border-left: solid 1px $borderGray;
+    border-right: solid 1px $borderGray;
     &::before {
         content: " ";
         width: 60px;

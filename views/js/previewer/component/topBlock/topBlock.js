@@ -2,11 +2,10 @@ define([
     'jquery',
     'lodash',
     'ui/component',
-    'ui/hider',
     'tpl!taoQtiTestPreviewer/previewer/component/topBlock/tpl/topBlock',
     'tpl!taoQtiTestPreviewer/previewer/component/topBlock/tpl/topBlockData',
     'css!taoQtiTestPreviewer/previewer/component/topBlock/css/topBlock',
-], function ($, _, componentFactory, hider, topBlockTpl, topBlockDataTpl) {
+], function ($, _, componentFactory, topBlockTpl, topBlockDataTpl) {
     'use strict';
 
     /**
@@ -33,16 +32,11 @@ define([
                 $element.find('.top-block-preview-info').append($info);
                 $element.find('.close').on('click', config.onClose);
                 const $icon = $element.find('.top-block-preview-collapser .icon');
-                const $main = $element.find('.top-block-preview-main');
                 $element.find('.top-block-preview-collapser').on('click', () => {
-                    if ($icon.hasClass('icon-up')) {
-                        $icon.removeClass('icon-up');
-                        $icon.addClass('icon-down');
-                    } else {
-                        $icon.removeClass('icon-down');
-                        $icon.addClass('icon-up');
-                    }
-                    hider.toggle($main);
+                    $icon.toggleClass('icon-up');
+                    $icon.toggleClass('icon-down');
+                    $element.toggleClass('open');
+                    $element.toggleClass('close');
                 });
                 /**
                  * @event ready

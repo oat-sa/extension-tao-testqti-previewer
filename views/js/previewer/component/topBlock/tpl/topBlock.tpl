@@ -1,4 +1,4 @@
-<div class="top-block-preview">
+<div class="top-block-preview open">
 	<div class="top-block-preview-main">
 		<div class="top-block-preview-info"></div>
 		<button class="btn-info small close" type="button">
