@@ -114,7 +114,8 @@ define([
                     testPartId: firstItem.part,
                     sectionId: firstItem.section,
                     canMoveBackward: true,
-                    state: testSessionStates.initial
+                    state: testSessionStates.initial,
+                    attempt: 1
                 };
                 return data;
             });
