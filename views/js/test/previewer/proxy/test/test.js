@@ -49,7 +49,8 @@ define([
         itemPosition: 0,
         sectionId: 'assessmentSection-1',
         state: 0,
-        testPartId: 'testPart-1'
+        testPartId: 'testPart-1',
+        attempt: 1
     };
 
     QUnit.test('module', function(assert) {
@@ -387,7 +388,8 @@ define([
                 sectionId: 'assessmentSection-1',
                 state: 0,
                 testPartId: 'testPart-1',
-                itemSessionState: 0
+                itemSessionState: 0,
+                attempt: 1
             },
         }, {
             title: 'move jump',
@@ -404,7 +406,8 @@ define([
                 sectionId: 'assessmentSection-1',
                 state: 0,
                 testPartId: 'testPart-1',
-                itemSessionState: 0
+                itemSessionState: 0,
+                attempt: 1
             },
         }, {
             title: 'skip next',
@@ -420,7 +423,8 @@ define([
                 sectionId: 'assessmentSection-1',
                 state: 0,
                 testPartId: 'testPart-1',
-                itemSessionState: 0
+                itemSessionState: 0,
+                attempt: 1
             },
         }])
         .test('testProxy.callItemAction ', function(caseData, assert) {
