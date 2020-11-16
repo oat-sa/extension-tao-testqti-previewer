@@ -115,7 +115,8 @@ define([
                     sectionId: firstItem.section,
                     canMoveBackward: true,
                     state: testSessionStates.initial,
-                    attempt: 1
+                    attempt: 1,
+                    options: {}
                 };
                 return data;
             });
