@@ -1,11 +1,12 @@
 define([
     'jquery',
     'lodash',
+    'i18n',
     'ui/component',
     'tpl!taoQtiTestPreviewer/previewer/component/topBlock/tpl/topBlock',
     'tpl!taoQtiTestPreviewer/previewer/component/topBlock/tpl/topBlockData',
     'css!taoQtiTestPreviewer/previewer/component/topBlock/css/topBlock',
-], function ($, _, componentFactory, topBlockTpl, topBlockDataTpl) {
+], function ($, _, __, componentFactory, topBlockTpl, topBlockDataTpl) {
     'use strict';
 
     /**
@@ -26,6 +27,7 @@ define([
             })
             .on('render', function () {
                 const $info = $(topBlockDataTpl({
+                    name: config.isTest ? __('Test Preview:') : __('Item Preview:'),
                     title: config.title
                 }));
                 const $element = this.getElement();
