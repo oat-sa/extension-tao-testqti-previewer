@@ -31,7 +31,7 @@ define([
     'util/strPad',
     'taoTests/runner/plugin',
     'taoQtiItem/qtiCommonRenderer/helpers/PciResponse',
-    'tpl!taoQtiTest/runner/plugins/templates/button',
+    'tpl!taoQtiTestPreviewer/previewer/plugins/button',
     'tpl!taoQtiTestPreviewer/previewer/plugins/navigation/submit/preview-console',
     'tpl!taoQtiTestPreviewer/previewer/plugins/navigation/submit/preview-console-line',
     'tpl!taoQtiTestPreviewer/previewer/plugins/navigation/submit/preview-console-closer'
