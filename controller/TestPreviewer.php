@@ -22,9 +22,12 @@ declare(strict_types=1);
 
 namespace oat\taoQtiTestPreviewer\controller;
 
+use common_exception_Unauthorized;
 use common_exception_UserReadableException;
+use common_ext_ExtensionException;
 use InvalidArgumentException;
 use oat\tao\model\http\HttpJsonResponseTrait;
+use oat\taoQtiTest\models\runner\QtiRunnerService;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewConfig;
 use oat\taoQtiTestPreviewer\models\test\service\TestPreviewer as TestPreviewerService;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewRequest;
@@ -52,6 +55,7 @@ class TestPreviewer extends tao_actions_ServiceModule
             $response = $this->getTestPreviewerService()->createPreview($testPreviewRequest);
 
             $this->setNoCacheHeaders();
+            $this->checkSecurityToken();
 
             $this->setSuccessJsonResponse(
                 [
@@ -74,7 +78,7 @@ class TestPreviewer extends tao_actions_ServiceModule
     {
         try {
             $this->setNoCacheHeaders();
-
+            $this->checkSecurityToken();
             $this->setSuccessJsonResponse(
                 $this->getTestPreviewerConfigurationService()->getConfiguration()
             );
@@ -95,6 +99,18 @@ class TestPreviewer extends tao_actions_ServiceModule
             ->addHeader('Expires', '0');
     }
 
+    /**
+     * @throws common_exception_Unauthorized
+     * @throws common_ext_ExtensionException
+     */
+    private function checkSecurityToken(): void
+    {
+        $config = $this->getRunnerService()->getTestConfig()->getConfigValue('security');
+        if (isset($config['csrfToken']) && $config['csrfToken'] === true) {
+            $this->validateCsrf();
+        }
+    }
+
     private function getTestPreviewerConfigurationService(): TestPreviewerConfigurationService
     {
         return $this->getServiceLocator()->get(TestPreviewerConfigurationService::class);
@@ -103,5 +119,14 @@ class TestPreviewer extends tao_actions_ServiceModule
     private function getTestPreviewerService(): TestPreviewerService
     {
         return $this->getServiceLocator()->get(TestPreviewerService::class);
+    }
+
+    /**
+     * @return QtiRunnerService
+     */
+    private function getRunnerService(): QtiRunnerService
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->getServiceLocator()->get(QtiRunnerService::SERVICE_ID);
     }
 }
