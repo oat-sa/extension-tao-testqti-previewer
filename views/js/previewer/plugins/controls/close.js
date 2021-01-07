@@ -27,7 +27,7 @@ define([
     'i18n',
     'ui/hider',
     'taoTests/runner/plugin',
-    'tpl!taoQtiTest/runner/plugins/templates/button'
+    'tpl!taoQtiTestPreviewer/previewer/plugins/button'
 ], function ($, _, __, hider, pluginFactory, buttonTpl) {
     'use strict';
 
