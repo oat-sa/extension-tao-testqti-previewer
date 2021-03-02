@@ -31,6 +31,7 @@ define([
     'util/strPad',
     'taoTests/runner/plugin',
     'taoQtiItem/qtiCommonRenderer/helpers/PciResponse',
+    'taoQtiItem/runner/rendererStrategies',
     'tpl!taoQtiTest/runner/plugins/templates/button',
     'tpl!taoQtiTestPreviewer/previewer/plugins/navigation/submit/preview-console',
     'tpl!taoQtiTestPreviewer/previewer/plugins/navigation/submit/preview-console-line',
@@ -45,6 +46,7 @@ define([
     strPad,
     pluginFactory,
     pciResponse,
+    rendererStrategies,
     buttonTpl,
     consoleTpl,
     consoleLineTpl,
@@ -79,7 +81,7 @@ define([
              */
             const isPluginAllowed = () => {
                 const config = testRunner.getConfig();
-                return !config.options.readOnly && config.options.view !== "reviewRenderer";
+                return !config.options.readOnly && rendererStrategies(config.options.view).getName() !== 'reviewRenderer';
             };
 
             // display the console and its related controls, then auto scrolls to the last element
