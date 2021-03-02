@@ -79,7 +79,7 @@ define([
              */
             const isPluginAllowed = () => {
                 const config = testRunner.getConfig();
-                return !config.options.readOnly;
+                return !config.options.readOnly && config.options.view !== "reviewRenderer";
             };
 
             // display the console and its related controls, then auto scrolls to the last element
