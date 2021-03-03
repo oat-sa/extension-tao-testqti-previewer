@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2018-2019 (original work) Open Assessment Technologies SA ;
+ * Copyright (c) 2018-2021 (original work) Open Assessment Technologies SA ;
  */
 
 /**
@@ -31,6 +31,7 @@ define([
     'util/strPad',
     'taoTests/runner/plugin',
     'taoQtiItem/qtiCommonRenderer/helpers/PciResponse',
+    'taoQtiItem/runner/rendererStrategies',
     'tpl!taoQtiTest/runner/plugins/templates/button',
     'tpl!taoQtiTestPreviewer/previewer/plugins/navigation/submit/preview-console',
     'tpl!taoQtiTestPreviewer/previewer/plugins/navigation/submit/preview-console-line',
@@ -45,6 +46,7 @@ define([
     strPad,
     pluginFactory,
     pciResponse,
+    rendererStrategies,
     buttonTpl,
     consoleTpl,
     consoleLineTpl,
@@ -79,7 +81,7 @@ define([
              */
             const isPluginAllowed = () => {
                 const config = testRunner.getConfig();
-                return !config.options.readOnly;
+                return !config.options.readOnly && rendererStrategies(config.options.view).getName() !== 'reviewRenderer';
             };
 
             // display the console and its related controls, then auto scrolls to the last element
