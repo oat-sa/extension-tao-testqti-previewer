@@ -29,6 +29,7 @@ use oat\taoQtiTestPreviewer\models\test\TestPreviewConfig;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewMap;
 use qtism\data\AssessmentItemRef;
 use qtism\data\AssessmentTest;
+use qtism\data\ExtendedAssessmentItemRef;
 use qtism\data\NavigationMode;
 use qtism\runtime\tests\Route;
 use qtism\runtime\tests\RouteItem;
@@ -106,7 +107,7 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
                 $isItemInformational = true;
 
                 if ($checkForInformationalItem) {
-                    $isItemInformational = $this->isItemInformational($itemInfos['categories']);
+                    $isItemInformational = $this->isItemInformational($itemInfos['categories'], $itemRef);
                     $itemInfos['informational'] = $isItemInformational;
                 }
 
@@ -230,11 +231,16 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
 
     /**
      * @param $categories
-     *
+     * @param $itemRef
      * @return bool
      */
-    private function isItemInformational($categories): bool
+    private function isItemInformational($categories, $itemRef): bool
     {
-        return in_array('x-tao-itemusage-informational', $categories, true);
+        $additionalCheck = false;
+
+        if ($itemRef instanceof ExtendedAssessmentItemRef && !count($itemRef->getResponseDeclarations())){
+            $additionalCheck = true;
+        }
+        return $additionalCheck || in_array('x-tao-itemusage-informational', $categories, true);
     }
 }
