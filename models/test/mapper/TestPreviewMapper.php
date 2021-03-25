@@ -231,14 +231,14 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
 
     /**
      * @param $categories
-     * @param $itemRef
+     * @param AssessmentItemRef|ExtendedAssessmentItemRef $itemRef
      * @return bool
      */
     private function isItemInformational($categories, $itemRef): bool
     {
         $additionalCheck = false;
 
-        if ($itemRef instanceof ExtendedAssessmentItemRef && !count($itemRef->getResponseDeclarations())){
+        if (method_exists($itemRef, 'getResponseDeclarations') && !count($itemRef->getResponseDeclarations())) {
             $additionalCheck = true;
         }
         return $additionalCheck || in_array('x-tao-itemusage-informational', $categories, true);
