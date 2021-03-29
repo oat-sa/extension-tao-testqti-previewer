@@ -238,7 +238,7 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
     {
         $additionalCheck = false;
 
-        if (method_exists($itemRef, 'getResponseDeclarations') && !count($itemRef->getResponseDeclarations())) {
+        if (method_exists($itemRef, 'getResponseDeclarations') && empty($itemRef->getResponseDeclarations())) {
             $additionalCheck = true;
         }
         return $additionalCheck || in_array('x-tao-itemusage-informational', $categories, true);
