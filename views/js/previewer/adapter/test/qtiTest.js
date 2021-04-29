@@ -25,16 +25,9 @@ define([
     'util/url',
     'core/logger',
     'taoQtiTestPreviewer/previewer/component/test/qtiTest',
-    'ui/feedback'
-], function (
-    _,
-    promiseQueue,
-    request,
-    urlUtil,
-    loggerFactory,
-    qtiTestPreviewerFactory,
-    feedback
-) {
+    'ui/feedback',
+    'taoQtiTestPreviewer/previewer/component/topBlock/topBlock'
+], function (_, promiseQueue, request, urlUtil, loggerFactory, qtiTestPreviewerFactory, feedback, topBlockFactory) {
     'use strict';
 
     const taoExtension = 'taoQtiTestPreviewer';
@@ -57,11 +50,11 @@ define([
 
     const transformConfiguration = config => {
         const plugins = Array.isArray(config.plugins) ? [...defaultPlugins, ...config.plugins] : defaultPlugins;
-        const {view, readOnly, fullPage, hideActionBars} = config;
-        const options = _.omit({view, readOnly, fullPage, hideActionBars}, _.isUndefined);
+        const { view, readOnly, fullPage, hideActionBars } = config;
+        const options = _.omit({ view, readOnly, fullPage, hideActionBars }, _.isUndefined);
 
         return request({
-            url: urlUtil.route('configuration', testPreviewerController, taoExtension),
+            url: urlUtil.route('configuration', testPreviewerController, taoExtension)
         }).then(response => {
             const configuration = response.data;
 
@@ -93,14 +86,37 @@ define([
          * @returns {Object}
          */
         init(testUri, config = {}) {
-            return transformConfiguration(config).then(config => {
-                config.options.testUri = testUri;
-                return qtiTestPreviewerFactory(window.document.body, config).on('error', function (err) {
-                    if (!_.isUndefined(err.message)) {
-                        feedback().error(err.message);
-                    }
-                    logger.error(err);
-                });
+            return transformConfiguration(config).then(testPreviewConfig => {
+                testPreviewConfig.options.testUri = testUri;
+                let topBlock = null;
+                const previewComponent = qtiTestPreviewerFactory(window.document.body, testPreviewConfig)
+                    .on('ready', function (runner) {
+                        topBlock = topBlockFactory(
+                            window.document.body,
+                            {
+                                title: runner.getTestMap().title,
+                                onClose: () =>  {
+                                    runner.trigger('exit');
+                                }
+                            });
+                    })
+                    .on('error', function (err) {
+                        if (topBlock){
+                            topBlock.destroy();
+                            topBlock = null;
+                        }
+                        if (!_.isUndefined(err.message)) {
+                            feedback().error(err.message);
+                        }
+                        logger.error(err);
+                    })
+                    .on('destroy', () => {
+                        if (topBlock){
+                            topBlock.destroy();
+                            topBlock = null;
+                        }
+                    });
+                return previewComponent;
             });
         },
 
@@ -108,6 +124,6 @@ define([
             this.queue = null;
 
             return Promise.resolve();
-        },
+        }
     };
 });
