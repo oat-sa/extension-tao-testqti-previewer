@@ -34,6 +34,7 @@ use qtism\common\collections\StringCollection;
 use qtism\data\AssessmentItemRef;
 use qtism\data\AssessmentSection;
 use qtism\data\AssessmentTest;
+use qtism\data\ExtendedAssessmentItemRef;
 use qtism\data\TestPart;
 use qtism\runtime\tests\Route;
 use qtism\runtime\tests\RouteItem;
@@ -81,57 +82,105 @@ class TestPreviewMapperTest extends TestCase
 
     public function testMapFullTest(): void
     {
-        $itemId       = 'itemId';
+        $itemId = 'itemId';
         $sectionTitle = 'sectionTitle';
-        $categories   = [
+        $categories = [
             'x-tao-test',
+            'x-tao-itemusage-informational'
         ];
 
-        $testPart  = $this->expectsTestPart('partId');
-        $section   = $this->expectSection('sectionId',  $sectionTitle);
-        $itemRef   = $this->expectsItemRef('itemUri', $itemId, $categories);
+        $testPart = $this->expectsTestPart('partId');
+        $section = $this->expectSection('sectionId', $sectionTitle);
+        $itemRef = $this->expectsItemRef('itemUri', $itemId, $categories);
         $routeItem = $this->expectRouteItem($itemRef, $testPart, $section);
 
         $this->expectsItemResource('itemUri', 'testLabel');
 
         static::assertEquals(
-            new TestPreviewMap(
-                [
-                    'scope' => 'test',
-                    'parts' => [
-                        'partId' => [
-                            'id' => 'partId',
-                            'label' => 'partId',
+            new TestPreviewMap($this->getFullMapData($itemId, $sectionTitle, $categories)),
+            $this->subject->map($this->expectsTest(), $this->expectsRoute([$routeItem]), new TestPreviewConfig())
+        );
+    }
+
+    public function testInformationalItemDetectionByCategories(): void
+    {
+        $itemId = 'itemId';
+        $sectionTitle = 'sectionTitle';
+        $categories = [
+            'x-tao-test',
+            'x-tao-itemusage-informational'
+        ];
+
+        $config = new TestPreviewConfig([TestPreviewConfig::CHECK_INFORMATIONAL => true]);
+
+        $testPart = $this->expectsTestPart('partId');
+        $section = $this->expectSection('sectionId', $sectionTitle);
+        $itemRef = $this->expectsItemRef('itemUri', $itemId, $categories);
+        $routeItem = $this->expectRouteItem($itemRef, $testPart, $section);
+
+        $this->expectsItemResource('itemUri', 'testLabel');
+
+        static::assertEquals(
+            new TestPreviewMap($this->getFullMapData($itemId, $sectionTitle, $categories, true)),
+            $this->subject->map($this->expectsTest(), $this->expectsRoute([$routeItem]), $config)
+        );
+    }
+
+    public function testInformationalItemDetectionByResponseDeclarations(): void
+    {
+        $itemId = 'itemId';
+        $sectionTitle = 'sectionTitle';
+        $categories = [
+            'x-tao-test'
+        ];
+
+        $config = new TestPreviewConfig([TestPreviewConfig::CHECK_INFORMATIONAL => true]);
+
+        $testPart = $this->expectsTestPart('partId');
+        $section = $this->expectSection('sectionId', $sectionTitle);
+        $itemRef = $this->expectsExtendedItemRef('itemUri', $itemId, $categories);
+        $routeItem = $this->expectRouteItem($itemRef, $testPart, $section);
+
+        $this->expectsItemResource('itemUri', 'testLabel');
+
+        static::assertEquals(
+            new TestPreviewMap($this->getFullMapData($itemId, $sectionTitle, $categories, true)),
+            $this->subject->map($this->expectsTest(), $this->expectsRoute([$routeItem]), $config)
+        );
+    }
+
+    private function getFullMapData(
+        string $itemId,
+        string $sectionTitle,
+        array $categories,
+        bool $isInformational = false
+    ): array {
+        $data = [
+            'scope' => 'test',
+            'parts' => [
+                'partId' => [
+                    'id' => 'partId',
+                    'label' => 'partId',
+                    'position' => 0,
+                    'isLinear' => true,
+                    'sections' => [
+                        'sectionId' => [
+                            'id' => 'sectionId',
+                            'label' => $sectionTitle,
+                            'isCatAdaptive' => false,
                             'position' => 0,
-                            'isLinear' => true,
-                            'sections' => [
-                                'sectionId' => [
-                                    'id' => 'sectionId',
-                                    'label' => $sectionTitle,
-                                    'isCatAdaptive' => false,
+                            'items' => [
+                                'itemId' => [
+                                    'id' => $itemId,
+                                    'uri' => 'itemUri',
+                                    'label' => 'testLabel',
                                     'position' => 0,
-                                    'items' => [
-                                        'itemId' => [
-                                            'id' => $itemId,
-                                            'uri' => 'itemUri',
-                                            'label' => 'testLabel',
-                                            'position' => 0,
-                                            'occurrence' => null,
-                                            'remainingAttempts' => -1,
-                                            'answered' => 0,
-                                            'flagged' => false,
-                                            'viewed' => false,
-                                            'categories' => $categories,
-                                        ],
-                                    ],
-                                    'stats' => [
-                                        'questions' => 1,
-                                        'answered' => 0,
-                                        'flagged' => 0,
-                                        'viewed' => 0,
-                                        'total' => 1,
-                                        'questionsViewed' => 0,
-                                    ],
+                                    'occurrence' => null,
+                                    'remainingAttempts' => -1,
+                                    'answered' => 0,
+                                    'flagged' => false,
+                                    'viewed' => false,
+                                    'categories' => $categories,
                                 ],
                             ],
                             'stats' => [
@@ -144,12 +193,6 @@ class TestPreviewMapperTest extends TestCase
                             ],
                         ],
                     ],
-                    'title' => 'testTitle',
-                    'identifier' => 'testIdentifier',
-                    'className' => 'testQtiClassName',
-                    'toolName' => 'testToolName',
-                    'exclusivelyLinear' => true,
-                    'hasTimeLimits' => true,
                     'stats' => [
                         'questions' => 1,
                         'answered' => 0,
@@ -158,10 +201,32 @@ class TestPreviewMapperTest extends TestCase
                         'total' => 1,
                         'questionsViewed' => 0,
                     ],
-                ]
-            ),
-            $this->subject->map($this->expectsTest(), $this->expectsRoute([$routeItem]), new TestPreviewConfig())
-        );
+                ],
+            ],
+            'title' => 'testTitle',
+            'identifier' => 'testIdentifier',
+            'className' => 'testQtiClassName',
+            'toolName' => 'testToolName',
+            'exclusivelyLinear' => true,
+            'hasTimeLimits' => true,
+            'stats' => [
+                'questions' => 1,
+                'answered' => 0,
+                'flagged' => 0,
+                'viewed' => 0,
+                'total' => 1,
+                'questionsViewed' => 0,
+            ],
+        ];
+
+        if ($isInformational) {
+            $data['parts']['partId']['sections']['sectionId']['items']['itemId']['informational'] = true;
+            $data['parts']['partId']['sections']['sectionId']['stats']['questions'] = 0;
+            $data['parts']['partId']['stats']['questions'] = 0;
+            $data['stats']['questions'] = 0;
+        }
+
+        return $data;
     }
 
     private function expectsItemResource(string $itemUri, string $label): core_kernel_classes_Resource
@@ -183,6 +248,28 @@ class TestPreviewMapperTest extends TestCase
     {
         $itemRef = $this->createMock(AssessmentItemRef::class);
 
+        return $this->mockItemRefMethods($itemRef, $itemUri, $itemId, $categories);
+    }
+
+    private function expectsExtendedItemRef(
+        string $itemUri,
+        string $itemId,
+        array $categories
+    ): ExtendedAssessmentItemRef {
+        $itemRef = $this->createMock(ExtendedAssessmentItemRef::class);
+
+        $itemRef->method('getResponseDeclarations')
+            ->willReturn([]);
+
+        return $this->mockItemRefMethods($itemRef, $itemUri, $itemId, $categories);
+    }
+
+    /**
+     * @param AssessmentItemRef|ExtendedAssessmentItemRef $itemRef
+     * @return AssessmentItemRef|ExtendedAssessmentItemRef
+     */
+    private function mockItemRefMethods($itemRef, string $itemUri, string $itemId, array $categories)
+    {
         $itemRef->method('getHref')
             ->willReturn($itemUri);
 
