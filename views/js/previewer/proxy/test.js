@@ -101,8 +101,7 @@ define([
             this.itemStore = {};
             return request( {
                 url: urlUtil.route('init', serviceControllerInit, serviceExtension),
-                data: { testUri: configs.options.testUri },
-                noToken: true
+                data: { testUri: configs.options.testUri }
             })
             .then(response => {
                 const data = response.data;
