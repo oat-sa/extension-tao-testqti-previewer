@@ -64,6 +64,7 @@ define([
 
         return request({
             url: urlUtil.route('configuration', testPreviewerController, taoExtension),
+            noToken: true
         }).then(response => {
             const configuration = response.data;
 
