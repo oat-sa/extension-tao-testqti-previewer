@@ -111,6 +111,7 @@ define([
                 data.testContext = {
                     itemIdentifier: firstItem.identifier,
                     itemPosition: 0,
+                    itemSessionState: 0,
                     testPartId: firstItem.part,
                     sectionId: firstItem.section,
                     canMoveBackward: true,
