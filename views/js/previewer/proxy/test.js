@@ -115,7 +115,7 @@ define([
                     testPartId: firstItem.part,
                     sectionId: firstItem.section,
                     canMoveBackward: true,
-                    state: testSessionStates.initial,
+                    state: testSessionStates.interacting,
                     attempt: 1,
                     options: {}
                 };
