@@ -47,8 +47,6 @@ final class Version202106221148456771_taoQtiTestPreviewer extends AbstractMigrat
 
     public function up(Schema $schema): void
     {
-        OntologyUpdater::syncModels();
-
         $setRolesAccess = $this->propagate(new SetRolesAccess());
         $setRolesAccess([
             '--' . SetRolesAccess::OPTION_CONFIG, self::CONFIG,
