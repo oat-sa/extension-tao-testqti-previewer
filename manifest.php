@@ -15,14 +15,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2018 (original work) Open Assessment Technologies SA (under the project TAO-PRODUCT);
- *
+ * Copyright (c) 2018-2021 (original work) Open Assessment Technologies SA (under the project TAO-PRODUCT);
  */
 
+use oat\taoItems\model\user\TaoItemsRoles;
+use oat\tao\model\accessControl\func\AccessRule;
 use oat\taoQtiTestPreviewer\scripts\update\Updater;
 use oat\taoQtiTestPreviewer\scripts\install\RegisterPreviewers;
 use oat\taoQtiTestPreviewer\scripts\install\RegisterTestPreviewer;
-use oat\taoItems\model\ontology\ItemAuthorRole;
 
 return [
     'name' => 'taoQtiTestPreviewer',
@@ -32,8 +32,31 @@ return [
     'author' => 'Open Assessment Technologies SA',
     'managementRole' => 'http://www.tao.lu/Ontologies/TAOTest.rdf#TaoQtiTestPreviewerRole',
     'acl' => [
-        ['grant', 'http://www.tao.lu/Ontologies/TAOTest.rdf#TaoQtiTestPreviewerRole', ['ext' => 'taoQtiTestPreviewer']],
-        ['grant', ItemAuthorRole::INSTANCE_URI, ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer']],
+        [
+            AccessRule::GRANT,
+            'http://www.tao.lu/Ontologies/TAOTest.rdf#TaoQtiTestPreviewerRole',
+            ['ext' => 'taoQtiTestPreviewer'],
+        ],
+        [
+            AccessRule::GRANT,
+            TaoItemsRoles::ITEM_AUTHOR,
+            ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer'],
+        ],
+        [
+            AccessRule::GRANT,
+            TaoItemsRoles::ITEM_PREVIEWER,
+            ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer', 'act' => 'init'],
+        ],
+        [
+            AccessRule::GRANT,
+            TaoItemsRoles::ITEM_PREVIEWER,
+            ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer', 'act' => 'getItem'],
+        ],
+        [
+            AccessRule::GRANT,
+            TaoItemsRoles::ITEM_PREVIEWER,
+            ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer', 'act' => 'submitItem'],
+        ],
     ],
     'install' => [
         'php' => [
