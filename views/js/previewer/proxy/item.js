@@ -27,8 +27,12 @@ define([
     'i18n',
     'core/promiseQueue',
     'core/request',
-    'taoQtiTestPreviewer/previewer/config/item'
-], function($, _, __, promiseQueue,  coreRequest, configFactory) {
+    'core/dataProvider/request',
+    'taoQtiTestPreviewer/previewer/config/item',
+    'taoQtiTestPreviewer/previewer/helpers/getIncludesFromItemData',
+    'uri',
+    'util/url',
+], function($, _, __, promiseQueue,  coreRequest, request, configFactory, getIncludesFromItemData, uri, urlUtil) {
     'use strict';
 
     /**
@@ -184,7 +188,47 @@ define([
                 params,
                 void 0,
                 true
-            );
+            ).then(itemData => {
+                const itemDataString=JSON.stringify(itemData);
+                const includes = itemDataString.match(/"qtiClass":"include"/g);
+                if (includes.length) {
+                    const elements = getIncludesFromItemData(itemData);
+                    const requests = [];
+                    const passageUris = [];
+                    _.forEach(elements, (elem, id) => {
+                        const passageUri = uri.decode(elem.attributes.href.replace('taomedia://mediamanager/', ''));
+                        if (!passageUris.includes(passageUri)) {
+                            passageUris.push(passageUri);
+                            requests.push(
+                                request(
+                                    urlUtil.route('getStylesheets', 'SharedStimulusStyling', 'taoMediaManager'),
+                                    { uri: passageUri }
+                                )
+                                .then(response => {
+                                    response.forEach((element, index) => {
+                                        const serial = `stylesheet_${id}_${index}`;
+                                        itemData.content.data.stylesheets[serial] = {
+                                            qtiClass: "stylesheet",
+                                            attributes: {
+                                                href: urlUtil.route('loadStylesheet', 'SharedStimulusStyling', 'taoMediaManager', {
+                                                    uri: passageUri,
+                                                    stylesheet: element
+                                                }),
+                                                media: "all",
+                                                title: "",
+                                                type: "text/css"
+                                            },
+                                            serial
+                                        };
+                                    });
+                                })
+                            );
+                        }
+                    });
+                    return Promise.all(requests).then(() => itemData);
+                }
+                return itemData;
+            });
         },
 
         /**
