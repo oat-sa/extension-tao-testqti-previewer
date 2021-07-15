@@ -19,7 +19,7 @@
 define(['lodash', 'uri', 'util/url', 'core/dataProvider/request'], function (_, uri, urlUtil, request) {
     'use strict';
 
-    function getPassagesFromElement(element) {
+    function getPassagesFromElement(element = {}) {
         let includes = {};
         _.forEach(['elements', 'choices'], elementCollection => {
             if (elementCollection === 'choices' && _.isArray(element[elementCollection])) {
@@ -54,7 +54,7 @@ define(['lodash', 'uri', 'util/url', 'core/dataProvider/request'], function (_, 
      * @param {Object} itemData
      * @returns {Array} array of include elements
      */
-    function getPassagesFromItemData(itemData) {
+    function getPassagesFromItemData(itemData = {}) {
         let includes = {};
         if (itemData.content && itemData.content.data && itemData.content.data.body) {
             includes = _.extend(includes, getPassagesFromElement(itemData.content.data.body));
@@ -68,7 +68,7 @@ define(['lodash', 'uri', 'util/url', 'core/dataProvider/request'], function (_, 
      * @param {Object} itemData
      * @returns {Promise}
      */
-    function injectPassagesStylesInItemData(elements, itemData) {
+    function injectPassagesStylesInItemData(elements = {}, itemData = {}) {
         const requests = [];
         const passageUris = [];
         _.forEach(elements, (elem, id) => {
@@ -118,14 +118,13 @@ define(['lodash', 'uri', 'util/url', 'core/dataProvider/request'], function (_, 
      * @param {Object} itemData
      * @returns {Promise}
      */
-    function checkAndInjectStylesInItemData(itemData) {
+    function checkAndInjectStylesInItemData(itemData = {}) {
         const itemDataString = JSON.stringify(itemData);
-        const includes = itemDataString.match(/"qtiClass":"include"/g);
-        if (includes.length) {
+        if (/"qtiClass":"include"/.test(itemDataString)) {
             const elements = getPassagesFromItemData(itemData);
             return injectPassagesStylesInItemData(elements, itemData);
         }
-        return itemData;
+        return Promise.resolve(itemData);
     }
 
     return {
