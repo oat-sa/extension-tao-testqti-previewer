@@ -22,12 +22,21 @@ define(['lodash', 'uri', 'util/url', 'core/dataProvider/request'], function (_, 
     function getPassagesFromElement(element) {
         let includes = {};
         _.forEach(['elements', 'choices'], elementCollection => {
-            for (let serial in element[elementCollection]) {
-                const childElement = element[elementCollection][serial];
-                if (childElement.qtiClass === 'include') {
-                    includes[serial] = childElement;
-                } else {
-                    includes = _.extend(includes, getPassagesFromElement(childElement));
+            if (elementCollection === 'choices' && _.isArray(element[elementCollection])) {
+                // in MatchInterection choices is Array of match sets
+                _.forEach(element[elementCollection], choiceMatch => {
+                    for (let serial in choiceMatch) {
+                        includes = _.extend(includes, getPassagesFromElement(choiceMatch[serial]));
+                    }
+                });
+            } else {
+                for (let serial in element[elementCollection]) {
+                    const childElement = element[elementCollection][serial];
+                    if (childElement.qtiClass === 'include') {
+                        includes[serial] = childElement;
+                    } else {
+                        includes = _.extend(includes, getPassagesFromElement(childElement));
+                    }
                 }
             }
         });
