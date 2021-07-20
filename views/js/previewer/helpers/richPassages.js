@@ -19,25 +19,29 @@
 define(['lodash', 'uri', 'util/url', 'core/dataProvider/request'], function (_, uri, urlUtil, request) {
     'use strict';
 
+    /**
+     * Get all passage elements qtiClass: 'include' presents in Element
+     * @param {Object} element
+     * @returns {Array} array of include elements
+     */
     function getPassagesFromElement(element = {}) {
         let includes = {};
         _.forEach(['elements', 'choices'], elementCollection => {
             if (elementCollection === 'choices' && _.isArray(element[elementCollection])) {
                 // in MatchInterection choices is Array of match sets
                 _.forEach(element[elementCollection], choiceMatch => {
-                    for (let serial in choiceMatch) {
-                        includes = _.extend(includes, getPassagesFromElement(choiceMatch[serial]));
-                    }
+                    _.forEach(choiceMatch, choice => {
+                        includes = _.extend(includes, getPassagesFromElement(choice));
+                    });
                 });
             } else {
-                for (let serial in element[elementCollection]) {
-                    const childElement = element[elementCollection][serial];
+                _.forEach(element[elementCollection], childElement => {
                     if (childElement.qtiClass === 'include') {
-                        includes[serial] = childElement;
+                        includes[childElement.serial] = childElement;
                     } else {
                         includes = _.extend(includes, getPassagesFromElement(childElement));
                     }
-                }
+                });
             }
         });
         if (element.body) {
