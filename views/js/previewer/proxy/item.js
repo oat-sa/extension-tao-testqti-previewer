@@ -28,8 +28,8 @@ define([
     'core/promiseQueue',
     'core/request',
     'taoQtiTestPreviewer/previewer/config/item',
-    'taoQtiTestPreviewer/previewer/helpers/richPassages'
-], function($, _, __, promiseQueue,  coreRequest, configFactory, richPassages) {
+    'taoQtiTestPreviewer/previewer/proxy/itemDataHandlers'
+], function($, _, __, promiseQueue,  coreRequest, configFactory, itemDataHandlers) {
     'use strict';
 
     /**
@@ -185,7 +185,7 @@ define([
                 params,
                 void 0,
                 true
-            ).then(itemData => richPassages.checkAndInjectStylesInItemData(itemData));
+            ).then(itemData => itemDataHandlers(itemData));
         },
 
         /**
