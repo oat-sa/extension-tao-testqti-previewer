@@ -24,18 +24,15 @@ namespace oat\taoQtiTestPreviewer\migrations;
 
 use Doctrine\DBAL\Schema\Schema;
 use oat\taoItems\model\user\TaoItemsRoles;
-use oat\tao\scripts\update\OntologyUpdater;
 use oat\tao\scripts\tools\migrations\AbstractMigration;
 use oat\tao\scripts\tools\accessControl\SetRolesAccess;
 
-final class Version202106221148456771_taoQtiTestPreviewer extends AbstractMigration
+final class Version202108021320306771_taoQtiTestPreviewer extends AbstractMigration
 {
     private const CONFIG = [
-        SetRolesAccess::CONFIG_RULES => [
-            TaoItemsRoles::ITEM_PREVIEWER => [
-                ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer', 'act' => 'init'],
-                ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer', 'act' => 'getItem'],
-                ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer', 'act' => 'submitItem'],
+        SetRolesAccess::CONFIG_RULES => [            
+            TaoItemsRoles::ITEM_CONTENT_CREATOR => [
+                ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer', 'act' => 'asset'],
             ],
         ],
     ];
