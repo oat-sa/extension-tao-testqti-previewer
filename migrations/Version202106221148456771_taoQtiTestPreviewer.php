@@ -37,6 +37,9 @@ final class Version202106221148456771_taoQtiTestPreviewer extends AbstractMigrat
                 ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer', 'act' => 'getItem'],
                 ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer', 'act' => 'submitItem'],
             ],
+            TaoItemsRoles::ITEM_CONTENT_CREATOR => [
+                ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer', 'act' => 'asset'],
+            ],
         ],
     ];
 
