@@ -39,7 +39,7 @@ final class Version202108021320306771_taoQtiTestPreviewer extends AbstractMigrat
 
     public function getDescription(): string
     {
-        return 'Assign permissions to Item Previewer role';
+        return 'Assign permissions to Item Content creator role';
     }
 
     public function up(Schema $schema): void
