@@ -29,7 +29,6 @@ use oat\tao\scripts\tools\accessControl\SetRolesAccess;
 
 final class Version202108040627446771_taoQtiTestPreviewer extends AbstractMigration
 {
-
     private const CONFIG = [
         SetRolesAccess::CONFIG_RULES => [            
             TaoItemsRoles::ITEM_PREVIEWER => [
