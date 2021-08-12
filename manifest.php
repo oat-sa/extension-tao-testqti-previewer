@@ -59,7 +59,7 @@ return [
         ],
         [
             AccessRule::GRANT,
-            TaoItemsRoles::ITEM_CONTENT_CREATOR,
+            TaoItemsRoles::ITEM_PREVIEWER,
             ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer', 'act' => 'asset'],
         ],
     ],
