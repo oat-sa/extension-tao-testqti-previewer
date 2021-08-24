@@ -104,6 +104,7 @@ define([
                         topBlock = topBlockFactory(
                             window.document.body,
                             {
+                                isTest: testPreviewConfig.options.review.scope === 'test',
                                 title: runner.getTestMap().title,
                                 onClose: () =>  {
                                     runner.trigger('exit');
