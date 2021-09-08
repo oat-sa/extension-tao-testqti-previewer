@@ -57,6 +57,11 @@ return [
             TaoItemsRoles::ITEM_PREVIEWER,
             ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer', 'act' => 'submitItem'],
         ],
+        [
+            AccessRule::GRANT,
+            TaoItemsRoles::ITEM_PREVIEWER,
+            ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer', 'act' => 'asset'],
+        ],
     ],
     'install' => [
         'php' => [
