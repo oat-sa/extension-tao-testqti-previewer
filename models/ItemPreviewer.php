@@ -36,6 +36,7 @@ use oat\taoQtiItem\helpers\QtiFile;
 use oat\taoQtiItem\model\qti\Service;
 use oat\taoQtiItem\model\QtiJsonItemCompiler;
 use oat\taoQtiTest\models\container\QtiTestDeliveryContainer;
+use oat\taoQtiTest\models\render\ContentPostprocessorService;
 use qtism\common\datatypes\files\FileManagerException;
 use qtism\data\storage\StorageException;
 use qtism\data\storage\xml\XmlDocument;
@@ -183,7 +184,7 @@ class ItemPreviewer extends ConfigurableService
             throw new NotFoundException('Either item.json or qti.xml should exist');
         }
 
-        return $itemData;
+        return $this->getPostProcessingService()->postProcessContent($itemData);
     }
 
     /**
@@ -405,5 +406,10 @@ class ItemPreviewer extends ConfigurableService
         }
 
         $this->itemHrefs = $itemHrefs;
+    }
+
+    private function getPostProcessingService(): ContentPostprocessorService
+    {
+        return $this->getServiceLocator()->getContainer()->get(ContentPostprocessorService::class);
     }
 }
