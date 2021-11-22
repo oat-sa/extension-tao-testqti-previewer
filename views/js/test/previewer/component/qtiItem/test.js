@@ -138,7 +138,7 @@ define([
         $.mockjax(data.mock);
 
         qtiItemPreviewerFactory($container, config)
-            .on('error', function(err) {
+            .on('error', function (err) {
                 assert.ok(false, 'An error has occurred');
                 assert.pushResult({
                     result: false,
@@ -229,6 +229,63 @@ define([
             .after('destroy', function() {
                 assert.equal($container.children().length, 0, 'The previewer has been destroyed');
                 ready();
+            });
+    });
+
+    QUnit.test('asset manager configuration', assert => {
+        const ready = assert.async();
+        const $container = $('#fixture-render');
+        const config = {};
+
+        assert.expect(3);
+
+        const mockItemData = {
+            content: {
+                type: 'qti',
+                data: itemData,
+                assets: {
+                    img: {
+                        'hello.jpg': 'hello.jpg?a=b'
+                    }
+                }
+            },
+            baseUrl: 'www.hello.org',
+            state: {}
+        };
+        $.mockjax({
+            url: '/init*',
+            responseText: {
+                success: true,
+                itemIdentifier: 'item-1',
+                itemData: mockItemData
+            }
+        });
+
+        qtiItemPreviewerFactory($container, config)
+            .on('error', function (err) {
+                assert.ok(false, 'An error has occurred');
+                assert.pushResult({
+                    result: false,
+                    message: err
+                });
+                ready();
+            })
+            .on('ready', function (runner) {
+                runner.after('renderitem', function () {
+                    assert.ok(runner.itemRunner.assetManager, 'Created assetManager');
+                    assert.equal(
+                        runner.itemRunner.assetManager.getData('baseUrl'),
+                        mockItemData.baseUrl,
+                        'Configured assetManager with "baseUrl" from itemData'
+                    );
+                    assert.deepEqual(
+                        runner.itemRunner.assetManager.getData('assets'),
+                        mockItemData.content.assets,
+                        'Configured assetManager with "assets" from itemData'
+                    );
+
+                    ready();
+                });
             });
     });
 
