@@ -274,9 +274,10 @@ define([
             setContext(areaBroker.getContentArea());
 
             return new Promise((resolve, reject) => {
-                assetManager.setData('baseUrl', itemData.baseUrl);
-
                 itemData.content = itemData.content || {};
+
+                assetManager.setData('baseUrl', itemData.baseUrl);
+                assetManager.setData('assets', itemData.content.assets);
 
                 this.itemRunner = qtiItemRunner(itemData.content.type, itemData.content.data, Object.assign({
                     assetManager: assetManager
