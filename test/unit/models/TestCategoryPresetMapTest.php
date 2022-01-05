@@ -24,11 +24,9 @@ namespace oat\taoQtiTestPreviewer\test\unit\models;
 
 use oat\generis\test\MockObject;
 use oat\generis\test\TestCase;
-use oat\oatbox\log\LoggerService;
 use oat\taoQtiTest\models\TestCategoryPreset;
 use oat\taoQtiTest\models\TestCategoryPresetProvider;
 use oat\taoQtiTestPreviewer\models\TestCategoryPresetMap;
-use RuntimeException;
 
 class TestCategoryPresetMapTest extends TestCase
 {
@@ -57,7 +55,9 @@ class TestCategoryPresetMapTest extends TestCase
             ->expects($this->once())
             ->method('findPresetGroupOrFail')
             ->willReturn([
-                $this->testCategoryPresetProviderMock
+                'presets' => [
+                    $this->testCategoryPresetMock
+                ]
             ]);
 
         $this->testCategoryPresetMock
@@ -73,15 +73,5 @@ class TestCategoryPresetMapTest extends TestCase
         $this->assertSame([
             ['presetId' => 'qtiCategory']
         ], $this->subject->getMap());
-    }
-
-    public function testGetMapFailed(): void
-    {
-        $this->testCategoryPresetProviderMock
-            ->expects($this->once())
-            ->method('findPresetGroupOrFail')
-            ->willThrowException(new RuntimeException());
-
-        $result = $this->subject->getMap();
     }
 }
