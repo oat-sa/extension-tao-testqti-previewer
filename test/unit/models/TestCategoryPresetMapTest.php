@@ -74,4 +74,16 @@ class TestCategoryPresetMapTest extends TestCase
             ['presetId' => 'qtiCategory']
         ], $this->subject->getMap());
     }
+
+    public function testGetMapEmpty(): void
+    {
+        $this->testCategoryPresetProviderMock
+            ->expects($this->once())
+            ->method('findPresetGroupOrFail')
+            ->willReturn([
+                'presets' => []
+            ]);
+
+        $this->assertSame([], $this->subject->getMap());
+    }
 }
