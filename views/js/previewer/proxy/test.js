@@ -71,19 +71,20 @@ define([
     function updateTestContextWithItem(testMap, position, testContext, presetMap) {
         const jump = mapHelper.getJump(testMap, position);
         const item = mapHelper.getItemAt(testMap, position);
-        if (item) {
-            testContext.testPartId = jump.part;
-            testContext.sectionId = jump.section;
-            testContext.itemIdentifier = jump.identifier;
-            testContext.itemSessionState = itemSessionStates.initial;
-            testContext.options = createContextOptions(item, presetMap);
+        if (!item) {
+            return;
         }
+        testContext.testPartId = jump.part;
+        testContext.sectionId = jump.section;
+        testContext.itemIdentifier = jump.identifier;
+        testContext.itemSessionState = itemSessionStates.initial;
+        testContext.options = createContextOptions(item, presetMap);
     }
     /**
      * Convert preset categories to context.options
      * @param {Object} item
      * @param {Array} presetMap
-     * @returns {Object} properties
+     * @returns {Object} options
      */
     function createContextOptions(item, presetMap) {
         const options = {};
