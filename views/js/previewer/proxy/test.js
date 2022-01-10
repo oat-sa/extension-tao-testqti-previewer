@@ -130,7 +130,7 @@ define([
                 const data = response.data;
                 //the received map is not complete and should be "built"
                 this.builtTestMap = mapHelper.reindex(data.testMap);
-                this.presetMap = data.presetMap;
+                this.presetMap = data.presetMap || [];
                 delete data.presetMap;
                 const firstJump = this.builtTestMap.jumps[0] || {};
                 const firstItem = mapHelper.getItemAt(this.builtTestMap, 0);
