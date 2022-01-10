@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2021 (original work) Open Assessment Technologies SA;
+ * Copyright (c) 2022 (original work) Open Assessment Technologies SA;
  */
 
 declare(strict_types=1);
@@ -25,7 +25,6 @@ namespace oat\taoQtiTestPreviewer\models;
 use oat\oatbox\log\LoggerAwareTrait;
 use oat\taoQtiTest\models\TestCategoryPreset;
 use oat\taoQtiTest\models\TestCategoryPresetProvider;
-use RuntimeException;
 
 class TestCategoryPresetMap
 {
