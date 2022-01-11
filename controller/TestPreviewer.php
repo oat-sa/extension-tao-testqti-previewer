@@ -28,6 +28,7 @@ use oat\tao\model\http\HttpJsonResponseTrait;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewConfig;
 use oat\taoQtiTestPreviewer\models\test\service\TestPreviewer as TestPreviewerService;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewRequest;
+use oat\taoQtiTestPreviewer\models\TestCategoryPresetMap;
 use oat\taoQtiTestPreviewer\models\testConfiguration\service\TestPreviewerConfigurationService;
 use tao_actions_ServiceModule;
 use Throwable;
@@ -59,6 +60,7 @@ class TestPreviewer extends tao_actions_ServiceModule
                     'testData' => [],
                     'testContext' => [],
                     'testMap' => $response->getMap()->getMap(),
+                    'presetMap' => $this->getTestPreviewerPresetsMapService()->getMap()
                 ]
             );
         } catch (Throwable $exception) {
@@ -103,5 +105,10 @@ class TestPreviewer extends tao_actions_ServiceModule
     private function getTestPreviewerService(): TestPreviewerService
     {
         return $this->getServiceLocator()->get(TestPreviewerService::class);
+    }
+
+    private function getTestPreviewerPresetsMapService(): TestCategoryPresetMap
+    {
+        return $this->getPsrContainer()->get(TestCategoryPresetMap::class);
     }
 }
