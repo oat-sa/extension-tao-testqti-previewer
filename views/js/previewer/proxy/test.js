@@ -25,9 +25,8 @@ define([
     'core/promiseQueue',
     'core/request',
     'util/url',
-    'taoQtiTest/runner/helpers/map',
-    'taoQtiTestPreviewer/previewer/proxy/itemDataHandlers'
-], function (promiseQueue, request, urlUtil, mapHelper, itemDataHandlers) {
+    'taoQtiTest/runner/helpers/map'
+], function (promiseQueue, request, urlUtil, mapHelper) {
     'use strict';
 
     const serviceControllerInit = 'TestPreviewer';
@@ -193,8 +192,7 @@ define([
                         data.itemState = {};
                         this.itemStore[itemIdentifier] = data;
                         return data;
-                })
-                .then(itemData => itemDataHandlers(itemData));
+                    });
             }
         },
 
