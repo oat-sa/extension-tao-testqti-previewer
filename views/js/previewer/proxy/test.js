@@ -79,6 +79,7 @@ define([
         testContext.itemIdentifier = jump.identifier;
         testContext.itemSessionState = itemSessionStates.initial;
         testContext.options = createContextOptions(item, presetMap);
+        testContext.allowSkipping = item.allowSkipping;
     }
     /**
      * Convert preset categories to context.options
