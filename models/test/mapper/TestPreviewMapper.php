@@ -102,6 +102,7 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
                     'flagged' => false,
                     'viewed' => false,
                     'categories' => $itemRef->getCategories()->getArrayCopy(),
+                    'allowSkipping' => $itemRef->getItemSessionControl()->doesAllowSkipping()
                 ];
 
                 $isItemInformational = true;
