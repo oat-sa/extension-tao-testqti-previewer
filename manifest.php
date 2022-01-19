@@ -20,6 +20,7 @@
 
 use oat\taoItems\model\user\TaoItemsRoles;
 use oat\tao\model\accessControl\func\AccessRule;
+use oat\taoQtiTestPreviewer\models\ServiceProvider\QtiTestPreviewerServiceProvider;
 use oat\taoQtiTestPreviewer\scripts\update\Updater;
 use oat\taoQtiTestPreviewer\scripts\install\RegisterPreviewers;
 use oat\taoQtiTestPreviewer\scripts\install\RegisterTestPreviewer;
@@ -87,5 +88,8 @@ return [
     ],
     'extra' => [
         'structures' => __DIR__ . DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR . 'structures.xml',
-    ]
+    ],
+    'containerServiceProviders' => [
+        QtiTestPreviewerServiceProvider::class,
+    ],
 ];
