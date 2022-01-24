@@ -25,6 +25,7 @@ use oat\generis\test\MockObject;
 use oat\generis\test\TestCase;
 use oat\oatbox\filesystem\File;
 use oat\taoQtiTest\models\container\QtiTestDeliveryContainer;
+use oat\taoQtiTest\models\render\UpdateItemContentReferencesService;
 use tao_models_classes_service_FileStorage as FileStorage;
 use oat\taoDelivery\model\RuntimeService;
 use oat\taoQtiTestPreviewer\models\ItemPreviewer;
@@ -69,6 +70,11 @@ class ItemPreviewerTest extends TestCase
      * @var MockObject
      */
     private $fileMockXML;
+
+    /**
+     * @var MockObject|UpdateItemContentReferencesService
+     */
+    private $updateItemContentreferencesServiceMock;
 
 
     public function setUp(): void
@@ -115,6 +121,11 @@ class ItemPreviewerTest extends TestCase
 
         $this->fileStorageMock = $this->createMock(FileStorage::class);
         $this->fileStorageMock->method('getDirectoryById')->willReturn($this->storageDirectoryMock);
+
+        $this->updateItemContentreferencesServiceMock = $this->createMock(UpdateItemContentReferencesService::class);
+        $this->updateItemContentreferencesServiceMock->expects($this->any())->method('__invoke')->willReturn(
+            ['test' => 'test']
+        );
     }
 
     public function testLoadCompiledItemData()
@@ -154,9 +165,12 @@ class ItemPreviewerTest extends TestCase
 
     private function getServiceLocator($services = [])
     {
-        return $this->getServiceLocatorMock(array_merge($services, [
-            RuntimeService::SERVICE_ID => $this->runtimeServiceMock,
-            FileStorage::SERVICE_ID => $this->fileStorageMock,
-        ]));
+        return $this->getServiceLocatorMock(
+            array_merge($services, [
+                RuntimeService::SERVICE_ID => $this->runtimeServiceMock,
+                FileStorage::SERVICE_ID => $this->fileStorageMock,
+                UpdateItemContentReferencesService::class => $this->updateItemContentreferencesServiceMock,
+            ])
+        );
     }
 }
