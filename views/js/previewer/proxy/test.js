@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2020 (original work) Open Assessment Technologies SA ;
+ * Copyright (c) 2020-2022 (original work) Open Assessment Technologies SA ;
  */
 
 /**
@@ -62,17 +62,41 @@ define([
         review: 6
     });
     /**
-     * Finds ids of testPart, section and item in testMap for a given item position
+     * Updates testContext with item data
      * @param {Object} testMap
-     * @param {Number} position item position
-     * @returns {Object} object containing testPartId, sectionId, itemIdentifier
+     * @param {Number} position - item position
+     * @param {Object} testContext
+     * @param {Array} presetMap
      */
-    function findIds(testMap, position) {
-        const item = mapHelper.getJump(testMap, position);
-        if (item) {
-            return { testPartId: item.part, sectionId: item.section, itemIdentifier: item.identifier};
+    function updateTestContextWithItem(testMap, position, testContext, presetMap) {
+        const jump = mapHelper.getJump(testMap, position);
+        const item = mapHelper.getItemAt(testMap, position);
+        if (!item) {
+            return;
         }
-        return {};
+        testContext.testPartId = jump.part;
+        testContext.sectionId = jump.section;
+        testContext.itemIdentifier = jump.identifier;
+        testContext.itemSessionState = itemSessionStates.initial;
+        testContext.options = createContextOptions(item, presetMap);
+        testContext.allowSkipping = item.allowSkipping;
+    }
+    /**
+     * Convert preset categories to context.options
+     * @param {Object} item
+     * @param {Array} presetMap
+     * @returns {Object} options
+     */
+    function createContextOptions(item, presetMap) {
+        const options = {};
+        presetMap.forEach(category => {
+            const pluginId = Object.keys(category)[0];
+            const categoryId = category[pluginId];
+            if (item.categories.includes(categoryId)) {
+                options[pluginId] = true;
+            }
+        });
+        return options;
     }
     /**
      * QTI proxy definition
@@ -100,25 +124,27 @@ define([
          */
         init(configs) {
             this.itemStore = {};
-            return request( {
+            return request({
                 url: urlUtil.route('init', serviceControllerInit, serviceExtension),
                 data: { testUri: configs.options.testUri }
-            })
-            .then(response => {
+            }).then(response => {
                 const data = response.data;
                 //the received map is not complete and should be "built"
                 this.builtTestMap = mapHelper.reindex(data.testMap);
-                const  firstItem = this.builtTestMap.jumps[0] || {};
+                this.presetMap = data.presetMap || [];
+                delete data.presetMap;
+                const firstJump = this.builtTestMap.jumps[0] || {};
+                const firstItem = mapHelper.getItemAt(this.builtTestMap, 0);
                 data.testContext = {
-                    itemIdentifier: firstItem.identifier,
+                    itemIdentifier: firstJump.identifier,
                     itemPosition: 0,
                     itemSessionState: 0,
-                    testPartId: firstItem.part,
-                    sectionId: firstItem.section,
+                    testPartId: firstJump.part,
+                    sectionId: firstJump.section,
                     canMoveBackward: true,
                     state: testSessionStates.interacting,
                     attempt: 1,
-                    options: {}
+                    options: createContextOptions(firstItem, this.presetMap)
                 };
                 return data;
             });
@@ -159,17 +185,17 @@ define([
                 }
                 return request({
                     url: urlUtil.route('getItem', serviceControllerGetItem, serviceExtension),
-                    data: { serviceCallId: 'previewer', itemUri: uri},
+                    data: { serviceCallId: 'previewer', itemUri: uri },
                     noToken: true
                 })
-                .then(data => {
-                    data.itemData = data.content;
-                    data.itemIdentifier = data.content.data.identifier;
-                    data.itemState = {};
-                    this.itemStore[itemIdentifier] = data;
-                    return data;
-                })
-                .then(itemData => itemDataHandlers(itemData));
+                    .then(data => {
+                        data.itemData = data.content;
+                        data.itemIdentifier = data.content.data.identifier;
+                        data.itemState = {};
+                        this.itemStore[itemIdentifier] = data;
+                        return data;
+                    })
+                    .then(itemData => itemDataHandlers(itemData));
             }
         },
 
@@ -196,13 +222,19 @@ define([
                             if (nextPartsSorted.length === 0) {
                                 testContext.state = testSessionStates.closed;
                             } else {
-                                testContext.itemPosition = Math.min(testMap.stats.total - 1, nextPartsSorted[0].position);
+                                testContext.itemPosition = Math.min(
+                                    testMap.stats.total - 1,
+                                    nextPartsSorted[0].position
+                                );
                             }
                         } else {
                             if (testContext.itemPosition + 1 >= testMap.stats.total) {
                                 testContext.state = testSessionStates.closed;
                             } else {
-                                testContext.itemPosition = Math.min(testMap.stats.total - 1, testContext.itemPosition + 1);
+                                testContext.itemPosition = Math.min(
+                                    testMap.stats.total - 1,
+                                    testContext.itemPosition + 1
+                                );
                             }
                         }
                     }
@@ -213,11 +245,7 @@ define([
                         testContext.itemPosition = params.ref;
                     }
 
-                    const ids = findIds(testMap, testContext.itemPosition);
-                    testContext.testPartId = ids.testPartId;
-                    testContext.sectionId = ids.sectionId;
-                    testContext.itemIdentifier = ids.itemIdentifier;
-                    testContext.itemSessionState = itemSessionStates.initial;
+                    updateTestContextWithItem(testMap, testContext.itemPosition, testContext, this.presetMap);
 
                     return { testContext, testMap };
                 },
@@ -244,6 +272,6 @@ define([
         callTestAction() {
             // the method must return a promise
             return Promise.resolve();
-        },
+        }
     };
 });
