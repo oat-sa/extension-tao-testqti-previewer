@@ -22,9 +22,9 @@ declare(strict_types=1);
 
 namespace oat\taoQtiTestPreviewer\models\test\mapper;
 
-use common_Exception as Exception;
 use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
+use oat\taoQtiItem\model\qti\Service;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewConfig;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewMap;
 use qtism\data\AssessmentItemRef;
@@ -33,7 +33,6 @@ use qtism\data\ExtendedAssessmentItemRef;
 use qtism\data\NavigationMode;
 use qtism\runtime\tests\Route;
 use qtism\runtime\tests\RouteItem;
-use oat\taoQtiItem\model\qti\Service;
 
 class TestPreviewMapper extends ConfigurableService implements TestPreviewMapperInterface
 {
@@ -91,6 +90,12 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
 
                 $itemUri = $itemRef->getHref();
 
+                $allowSkipping = true;
+                $sessionControl = $itemRef->getItemSessionControl();
+                if ($sessionControl !== null) {
+                    $allowSkipping = $sessionControl->doesAllowSkipping();
+                }
+
                 $itemInfos = [
                     'id' => $itemId,
                     'uri' => $itemUri,
@@ -102,6 +107,7 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
                     'flagged' => false,
                     'viewed' => false,
                     'categories' => $itemRef->getCategories()->getArrayCopy(),
+                    'allowSkipping' => $allowSkipping
                 ];
 
                 $isItemInformational = true;

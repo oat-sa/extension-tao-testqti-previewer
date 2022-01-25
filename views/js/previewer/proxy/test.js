@@ -79,6 +79,7 @@ define([
         testContext.itemIdentifier = jump.identifier;
         testContext.itemSessionState = itemSessionStates.initial;
         testContext.options = createContextOptions(item, presetMap);
+        testContext.allowSkipping = item.allowSkipping;
     }
     /**
      * Convert preset categories to context.options
@@ -143,7 +144,8 @@ define([
                     canMoveBackward: true,
                     state: testSessionStates.interacting,
                     attempt: 1,
-                    options: createContextOptions(firstItem, this.presetMap)
+                    options: createContextOptions(firstItem, this.presetMap),
+                    allowSkipping: firstItem.allowSkipping,
                 };
                 return data;
             });
@@ -212,7 +214,7 @@ define([
             const actions = {
                 //simulate backend move action
                 move: () => {
-                    if (params.direction === 'next') {
+                    if (params.direction === 'next' || action === 'skip') {
                         if (params.scope === 'testPart') {
                             const testPartPosition = testMap.parts[testContext.testPartId].position;
                             const nextPartsSorted = Object.values(testMap.parts)
