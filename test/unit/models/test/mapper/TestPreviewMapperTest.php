@@ -35,6 +35,7 @@ use qtism\data\AssessmentItemRef;
 use qtism\data\AssessmentSection;
 use qtism\data\AssessmentTest;
 use qtism\data\ExtendedAssessmentItemRef;
+use qtism\data\ItemSessionControl;
 use qtism\data\TestPart;
 use qtism\runtime\tests\Route;
 use qtism\runtime\tests\RouteItem;
@@ -149,11 +150,61 @@ class TestPreviewMapperTest extends TestCase
         );
     }
 
+    /**
+     * @dataProvider provideAllowSkippingVariations
+     */
+    public function testAllowSkipping(bool $doesAllowSkipping, bool $hasSessionControl = true): void
+    {
+        $itemId = 'itemId';
+        $sectionTitle = 'sectionTitle';
+        $categories = [
+            'x-tao-test'
+        ];
+
+        $config = new TestPreviewConfig([TestPreviewConfig::CHECK_INFORMATIONAL => true]);
+
+        $testPart = $this->expectsTestPart('partId');
+        $section = $this->expectSection('sectionId', $sectionTitle);
+
+        $sessionControl = null;
+        if ($hasSessionControl) {
+            $sessionControl = $this->createMock(ItemSessionControl::class);
+            $sessionControl->expects($this->once())->method('doesAllowSkipping')->willReturn($doesAllowSkipping);
+        }
+
+        $itemRef = $this->expectsExtendedItemRef('itemUri', $itemId, $categories, $sessionControl);
+        $routeItem = $this->expectRouteItem($itemRef, $testPart, $section);
+
+        $this->expectsItemResource('itemUri', 'testLabel');
+
+        static::assertEquals(
+            new TestPreviewMap($this->getFullMapData($itemId, $sectionTitle, $categories, true, $doesAllowSkipping)),
+            $this->subject->map($this->expectsTest(), $this->expectsRoute([$routeItem]), $config)
+        );
+    }
+
+    public function provideAllowSkippingVariations(): array
+    {
+        return [
+            'without-session-control-set-default-allow-skipping' => [
+                'doesAllowSkipping' => true,
+                'hasSessionControl' => false,
+            ],
+            'allow-skipping-disabled' => [
+                'doesAllowSkipping' => false,
+            ],
+            'allow-skipping-enabled' => [
+                'doesAllowSkipping' => true,
+            ],
+        ];
+    }
+
     private function getFullMapData(
         string $itemId,
         string $sectionTitle,
         array $categories,
-        bool $isInformational = false
+        bool $isInformational = false,
+        bool $allowSkipping = true
     ): array {
         $data = [
             'scope' => 'test',
@@ -181,6 +232,7 @@ class TestPreviewMapperTest extends TestCase
                                     'flagged' => false,
                                     'viewed' => false,
                                     'categories' => $categories,
+                                    'allowSkipping' => $allowSkipping,
                                 ],
                             ],
                             'stats' => [
@@ -254,21 +306,22 @@ class TestPreviewMapperTest extends TestCase
     private function expectsExtendedItemRef(
         string $itemUri,
         string $itemId,
-        array $categories
+        array $categories,
+        ItemSessionControl $sessionControl = null
     ): ExtendedAssessmentItemRef {
         $itemRef = $this->createMock(ExtendedAssessmentItemRef::class);
 
         $itemRef->method('getResponseDeclarations')
             ->willReturn([]);
 
-        return $this->mockItemRefMethods($itemRef, $itemUri, $itemId, $categories);
+        return $this->mockItemRefMethods($itemRef, $itemUri, $itemId, $categories, $sessionControl);
     }
 
     /**
      * @param AssessmentItemRef|ExtendedAssessmentItemRef $itemRef
      * @return AssessmentItemRef|ExtendedAssessmentItemRef
      */
-    private function mockItemRefMethods($itemRef, string $itemUri, string $itemId, array $categories)
+    private function mockItemRefMethods($itemRef, string $itemUri, string $itemId, array $categories, ItemSessionControl $sessionControl = null)
     {
         $itemRef->method('getHref')
             ->willReturn($itemUri);
@@ -280,6 +333,9 @@ class TestPreviewMapperTest extends TestCase
             ->willReturn(
                 new StringCollection($categories)
             );
+
+        $itemRef->method('getItemSessionControl')
+            ->willReturn($sessionControl);
 
         return $itemRef;
     }
