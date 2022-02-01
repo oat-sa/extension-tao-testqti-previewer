@@ -148,7 +148,7 @@ class Previewer extends ServiceModule
                     return;
                 }
 
-                $packer = new Packer($item, $lang);
+                $packer = new Packer($item, $lang, true);
                 $packer->setServiceLocator($this->getServiceLocator());
 
                 $itemPack = $packer->pack();
