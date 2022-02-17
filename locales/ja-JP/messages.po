@@ -1,0 +1,78 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: TAO 2021.11\n"
+"PO-Revision-Date: 2022-02-15T10:38:31\n"
+"Last-Translator: TAO Translation Team <translation@tao.lu>\n"
+"MIME-Version: 1.0\n"
+"Language: ja-JP\n"
+"sourceLanguage: en-US\n"
+"targetLanguage: ja-JP\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Basepath: ../../\n"
+"X-Poedit-KeywordsList: __\n"
+"X-Poedit-SearchPath-0: .\n"
+
+msgid "Actual size"
+msgstr ""
+
+msgid "An error occurred during results submission. Please retry."
+msgstr ""
+
+msgid "An error occurred!"
+msgstr ""
+
+msgid "Close"
+msgstr ""
+
+msgid "Close console"
+msgstr ""
+
+msgid "Close the previewer"
+msgstr ""
+
+msgid "Desktop preview"
+msgstr ""
+
+msgid "File not found"
+msgstr ""
+
+msgid "Go back to tests selection"
+msgstr ""
+
+msgid "It seems that there is an error during item preview loading. Please, try again."
+msgstr ""
+
+msgid "Item Preview:"
+msgstr ""
+
+msgid "Landscape"
+msgstr ""
+
+msgid "Logout"
+msgstr ""
+
+msgid "Mobile preview"
+msgstr ""
+
+msgid "Output data"
+msgstr ""
+
+msgid "Portrait"
+msgstr ""
+
+msgid "Submit"
+msgstr ""
+
+msgid "Submit and show the result"
+msgstr ""
+
+msgid "Submitted data"
+msgstr ""
+
+msgid "TAO Guest"
+msgstr ""
+
+msgid "Test Preview:"
+msgstr "プレビュー:"
+
