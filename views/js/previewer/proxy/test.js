@@ -61,6 +61,7 @@ define([
         solution: 5,
         review: 6
     });
+
     /**
      * Updates testContext with item data
      * @param {Object} testMap
@@ -81,6 +82,7 @@ define([
         testContext.options = createContextOptions(item, presetMap);
         testContext.allowSkipping = item.allowSkipping;
     }
+
     /**
      * Convert preset categories to context.options
      * @param {Object} item
@@ -98,6 +100,7 @@ define([
         });
         return options;
     }
+
     /**
      * QTI proxy definition
      * Related to remote services calls
@@ -126,7 +129,8 @@ define([
             this.itemStore = {};
             return request({
                 url: urlUtil.route('init', serviceControllerInit, serviceExtension),
-                data: { testUri: configs.options.testUri }
+                data: { testUri: configs.options.testUri },
+                noToken: true
             }).then(response => {
                 const data = response.data;
                 //the received map is not complete and should be "built"
@@ -145,7 +149,7 @@ define([
                     state: testSessionStates.interacting,
                     attempt: 1,
                     options: createContextOptions(firstItem, this.presetMap),
-                    allowSkipping: firstItem.allowSkipping,
+                    allowSkipping: firstItem.allowSkipping
                 };
                 return data;
             });
