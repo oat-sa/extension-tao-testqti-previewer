@@ -146,7 +146,7 @@ define([
          *                      Any error will be provided if rejected.
          */
         callTestAction(action, params) {
-            return this.request(this.configStorage.getTestActionUrl(action), params);
+            return this.request(this.configStorage.getTestActionUrl(action), params, void 0, true);
         },
 
         /**
@@ -158,7 +158,7 @@ define([
          *                      Any error will be provided if rejected.
          */
         callItemAction(itemIdentifier, action, params) {
-            return this.request(this.configStorage.getItemActionUrl(itemIdentifier, action), params);
+            return this.request(this.configStorage.getItemActionUrl(itemIdentifier, action), params, void 0, true);
         },
 
         /**
