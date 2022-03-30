@@ -26,6 +26,7 @@
                                     "position": 0,
                                     "occurrence": 0,
                                     "remainingAttempts": 0,
+                                    "allowSkipping": false,
                                     "answered": 0,
                                     "flagged": false,
                                     "viewed": false,
