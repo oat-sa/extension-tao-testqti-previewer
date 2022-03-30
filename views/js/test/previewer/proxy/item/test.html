@@ -18,8 +18,9 @@
             require(['/tao/ClientConfig/config'], function(){
                 // mock Client Config data:
                 requirejs.config({
-                    "config": {
-                        "core/tokenHandler" : {
+                    config: {
+                        'core/request': {
+                            noToken: true
                         }
                     }
                 });

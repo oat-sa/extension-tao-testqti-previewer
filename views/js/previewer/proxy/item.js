@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2018-2019 (original work) Open Assessment Technologies SA ;
+ * Copyright (c) 2018-2022 (original work) Open Assessment Technologies SA ;
  */
 
 /**
@@ -22,14 +22,12 @@
  * @author Jean-Sébastien Conan <jean-sebastien@taotesting.com>
  */
 define([
-    'jquery',
     'lodash',
-    'i18n',
     'core/promiseQueue',
     'core/request',
     'taoQtiTestPreviewer/previewer/config/item',
     'taoQtiTestPreviewer/previewer/proxy/itemDataHandlers'
-], function($, _, __, promiseQueue,  coreRequest, configFactory, itemDataHandlers) {
+], function (_, promiseQueue, coreRequest, configFactory, itemDataHandlers) {
     'use strict';
 
     /**
@@ -38,15 +36,12 @@ define([
      * @type {Object}
      */
     return {
-
-        name : 'qtiItemPreviewerProxy',
+        name: 'qtiItemPreviewerProxy',
 
         /**
          * Installs the proxy
          */
-        install : function install(){
-            var self = this;
-
+        install() {
             /**
              * A promise queue to ensure requests run sequentially
              */
@@ -57,14 +52,13 @@ define([
              * @param {Object} actionParams - the input parameters
              * @returns {Object} output parameters
              */
-            this.prepareParams = function prepareParams(actionParams){
-
+            this.prepareParams = function prepareParams(actionParams) {
                 //some parameters need to be JSON.stringified
-                var stringifyParams = ['itemState', 'itemResponse'];
+                const stringifyParams = ['itemState', 'itemResponse'];
 
-                if(_.isPlainObject(actionParams)){
-                    return _.mapValues(actionParams, function(value, key){
-                        if(_.contains(stringifyParams, key)){
+                if (_.isPlainObject(actionParams)) {
+                    return _.mapValues(actionParams, (value, key) => {
+                        if (_.contains(stringifyParams, key)) {
                             return JSON.stringify(value);
                         }
                         return value;
@@ -86,16 +80,16 @@ define([
             this.request = function request(url, reqParams, contentType, noToken) {
                 return coreRequest({
                     url: url,
-                    data: self.prepareParams(reqParams),
+                    data: this.prepareParams(reqParams),
                     method: reqParams ? 'POST' : 'GET',
                     contentType: contentType,
                     noToken: noToken,
                     background: false,
                     sequential: true,
-                    timeout: self.configStorage.getTimeout()
+                    timeout: this.configStorage.getTimeout()
                 })
-                    .then(function(response) {
-                        self.setOnline();
+                    .then(response => {
+                        this.setOnline();
 
                         if (response && response.success) {
                             return Promise.resolve(response);
@@ -103,9 +97,9 @@ define([
                             return Promise.reject(response);
                         }
                     })
-                    .catch(function(error) {
-                        if (error.data && self.isConnectivityError(error.data)) {
-                            self.setOffline('request');
+                    .catch(error => {
+                        if (error.data && this.isConnectivityError(error.data)) {
+                            this.setOffline('request');
                         }
                         return Promise.reject(error);
                     });
@@ -122,17 +116,12 @@ define([
          * @returns {Promise} - Returns a promise. The proxy will be fully initialized on resolve.
          *                      Any error will be provided if rejected.
          */
-        init: function init(config, params) {
+        init(config, params) {
             // store config in a dedicated configStorage
             this.configStorage = configFactory(config || {});
 
             // request for initialization
-            return this.request(
-                this.configStorage.getTestActionUrl('init'),
-                params,
-                void 0,
-                true
-            );
+            return this.request(this.configStorage.getTestActionUrl('init'), params, void 0, true);
         },
 
         /**
@@ -140,7 +129,7 @@ define([
          * @returns {Promise} - Returns a promise. The proxy will be fully uninstalled on resolve.
          *                      Any error will be provided if rejected.
          */
-        destroy: function destroy() {
+        destroy() {
             // no request, just a resources cleaning
             this.configStorage = null;
             this.queue = null;
@@ -156,8 +145,8 @@ define([
          * @returns {Promise} - Returns a promise. The result of the request will be provided on resolve.
          *                      Any error will be provided if rejected.
          */
-        callTestAction: function callTestAction(action, params) {
-            return this.request(this.configStorage.getTestActionUrl(action), params);
+        callTestAction(action, params) {
+            return this.request(this.configStorage.getTestActionUrl(action), params, void 0, true);
         },
 
         /**
@@ -168,8 +157,8 @@ define([
          * @returns {Promise} - Returns a promise. The result of the request will be provided on resolve.
          *                      Any error will be provided if rejected.
          */
-        callItemAction: function callItemAction(itemIdentifier, action, params) {
-            return this.request(this.configStorage.getItemActionUrl(itemIdentifier, action), params);
+        callItemAction(itemIdentifier, action, params) {
+            return this.request(this.configStorage.getItemActionUrl(itemIdentifier, action), params, void 0, true);
         },
 
         /**
@@ -179,7 +168,7 @@ define([
          * @returns {Promise} - Returns a promise. The item data will be provided on resolve.
          *                      Any error will be provided if rejected.
          */
-        getItem: function getItem(itemIdentifier, params) {
+        getItem(itemIdentifier, params) {
             return this.request(
                 this.configStorage.getItemActionUrl(itemIdentifier, 'getItem'),
                 params,
@@ -197,18 +186,16 @@ define([
          * @returns {Promise} - Returns a promise. The result of the request will be provided on resolve.
          *                      Any error will be provided if rejected.
          */
-        submitItem: function submitItem(itemIdentifier, state, response, params) {
-            var body = _.merge({
-                itemState: state,
-                itemResponse: response
-            }, params || {});
-
-            return this.request(
-                this.configStorage.getItemActionUrl(itemIdentifier, 'submitItem'),
-                body,
-                void 0,
-                true
+        submitItem(itemIdentifier, state, response, params) {
+            const body = _.merge(
+                {
+                    itemState: state,
+                    itemResponse: response
+                },
+                params || {}
             );
+
+            return this.request(this.configStorage.getItemActionUrl(itemIdentifier, 'submitItem'), body, void 0, true);
         }
     };
 });
