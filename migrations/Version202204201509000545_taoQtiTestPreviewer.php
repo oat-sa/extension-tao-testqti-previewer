@@ -23,7 +23,6 @@ declare(strict_types=1);
 namespace oat\taoQtiTestPreviewer\migrations;
 
 use Doctrine\DBAL\Schema\Schema;
-use oat\taoItems\model\user\TaoItemsRoles;
 use oat\tao\scripts\tools\migrations\AbstractMigration;
 use oat\tao\scripts\tools\accessControl\SetRolesAccess;
 
@@ -56,14 +55,6 @@ final class Version202204201509000545_taoQtiTestPreviewer extends AbstractMigrat
         ],
     ];
 
-    /*private const REVOKE_CONFIG = [
-        SetRolesAccess::CONFIG_RULES => [
-            TaoItemsRoles::ITEM_CONTENT_CREATOR => [
-                ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer', 'act' => 'asset'],
-            ],
-        ],
-    ];*/
-
     public function getDescription(): string
     {
         return 'Assign permissions to Test Author role';
@@ -71,11 +62,6 @@ final class Version202204201509000545_taoQtiTestPreviewer extends AbstractMigrat
 
     public function up(Schema $schema): void
     {
-        /*$setRolesAccess = $this->propagate(new SetRolesAccess());
-        $setRolesAccess([
-            '--' . SetRolesAccess::OPTION_REVOKE,
-            '--' . SetRolesAccess::OPTION_CONFIG, self::REVOKE_CONFIG,
-        ]);*/
         $setRolesAccess = $this->propagate(new SetRolesAccess());
         $setRolesAccess([
             '--' . SetRolesAccess::OPTION_CONFIG, self::CONFIG,
@@ -89,9 +75,5 @@ final class Version202204201509000545_taoQtiTestPreviewer extends AbstractMigrat
             '--' . SetRolesAccess::OPTION_REVOKE,
             '--' . SetRolesAccess::OPTION_CONFIG, self::CONFIG,
         ]);
-        /*$setRolesAccess = $this->propagate(new SetRolesAccess());
-        $setRolesAccess([
-            '--' . SetRolesAccess::OPTION_CONFIG, self::REVOKE_CONFIG,
-        ]);*/
     }
 }
