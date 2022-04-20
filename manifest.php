@@ -40,6 +40,26 @@ return [
         ],
         [
             AccessRule::GRANT,
+            'http://www.tao.lu/Ontologies/TAOItem.rdf#TestAuthor',
+            ['ext' => 'taoQtiTestPreviewer', 'mod' => 'TestPreviewer', 'act' => 'init'],
+        ],
+        [
+            AccessRule::GRANT,
+            'http://www.tao.lu/Ontologies/TAOItem.rdf#TestAuthor',
+            ['ext' => 'taoQtiTestPreviewer', 'mod' => 'TestPreviewer', 'act' => 'configuration'],
+        ],
+        [
+            AccessRule::GRANT,
+            'http://www.tao.lu/Ontologies/TAOItem.rdf#TestAuthor',
+            ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer', 'act' => 'getItem'],
+        ],
+        [
+            AccessRule::GRANT,
+            'http://www.tao.lu/Ontologies/TAOItem.rdf#TestAuthor',
+            ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer', 'act' => 'asset'],
+        ],
+        [
+            AccessRule::GRANT,
             TaoItemsRoles::ITEM_AUTHOR,
             ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer'],
         ],
