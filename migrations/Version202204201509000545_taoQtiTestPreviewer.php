@@ -62,18 +62,22 @@ final class Version202204201509000545_taoQtiTestPreviewer extends AbstractMigrat
 
     public function up(Schema $schema): void
     {
-        $setRolesAccess = $this->propagate(new SetRolesAccess());
-        $setRolesAccess([
-            '--' . SetRolesAccess::OPTION_CONFIG, self::CONFIG,
-        ]);        
+        $this->runAction(
+            new SetRolesAccess(),
+            [
+                '--' . SetRolesAccess::OPTION_CONFIG, self::CONFIG,
+            ]
+        );
     }
 
     public function down(Schema $schema): void
     {
-        $setRolesAccess = $this->propagate(new SetRolesAccess());
-        $setRolesAccess([
-            '--' . SetRolesAccess::OPTION_REVOKE,
-            '--' . SetRolesAccess::OPTION_CONFIG, self::CONFIG,
-        ]);
+        $this->runAction(
+            new SetRolesAccess(),
+            [
+                '--' . SetRolesAccess::OPTION_REVOKE,
+                '--' . SetRolesAccess::OPTION_CONFIG, self::CONFIG,
+            ]
+        );
     }
 }
