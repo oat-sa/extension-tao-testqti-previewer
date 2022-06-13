@@ -34,7 +34,6 @@ define([
     'taoQtiTest/runner/config/assetManager',
     'taoItems/assets/strategies',
     'taoQtiItem/qtiCommonRenderer/helpers/container',
-    'taoQtiTestPreviewer/previewer/helpers/formatStyles',
     'tpl!taoQtiTestPreviewer/previewer/provider/item/tpl/item'
 ], function (
     $,
@@ -49,7 +48,6 @@ define([
     assetManagerFactory,
     assetStrategies,
     containerHelper,
-    formatStyles,
     layoutTpl
 ) {
     'use strict';
@@ -294,19 +292,6 @@ define([
                         this.render(areaBroker.getContentArea(), {state, portableElements});
                     })
                     .on('render', function onItemRunnerRender() {
-                        if (itemData.content.data.stylesheets.lenght) {
-                            _.forEach(itemData.content.data.stylesheets, (elem, id) => {
-                                const stylesheetName = elem.attributes.href.split('stylesheet=');
-                                if (stylesheetName && stylesheetName[1] !== 'tao-user-styles.css') {
-                                    $(`[href="${elem.attributes.href}"]`).load((e) => {
-                                        const assetId = id.split('_');
-                                        const className = itemData.content.data.body.elements[`${assetId[1]}_${assetId[2]}`].attributes.class;
-                                        formatStyles(e.target, className);
-                                    })
-                                }
-                            })
-                        }
-
                         this.on('responsechange', changeState);
                         this.on('statechange', changeState);
                         resolve();
