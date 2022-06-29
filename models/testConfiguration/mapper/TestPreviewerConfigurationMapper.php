@@ -37,9 +37,11 @@ class TestPreviewerConfigurationMapper extends ConfigurableService
      *
      * @return TestPreviewerConfig
      */
-    public function map(array $providerModules, array $plugins, array $options): TestPreviewerConfig
+    public function map(array $providerModules, array $plugins, array $testRunnerOptions, array $testPreviewerOptions): TestPreviewerConfig
     {
-        return new TestPreviewerConfig($this->getActiveProviders($providerModules, $plugins), $options);
+        return new TestPreviewerConfig(
+            $this->getActiveProviders($providerModules, $plugins),
+            $this->getCombinedOptions($testRunnerOptions, $testPreviewerOptions));
     }
 
     /**
@@ -83,5 +85,18 @@ class TestPreviewerConfigurationMapper extends ConfigurableService
         }
 
         return $result;
+    }
+
+    private function getCombinedOptions(array $testRunnerOptions, array $testPreviewerOptions): array
+    {
+        //specify theme - override test-runner config for itemThemeSwitcher plugin with test-previewer's own config
+        if (isset($testPreviewerOptions['plugins']) && isset($testPreviewerOptions['plugins']['itemThemeSwitcher'])) {
+            if (!isset($testRunnerOptions['plugins'])) {
+                $testRunnerOptions['plugins'] = array([]);
+            }
+            $testRunnerOptions['plugins']['itemThemeSwitcher'] = $testPreviewerOptions['plugins']['itemThemeSwitcher'];
+        }
+
+        return $testRunnerOptions;
     }
 }

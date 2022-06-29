@@ -22,6 +22,7 @@ declare(strict_types=1);
 
 namespace oat\taoQtiTestPreviewer\models\testConfiguration\service;
 
+use common_ext_ExtensionsManager;
 use oat\oatbox\service\ConfigurableService;
 use oat\taoQtiTest\models\runner\config\QtiRunnerConfig;
 use oat\taoQtiTestPreviewer\models\testConfiguration\mapper\TestPreviewerConfigurationMapper;
@@ -36,7 +37,8 @@ class TestPreviewerConfigurationService extends ConfigurableService
         return $this->getMapper()->map(
             $this->getProviderService()->getAllProviders(),
             $this->getTestRunnerPluginService()->getAllPlugins(),
-            $this->getTestRunnerConfigurationService()->getConfig()
+            $this->getTestRunnerConfigurationService()->getConfig(),
+            $this->getTestPreviewerConfig()
         );
     }
 
@@ -53,6 +55,14 @@ class TestPreviewerConfigurationService extends ConfigurableService
     private function getTestRunnerConfigurationService(): QtiRunnerConfig
     {
         return $this->getServiceLocator()->get(QtiRunnerConfig::SERVICE_ID);
+    }
+
+    private function getTestPreviewerConfig(): array
+    {
+        $extensionsManager = $this->getServiceLocator()->get(common_ext_ExtensionsManager::SERVICE_ID);
+        $extension = $extensionsManager->getExtensionById('taoQtiTestPreviewer');
+        $rawTestPreviewerConfig = $extension->getConfig('TestPreviewer');
+        return $rawTestPreviewerConfig;
     }
 
     private function getMapper(): TestPreviewerConfigurationMapper
