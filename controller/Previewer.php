@@ -24,12 +24,14 @@ namespace oat\taoQtiTestPreviewer\controller;
 
 use Exception;
 use common_exception_Error;
+use common_ext_ExtensionsManager;
 use oat\tao\helpers\Base64;
 use tao_helpers_Http as HttpHelper;
 use oat\taoItems\model\pack\Packer;
 use common_Exception as CommonException;
 use taoItems_models_classes_ItemsService;
 use oat\generis\model\OntologyAwareTrait;
+use oat\tao\model\http\HttpJsonResponseTrait;
 use tao_actions_ServiceModule as ServiceModule;
 use oat\taoItems\model\media\ItemMediaResolver;
 use oat\taoQtiTestPreviewer\models\ItemPreviewer;
@@ -53,6 +55,7 @@ use tao_models_classes_FileNotFoundException as FileNotFoundException;
 class Previewer extends ServiceModule
 {
     use OntologyAwareTrait;
+    use HttpJsonResponseTrait;
 
     /**
      * Previewer constructor.
@@ -89,6 +92,23 @@ class Previewer extends ServiceModule
         }
 
         $this->returnJson($response, $code);
+    }
+
+    public function configuration(): void
+    {
+        try {
+            $this->setNoCacheHeaders();
+
+            $this->setSuccessJsonResponse(
+                $this->getItemPreviewerConfig()
+            );
+        } catch (Throwable $exception) {
+            $message = $exception instanceof common_exception_UserReadableException
+                ? $exception->getUserMessage()
+                : $exception->getMessage();
+
+            $this->setErrorJsonResponse($message);
+        }
     }
 
     /**
@@ -301,5 +321,21 @@ class Previewer extends ServiceModule
         $jsonPayload = $this->getPsrRequest()->getParsedBody();
 
         return json_decode($jsonPayload['itemResponse'], true);
+    }
+
+    private function setNoCacheHeaders(): void
+    {
+        $this->getResponseFormatter()
+            ->addHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+            ->addHeader('Pragma', 'no-cache')
+            ->addHeader('Expires', '0');
+    }
+
+    private function getItemPreviewerConfig(): array
+    {
+        $extensionsManager = $this->getServiceLocator()->get(common_ext_ExtensionsManager::SERVICE_ID);
+        $extension = $extensionsManager->getExtensionById('taoQtiTestPreviewer');
+        $rawItemPreviewerConfig = $extension->getConfig('ItemPreviewer');
+        return $rawItemPreviewerConfig;
     }
 }
