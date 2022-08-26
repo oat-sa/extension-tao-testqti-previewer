@@ -53,7 +53,7 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
         $forceInformationalTitles = $config->get(TestPreviewConfig::REVIEW_FORCE_INFORMATION_TITLE);
         $displaySubsectionTitle = $config->get(TestPreviewConfig::REVIEW_DISPLAY_SUBSECTION_TITLE) ?? true;
 
-        $map['title'] = html_entity_decode($test->getTitle());
+        $map['title'] = $test->getTitle();
         $map['identifier'] = $test->getIdentifier();
         $map['className'] = $test->getQtiClassName();
         $map['toolName'] = $test->getToolName();
@@ -134,7 +134,7 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
 
                 if (!isset($map['parts'][$partId]['sections'][$sectionId])) {
                     $map['parts'][$partId]['sections'][$sectionId]['id'] = $sectionId;
-                    $map['parts'][$partId]['sections'][$sectionId]['label'] = html_entity_decode($section->getTitle());
+                    $map['parts'][$partId]['sections'][$sectionId]['label'] = $section->getTitle();
                     $map['parts'][$partId]['sections'][$sectionId]['isCatAdaptive'] = false; //@TODO Implement as feature
                     $map['parts'][$partId]['sections'][$sectionId]['position'] = $offset;
 
