@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: TAO 2021.11\n"
-"PO-Revision-Date: 2022-02-15T10:38:31\n"
+"Project-Id-Version: TAO 2022.09\n"
+"PO-Revision-Date: 2022-08-12T16:45:57\n"
 "Last-Translator: TAO Translation Team <translation@tao.lu>\n"
 "MIME-Version: 1.0\n"
 "Language: ja-JP\n"
@@ -14,64 +14,64 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 
 msgid "Actual size"
-msgstr ""
+msgstr "実サイズ"
 
 msgid "An error occurred during results submission. Please retry."
-msgstr ""
+msgstr "結果の送信中にエラーが発生しました。再試行してください。"
 
 msgid "An error occurred!"
-msgstr ""
+msgstr "エラーが発生しました"
 
 msgid "Close"
-msgstr ""
+msgstr "閉じる"
 
 msgid "Close console"
-msgstr ""
+msgstr "コンソールを閉じる"
 
 msgid "Close the previewer"
-msgstr ""
+msgstr "プレビュアを閉じる"
 
 msgid "Desktop preview"
-msgstr ""
+msgstr "デスクトッププレビュー"
 
 msgid "File not found"
-msgstr ""
+msgstr "ファイルが見つかりません"
 
 msgid "Go back to tests selection"
-msgstr ""
+msgstr "テスト一覧に戻る"
 
 msgid "It seems that there is an error during item preview loading. Please, try again."
-msgstr ""
+msgstr "アイテムプレビューの読み込み中にエラーが発生したようです。お手数ですが、もう一度お試しください。"
 
 msgid "Item Preview:"
-msgstr ""
+msgstr "アイテムプレビュ"
 
 msgid "Landscape"
-msgstr ""
+msgstr "ランドスケープ"
 
 msgid "Logout"
-msgstr ""
+msgstr "ログアウト"
 
 msgid "Mobile preview"
-msgstr ""
+msgstr "モバイルプレビュ"
 
 msgid "Output data"
-msgstr ""
+msgstr "アウトプットデータ"
 
 msgid "Portrait"
-msgstr ""
+msgstr "ポートレート"
 
 msgid "Submit"
-msgstr ""
+msgstr "送信"
 
 msgid "Submit and show the result"
-msgstr ""
+msgstr "提出して結果を表示"
 
 msgid "Submitted data"
-msgstr ""
+msgstr "送信済みデータ"
 
 msgid "TAO Guest"
-msgstr ""
+msgstr "TAOゲスト"
 
 msgid "Test Preview:"
 msgstr "プレビュー:"
