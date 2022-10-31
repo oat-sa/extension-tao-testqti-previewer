@@ -34,7 +34,8 @@ define([
     'taoQtiTest/runner/config/assetManager',
     'taoItems/assets/strategies',
     'taoQtiItem/qtiCommonRenderer/helpers/container',
-    'tpl!taoQtiTestPreviewer/previewer/provider/item/tpl/item'
+    'tpl!taoQtiTestPreviewer/previewer/provider/item/tpl/item',
+    'ui/mediaEditor/plugins/mediaAlignment/helper'
 ], function (
     $,
     _,
@@ -48,7 +49,8 @@ define([
     assetManagerFactory,
     assetStrategies,
     containerHelper,
-    layoutTpl
+    layoutTpl,
+    alignmentHelper
 ) {
     'use strict';
 
@@ -294,6 +296,25 @@ define([
                     .on('render', function onItemRunnerRender() {
                         this.on('responsechange', changeState);
                         this.on('statechange', changeState);
+
+                        // if there is a Figure with inline aligment
+                        if (this._item.bdy && this._item.bdy.elements && Object.keys(this._item.bdy.elements).length) {
+                            // on Item
+                            if (Object.values(this._item.bdy.elements).some(el => el.attr('class') === alignmentHelper.INLINE_CLASS)) {
+                                const parent = $(this.container).find(`.${alignmentHelper.INLINE_CLASS}`).parent().parent();
+                                parent.addClass(`parent-${alignmentHelper.INLINE_CLASS}`);
+                            } else if (
+                                // on Passage
+                                Object.values(this._item.bdy.elements).some(el => el.bdy.elements
+                                    && Object.keys(el.bdy.elements).length
+                                    && Object.values(el.bdy.elements).some(els => els.attr('class') === alignmentHelper.INLINE_CLASS)
+                                )
+                            ) {
+                                const parent = $(this.container).find(`.${alignmentHelper.INLINE_CLASS}`).parent().parent();
+                                parent.addClass(`parent-${alignmentHelper.INLINE_CLASS}`);
+                            }
+                        }
+
                         resolve();
                     })
                     .init();
