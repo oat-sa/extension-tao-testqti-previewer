@@ -305,7 +305,7 @@ define([
                                 parent.addClass(`parent-${alignmentHelper.INLINE_CLASS}`);
                             } else if (
                                 // on Passage
-                                Object.values(this._item.bdy.elements).some(el => el.bdy.elements
+                                Object.values(this._item.bdy.elements).some(el => el.bdy && el.bdy.elements
                                     && Object.keys(el.bdy.elements).length
                                     && Object.values(el.bdy.elements).some(els => els.attr('class') === alignmentHelper.INLINE_CLASS)
                                 )
