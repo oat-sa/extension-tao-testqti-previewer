@@ -22,12 +22,13 @@
  * @author Hanna Dzmitryieva <hanna@taotesting.com>
  */
 define([
+    'i18n',
     'core/promiseQueue',
     'core/request',
     'util/url',
     'taoQtiTest/runner/helpers/map',
     'taoQtiTestPreviewer/previewer/proxy/itemDataHandlers'
-], function (promiseQueue, request, urlUtil, mapHelper, itemDataHandlers) {
+], function (__, promiseQueue, request, urlUtil, mapHelper, itemDataHandlers) {
     'use strict';
 
     const serviceControllerInit = 'TestPreviewer';
@@ -152,6 +153,18 @@ define([
                     allowSkipping: firstItem.allowSkipping
                 };
                 return data;
+            })
+            .catch(e => {
+                // error from old system
+                // \oat\tao\model\http\HttpJsonResponseTrait::setErrorJsonResponse for standard response
+                // that doesn't contains errorCode and printed as '400: error'
+                // see function createError from @oat-sa/tao-core-sdk/src/core/request.js
+                // to have meaningfull error copy original message from response
+                if (e.response && e.response.message && /An error occurred while unreferencing item reference/.test(e.response.message)) {
+                    throw Error(__('It seems that some items have been deleted. Please remove the items with empty labels from the test and save before trying again.'));
+                } else {
+                    throw e;
+                }
             });
         },
 
