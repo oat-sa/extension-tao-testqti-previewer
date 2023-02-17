@@ -157,10 +157,12 @@ define([
             .catch(e => {
                 // error from old system
                 // \oat\tao\model\http\HttpJsonResponseTrait::setErrorJsonResponse for standard response
-                // that doesn't contains errorCode and printed as '400: error'
+                // in vendor/qtism/qtism/qtism/data/storage/xml/XmlCompactDocument.php
+                // "An error occurred while unreferencing item reference with identifier  "
+                // response doesn't contains errorCode and printed as '400: error'
                 // see function createError from @oat-sa/tao-core-sdk/src/core/request.js
-                // to have meaningfull error copy original message from response
-                if (e.response && e.response.message && /An error occurred while unreferencing item reference/.test(e.response.message)) {
+                // check message from response and replace by meaningful message
+                if (e.response && e.response.message && /An error occurred while unreferencing item reference with identifier/.test(e.response.message)) {
                     throw Error(__('It seems that some items have been deleted. Please remove the items with empty labels from the test and save before trying again.'));
                 } else {
                     throw e;
