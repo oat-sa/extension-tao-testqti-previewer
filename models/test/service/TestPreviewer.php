@@ -33,7 +33,9 @@ use oat\taoQtiTestPreviewer\models\test\TestPreviewRequest;
 class TestPreviewer extends ConfigurableService implements TestPreviewerInterface
 {
     /**
-     * @inheritDoc
+     * @param TestPreviewRequest $testPreviewRequest
+     * @return TestPreview
+     * @throws \qtism\data\storage\xml\XmlStorageException
      */
     public function createPreview(TestPreviewRequest $testPreviewRequest): TestPreview
     {
