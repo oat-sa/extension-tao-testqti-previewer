@@ -30,6 +30,7 @@ use oat\taoQtiTestPreviewer\models\test\service\TestPreviewer as TestPreviewerSe
 use oat\taoQtiTestPreviewer\models\test\TestPreviewRequest;
 use oat\taoQtiTestPreviewer\models\TestCategoryPresetMap;
 use oat\taoQtiTestPreviewer\models\testConfiguration\service\TestPreviewerConfigurationService;
+use qtism\data\storage\xml\XmlStorageException;
 use tao_actions_ServiceModule;
 use Throwable;
 
@@ -63,6 +64,9 @@ class TestPreviewer extends tao_actions_ServiceModule
                     'presetMap' => $this->getTestPreviewerPresetsMapService()->getMap()
                 ]
             );
+        } catch (XmlStorageException $xmlStorageException) {
+            $message = $this->mapXmlExceptionMessage($xmlStorageException);
+            $this->setErrorJsonResponse($message);
         } catch (Throwable $exception) {
             $message = $exception instanceof common_exception_UserReadableException
                 ? $exception->getUserMessage()
@@ -110,5 +114,21 @@ class TestPreviewer extends tao_actions_ServiceModule
     private function getTestPreviewerPresetsMapService(): TestCategoryPresetMap
     {
         return $this->getPsrContainer()->get(TestCategoryPresetMap::class);
+    }
+
+    private function mapXmlExceptionMessage(XmlStorageException $exception): string
+    {
+        if (
+            stristr(
+                $exception->getMessage(),
+                'An error occurred while unreferencing item reference with identifier'
+            ) !== false
+        ) {
+            return __(
+                'It seems that some items have been deleted. ' .
+                'Please remove the items with empty labels from the test and save before trying again.'
+            );
+        }
+        return $exception->getMessage();
     }
 }
