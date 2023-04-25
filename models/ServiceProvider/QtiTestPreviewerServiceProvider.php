@@ -26,6 +26,7 @@ use oat\generis\model\DependencyInjection\ContainerServiceProviderInterface;
 use oat\taoQtiTest\models\TestCategoryPresetProvider;
 use oat\taoQtiTestPreviewer\models\TestCategoryPresetMap;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 class QtiTestPreviewerServiceProvider implements ContainerServiceProviderInterface
