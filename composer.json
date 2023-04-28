@@ -35,7 +35,7 @@
     "oat-sa/extension-tao-itemqti" : ">=28.22.0",
     "oat-sa/extension-tao-testqti" : ">=41.22.2",
     "oat-sa/extension-tao-test" : ">=15.0.0",
-    "oat-sa/extension-tao-delivery" : ">=15.0.0",
+    "oat-sa/extension-tao-delivery" : "dev-feature/AUT-2995",
     "oat-sa/extension-tao-outcome" : ">=13.0.0",
     "qtism/qtism": "~0"
   },
