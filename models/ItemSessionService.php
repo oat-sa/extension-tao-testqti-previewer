@@ -27,7 +27,7 @@ use qtism\runtime\common\Variable;
 use qtism\runtime\tests\AssessmentItemSession;
 use qtism\runtime\tests\AssessmentItemSessionException;
 use qtism\runtime\tests\SessionManager;
-use \RuntimeException;
+use RuntimeException;
 use taoQtiCommon_helpers_ResultTransmissionException;
 
 /**

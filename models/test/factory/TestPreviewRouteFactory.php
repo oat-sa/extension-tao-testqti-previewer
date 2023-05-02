@@ -31,7 +31,7 @@ class TestPreviewRouteFactory extends ConfigurableService implements TestPreview
 {
     public function create(AssessmentTest $test): Route
     {
-        $manager = new class() extends SessionManager {
+        $manager = new class () extends SessionManager {
             public function createRoute(AssessmentTest $test)
             {
                 return parent::createRoute($test);

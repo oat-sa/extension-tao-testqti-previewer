@@ -14,7 +14,6 @@ use oat\tao\model\ClientLibConfigRegistry;
  */
 final class Version202008261239036771_taoQtiTestPreviewer extends AbstractMigration
 {
-
     public function getDescription(): string
     {
         return 'Register Test Previewer';

@@ -40,7 +40,7 @@ use oat\taoQtiTest\models\render\UpdateItemContentReferencesService;
 use qtism\common\datatypes\files\FileManagerException;
 use qtism\data\storage\StorageException;
 use qtism\data\storage\xml\XmlDocument;
-use \RuntimeException;
+use RuntimeException;
 use tao_models_classes_service_FileStorage as FileStorage;
 use tao_models_classes_service_StorageDirectory as StorageDirectory;
 use taoQtiCommon_helpers_PciVariableFiller as PciVariableFiller;
