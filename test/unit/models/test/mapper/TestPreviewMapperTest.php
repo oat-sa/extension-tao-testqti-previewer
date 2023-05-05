@@ -321,8 +321,13 @@ class TestPreviewMapperTest extends TestCase
      * @param AssessmentItemRef|ExtendedAssessmentItemRef $itemRef
      * @return AssessmentItemRef|ExtendedAssessmentItemRef
      */
-    private function mockItemRefMethods($itemRef, string $itemUri, string $itemId, array $categories, ItemSessionControl $sessionControl = null)
-    {
+    private function mockItemRefMethods(
+        $itemRef,
+        string $itemUri,
+        string $itemId,
+        array $categories,
+        ItemSessionControl $sessionControl = null
+    ) {
         $itemRef->method('getHref')
             ->willReturn($itemUri);
 

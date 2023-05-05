@@ -30,7 +30,7 @@ use oat\tao\scripts\tools\accessControl\SetRolesAccess;
 final class Version202108040627446771_taoQtiTestPreviewer extends AbstractMigration
 {
     private const CONFIG = [
-        SetRolesAccess::CONFIG_RULES => [            
+        SetRolesAccess::CONFIG_RULES => [
             TaoItemsRoles::ITEM_PREVIEWER => [
                 ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer', 'act' => 'asset'],
             ],
@@ -38,7 +38,7 @@ final class Version202108040627446771_taoQtiTestPreviewer extends AbstractMigrat
     ];
 
     private const REVOKE_CONFIG = [
-        SetRolesAccess::CONFIG_RULES => [            
+        SetRolesAccess::CONFIG_RULES => [
             TaoItemsRoles::ITEM_CONTENT_CREATOR => [
                 ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer', 'act' => 'asset'],
             ],
@@ -60,7 +60,7 @@ final class Version202108040627446771_taoQtiTestPreviewer extends AbstractMigrat
         $setRolesAccess = $this->propagate(new SetRolesAccess());
         $setRolesAccess([
             '--' . SetRolesAccess::OPTION_CONFIG, self::CONFIG,
-        ]);        
+        ]);
     }
 
     public function down(Schema $schema): void
