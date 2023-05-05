@@ -31,7 +31,8 @@ use qtism\data\storage\xml\XmlCompactDocument;
 use taoQtiTest_helpers_ItemResolver;
 use taoQtiTest_models_classes_QtiTestService;
 
-class TestPreviewerAssessmentTestGenerator extends ConfigurableService implements TestPreviewerAssessmentTestGeneratorInterface
+class TestPreviewerAssessmentTestGenerator extends ConfigurableService implements
+    TestPreviewerAssessmentTestGeneratorInterface
 {
     use OntologyAwareTrait;
 
