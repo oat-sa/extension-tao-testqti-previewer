@@ -26,7 +26,6 @@ use common_Exception as Exception;
 use common_report_Report as Report;
 use oat\oatbox\extension\InstallAction;
 use oat\tao\model\modules\DynamicModule;
-use oat\taoOutcomeUi\model\ResultsViewerService;
 use oat\oatbox\service\exception\InvalidServiceManagerException;
 use common_exception_InconsistentData as InconsistentDataException;
 use oat\taoItems\model\preview\ItemPreviewerRegistryServiceInterface;
@@ -78,11 +77,6 @@ class RegisterPreviewers extends InstallAction
                 }
             }
         }
-
-        /** @var ResultsViewerService $service */
-        $service = $serviceManager->get(ResultsViewerService::SERVICE_ID);
-        $service->setDefaultItemType('qtiItem');
-        $serviceManager->register(ResultsViewerService::SERVICE_ID, $service);
 
         return Report::createSuccess($count . ' providers registered.');
     }
