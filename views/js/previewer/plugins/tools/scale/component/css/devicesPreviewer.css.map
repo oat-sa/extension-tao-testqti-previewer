@@ -1,14 +1,1 @@
-{
-	"version": 3,
-	"file": "devicesPreviewer.css",
-	"sources": [
-		"../scss/devicesPreviewer.scss",
-		"../../../../../../../../../tao/views/node_modules/@oat-sa/tao-core-ui/scss/inc/_bootstrap.scss",
-		"../../../../../../../../../tao/views/node_modules/@oat-sa/tao-core-ui/scss/inc/_variables.scss",
-		"../../../../../../../../../tao/views/node_modules/@oat-sa/tao-core-ui/scss/inc/_functions.scss",
-		"../../../../../../../../../tao/views/node_modules/@oat-sa/tao-core-ui/scss/inc/_colors.scss",
-		"../../../../../../../../../tao/views/scss/inc/fonts/_tao-icon-vars.scss"
-	],
-	"names": [],
-	"mappings": "AAEA,AAAA,kBAAkB,AAAC,CAYf,KAAK,CAAE,IAAI,CACX,MAAM,CAAE,IAAI,CA+Cf,AA5DD,AAgBQ,kBAhBU,AAeb,IAAK,CAAA,SAAS,EACV,AAAA,SAAC,CAAU,SAAS,AAAnB,EAhBV,kBAAkB,AAeb,IAAK,CAAA,SAAS,EAEV,AAAA,SAAC,CAAU,QAAQ,AAAlB,CAAoB,CAClB,QAAQ,CAAE,MAAM,CA2BnB,AA7CT,AAoBY,kBApBM,AAeb,IAAK,CAAA,SAAS,EACV,AAAA,SAAC,CAAU,SAAS,AAAnB,EAIE,kBAAkB,CApB9B,kBAAkB,AAeb,IAAK,CAAA,SAAS,EAEV,AAAA,SAAC,CAAU,QAAQ,AAAlB,EAGE,kBAAkB,AAAC,CACf,QAAQ,CAAE,QAAQ,CACrB,AAtBb,AAwBY,kBAxBM,AAeb,IAAK,CAAA,SAAS,EACV,AAAA,SAAC,CAAU,SAAS,AAAnB,EAQE,cAAc,CAxB1B,kBAAkB,AAeb,IAAK,CAAA,SAAS,EAEV,AAAA,SAAC,CAAU,QAAQ,AAAlB,EAOE,cAAc,AAAC,CACX,QAAQ,CAAE,QAAQ,CAClB,MAAM,CAAE,GAAG,CAvBG,IAAI,CAuBmB,KAAK,CAC1C,UAAU,CArBD,OAAe,CAsBxB,UAAU,CAAE,sEAMX,CGqBL,kBAAsB,CAAC,8BAAC,CAAxB,eAAsB,CAAC,8BAAC,CAAxB,cAAsB,CAAC,8BAAC,CAAxB,aAAsB,CAAC,8BAAC,CAAxB,UAAsB,CAAC,8BAAC,CHnBvB,AApCb,AAsCY,kBAtCM,AAeb,IAAK,CAAA,SAAS,EACV,AAAA,SAAC,CAAU,SAAS,AAAnB,EAsBE,gBAAgB,CAtC5B,kBAAkB,AAeb,IAAK,CAAA,SAAS,EAEV,AAAA,SAAC,CAAU,QAAQ,AAAlB,EAqBE,gBAAgB,AAAC,CACb,UAAU,CArCF,IAAI,CAsCZ,aAAa,CAAE,GAAG,CAClB,MAAM,CAAE,SAAS,CACjB,YAAY,CAtCG,IAAI,CACJ,IAAI,CAAJ,IAAI,CADJ,IAAI,CAuCnB,QAAQ,CAAE,IAAI,CACjB,AA5Cb,AAgDY,kBAhDM,AAeb,IAAK,CAAA,SAAS,EAgCV,AAAA,SAAC,CAAU,QAAQ,AAAlB,EACE,cAAc,AAAC,CACX,aAAa,CAAE,IAAI,CACnB,OAAO,CAAE,IAAI,CAChB,AAnDb,AAsDY,kBAtDM,AAeb,IAAK,CAAA,SAAS,EAsCV,AAAA,SAAC,CAAU,SAAS,AAAnB,EACE,cAAc,AAAC,CACX,aAAa,CAAE,GAAG,CAClB,OAAO,CAAE,IAAI,CAChB"
-}
+{"version":3,"sourceRoot":"","sources":["../scss/devicesPreviewer.scss","../../../../../../../../../tao/views/node_modules/@oat-sa/tao-core-ui/scss/inc/_functions.scss"],"names":[],"mappings":"AAEA,mBAYI,WACA,YAGI,yGAEI,gBAEA,+IACI,kBAGJ,uIACI,kBACA,sBACA,WArBS,QAsBT,qHC2BJ,qPDjBA,2IACI,WArCQ,KAsCR,kBACA,iBACA,iCACA,cAKJ,mEACI,mBACA,aAIJ,oEACI,kBACA","file":"devicesPreviewer.css"}
