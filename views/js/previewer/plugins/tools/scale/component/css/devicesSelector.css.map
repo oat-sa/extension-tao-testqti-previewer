@@ -1,14 +1,1 @@
-{
-	"version": 3,
-	"file": "devicesSelector.css",
-	"sources": [
-		"../scss/devicesSelector.scss",
-		"../../../../../../../../../tao/views/node_modules/@oat-sa/tao-core-ui/scss/inc/_bootstrap.scss",
-		"../../../../../../../../../tao/views/node_modules/@oat-sa/tao-core-ui/scss/inc/_variables.scss",
-		"../../../../../../../../../tao/views/node_modules/@oat-sa/tao-core-ui/scss/inc/_functions.scss",
-		"../../../../../../../../../tao/views/node_modules/@oat-sa/tao-core-ui/scss/inc/_colors.scss",
-		"../../../../../../../../../tao/views/scss/inc/fonts/_tao-icon-vars.scss"
-	],
-	"names": [],
-	"mappings": "AAEA,AAAA,iBAAiB,AAAC,CG4DN,OAAY,CAAC,QAAC,CAAd,OAAY,CAAC,YAAC,CAAd,OAAY,CAAC,IAAC,CALd,kBAAsB,CAAC,GAAC,CAAxB,sBAAsB,CAAC,GAAC,CAAxB,cAAsB,CAAC,GAAC,CHnBnC,AApCD,AAKQ,iBALS,CAIZ,AAAA,SAAC,CAAU,UAAU,AAApB,EACE,iBAAiB,CALzB,iBAAiB,CAIZ,AAAA,SAAC,CAAU,UAAU,AAApB,EAEE,gBAAgB,CANxB,iBAAiB,CAIZ,AAAA,SAAC,CAAU,UAAU,AAApB,EAGE,qBAAqB,AAAC,CAClB,OAAO,CAAE,IAAI,CAChB,AATT,AAYQ,iBAZS,CAWZ,AAAA,SAAC,CAAU,SAAS,AAAnB,EACE,gBAAgB,CAZxB,iBAAiB,CAWZ,AAAA,SAAC,CAAU,SAAS,AAAnB,EAEE,qBAAqB,AAAC,CAClB,OAAO,CAAE,IAAI,CAChB,AAfT,AAkBQ,iBAlBS,CAiBZ,AAAA,SAAC,CAAU,QAAQ,AAAlB,EACE,iBAAiB,AAAC,CACd,OAAO,CAAE,IAAI,CAChB,AApBT,AAuBI,iBAvBa,CAuBb,SAAS,AAAC,CACN,OAAO,CAAE,YAAY,CACrB,UAAU,CAAE,KAAK,CAUpB,AAnCL,AA0BQ,iBA1BS,CAuBb,SAAS,AAGJ,IAAK,CAAA,WAAW,CAAE,CACf,YAAY,CAAE,IAAI,CACrB,AA5BT,AA6BQ,iBA7BS,CAuBb,SAAS,CAML,MAAM,AAAC,CACH,QAAQ,CAAE,OAAO,CACpB,AA/BT,AAgCQ,iBAhCS,CAuBb,SAAS,CASL,kBAAkB,AAAC,CACf,WAAW,CAAE,IAAI,CACpB"
-}
+{"version":3,"sourceRoot":"","sources":["../scss/devicesSelector.scss","../../../../../../../../../tao/views/node_modules/@oat-sa/tao-core-ui/scss/inc/_functions.scss"],"names":[],"mappings":"AAEA,kBC4DY,mDALA,qEDlDJ,2KAGI,aAIJ,iHAEI,aAIJ,sDACI,aAIR,4BACI,qBACA,gBACA,6CACI,kBAEJ,mCACI,iBAEJ,+CACI","file":"devicesSelector.css"}
