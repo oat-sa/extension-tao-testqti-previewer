@@ -23,12 +23,13 @@ declare(strict_types=1);
 namespace oat\taoQtiTestPreviewer\scripts\install;
 
 use common_Exception as Exception;
+use common_exception_InconsistentData as InconsistentDataException;
 use common_report_Report as Report;
 use oat\oatbox\extension\InstallAction;
-use oat\tao\model\modules\DynamicModule;
 use oat\oatbox\service\exception\InvalidServiceManagerException;
-use common_exception_InconsistentData as InconsistentDataException;
+use oat\tao\model\modules\DynamicModule;
 use oat\taoItems\model\preview\ItemPreviewerRegistryServiceInterface;
+use oat\taoQtiTest\models\DeliveryItemTypeRepository;
 
 /**
  * Installation action that registers the test runner providers
@@ -77,6 +78,11 @@ class RegisterPreviewers extends InstallAction
                 }
             }
         }
+
+        /** @var DeliveryItemTypeRepository $service */
+        $service = $serviceManager->get(DeliveryItemTypeRepository::SERVICE_ID);
+        $service->setDefaultItemType('qtiItem');
+        $serviceManager->register(DeliveryItemTypeRepository::SERVICE_ID, $service);
 
         return Report::createSuccess($count . ' providers registered.');
     }
