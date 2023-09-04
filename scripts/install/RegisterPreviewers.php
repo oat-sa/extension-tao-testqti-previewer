@@ -29,7 +29,7 @@ use oat\oatbox\extension\InstallAction;
 use oat\oatbox\service\exception\InvalidServiceManagerException;
 use oat\tao\model\modules\DynamicModule;
 use oat\taoItems\model\preview\ItemPreviewerRegistryServiceInterface;
-use oat\taoQtiTest\models\DeliveryItemTypeRepository;
+use oat\taoQtiTest\models\DeliveryItemTypeService;
 
 /**
  * Installation action that registers the test runner providers
@@ -79,10 +79,10 @@ class RegisterPreviewers extends InstallAction
             }
         }
 
-        /** @var DeliveryItemTypeRepository $service */
-        $service = $serviceManager->get(DeliveryItemTypeRepository::SERVICE_ID);
+        /** @var DeliveryItemTypeService $service */
+        $service = $serviceManager->get(DeliveryItemTypeService::SERVICE_ID);
         $service->setDefaultItemType('qtiItem');
-        $serviceManager->register(DeliveryItemTypeRepository::SERVICE_ID, $service);
+        $serviceManager->register(DeliveryItemTypeService::SERVICE_ID, $service);
 
         return Report::createSuccess($count . ' providers registered.');
     }
