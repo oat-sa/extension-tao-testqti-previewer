@@ -26,7 +26,7 @@ use oat\tao\model\accessControl\func\AclProxy;
 use oat\tao\model\modules\DynamicModule;
 use oat\tao\scripts\update\OntologyUpdater;
 use oat\taoItems\model\preview\ItemPreviewerService;
-use oat\taoOutcomeUi\model\ResultsViewerService;
+use oat\taoQtiTest\models\DeliveryItemTypeService;
 
 /**
  * Class Updater
@@ -60,9 +60,10 @@ class Updater extends \common_ext_ExtensionUpdater
                 )
             );
 
-            $service = $this->getServiceManager()->get(ResultsViewerService::SERVICE_ID);
+            /** @var DeliveryItemTypeService $service */
+            $service = $this->getServiceManager()->get(DeliveryItemTypeService::SERVICE_ID);
             $service->setDefaultItemType('qtiItem');
-            $this->getServiceManager()->register(ResultsViewerService::SERVICE_ID, $service);
+            $this->getServiceManager()->register(DeliveryItemTypeService::SERVICE_ID, $service);
 
             $this->setVersion('0.1.0');
         }
