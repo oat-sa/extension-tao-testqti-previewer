@@ -60,7 +60,7 @@ define([
     const transformConfiguration = config => {
         const plugins = Array.isArray(config.plugins) ? [...defaultPlugins, ...config.plugins] : defaultPlugins;
         const { view, readOnly, fullPage, hideActionBars, pluginsOptions } = config;
-        const options = _.omitBy({ view, readOnly, fullPage, hideActionBars }, _.isUndefined);
+        const options = _.omit({ view, readOnly, fullPage, hideActionBars }, _.isUndefined);
 
         return request({
             url: urlUtil.route('configuration', testPreviewerController, taoExtension),
