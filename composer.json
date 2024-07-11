@@ -36,7 +36,7 @@
     "oat-sa/extension-tao-test" : ">=15.0.0",
     "oat-sa/extension-tao-delivery" : ">=15.0.0",
     "oat-sa/extension-tao-outcome" : ">=13.0.0",
-    "qtism/qtism": "~0"
+    "qtism/qtism": "dev-fix/AUT-3705/backport-use-normalised-string-in-item-identifier as 0.28.6"
   },
   "autoload": {
     "psr-4": {
