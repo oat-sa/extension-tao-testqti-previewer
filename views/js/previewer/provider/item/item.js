@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2018-2020 (original work) Open Assessment Technologies SA ;
+ * Copyright (c) 2018-2024 (original work) Open Assessment Technologies SA ;
  */
 
 /**
@@ -58,11 +58,11 @@ define([
 
     //store the current execution context of the common renderer (preview)
     let _$previousContext = null;
-    function setContext($context){
+    function setContext($context) {
         _$previousContext = containerHelper.getContext();
         containerHelper.setContext($context);
     }
-    function restoreContext(){
+    function restoreContext() {
         containerHelper.setContext(_$previousContext);
         _$previousContext = null;
     }
@@ -70,7 +70,6 @@ define([
      * A Test runner provider to be registered against the runner
      */
     return {
-
         //provider name
         name: 'qtiItemPreviewer',
 
@@ -99,8 +98,8 @@ define([
          * @returns {proxy}
          */
         loadProxy() {
-            const {proxyProvider, serviceCallId, bootstrap, timeout} = this.getConfig();
-            return proxyFactory(proxyProvider || 'qtiItemPreviewerProxy', {serviceCallId, bootstrap, timeout});
+            const { proxyProvider, serviceCallId, bootstrap, timeout } = this.getConfig();
+            return proxyFactory(proxyProvider || 'qtiItemPreviewerProxy', { serviceCallId, bootstrap, timeout });
         },
 
         /**
@@ -119,7 +118,7 @@ define([
          * Installation of the provider, called during test runner init phase.
          */
         install() {
-            const {plugins} = this.getConfig().options;
+            const { plugins } = this.getConfig().options;
             if (plugins) {
                 _.forEach(this.getPlugins(), plugin => {
                     if (_.isPlainObject(plugin) && _.isFunction(plugin.setConfig)) {
@@ -151,32 +150,32 @@ define([
             /*
              * Install behavior on events
              */
-            this
-                .on('submititem', () => {
-                    const itemState = this.itemRunner.getState();
-                    const itemResponses = this.itemRunner.getResponses();
+            this.on('submititem', () => {
+                const itemState = this.itemRunner.getState();
+                const itemResponses = this.itemRunner.getResponses();
 
-                    this.trigger('disabletools disablenav');
-                    this.trigger('submitresponse', itemResponses, itemState);
+                this.trigger('disabletools disablenav');
+                this.trigger('submitresponse', itemResponses, itemState);
 
-                    return this.getProxy()
-                        .submitItem(dataHolder.get('itemIdentifier'), itemState, itemResponses)
-                        .then(response => {
-                            this.trigger('scoreitem', response);
-                            this.trigger('enabletools enablenav resumeitem');
-                        })
-                        .catch(err => {
-                            this.trigger('enabletools enablenav');
+                return this.getProxy()
+                    .submitItem(dataHolder.get('itemIdentifier'), itemState, itemResponses)
+                    .then(response => {
+                        this.trigger('scoreitem', response);
+                        this.trigger('enabletools enablenav resumeitem');
+                    })
+                    .catch(err => {
+                        this.trigger('enabletools enablenav');
 
-                            //some server errors are valid, so we don't fail (prevent empty responses)
-                            if (err.code === 200) {
-                                this.trigger('alert.submitError',
-                                    err.message || __('An error occurred during results submission. Please retry.'),
-                                    () => this.trigger('resumeitem')
-                                );
-                            }
-                        });
-                })
+                        //some server errors are valid, so we don't fail (prevent empty responses)
+                        if (err.code === 200) {
+                            this.trigger(
+                                'alert.submitError',
+                                err.message || __('An error occurred during results submission. Please retry.'),
+                                () => this.trigger('resumeitem')
+                            );
+                        }
+                    });
+            })
                 .on('ready', () => {
                     const itemIdentifier = dataHolder.get('itemIdentifier');
                     const itemData = dataHolder.get('itemData');
@@ -237,6 +236,10 @@ define([
 
             config.renderTo.append(areaBroker.getContainer());
 
+            if (config.options.view) {
+                areaBroker.getContainer().addClass(`view-${config.options.view}`);
+            }
+
             areaBroker.getToolbox().render(areaBroker.getToolboxArea());
         },
 
@@ -279,17 +282,26 @@ define([
                 assetManager.setData('baseUrl', itemData.baseUrl);
                 assetManager.setData('assets', itemData.content.assets);
 
-                this.itemRunner = qtiItemRunner(itemData.content.type, itemData.content.data, Object.assign({
-                    assetManager: assetManager
-                }, options))
+                this.itemRunner = qtiItemRunner(
+                    itemData.content.type,
+                    itemData.content.data,
+                    Object.assign(
+                        {
+                            assetManager: assetManager
+                        },
+                        options
+                    )
+                )
                     .on('error', err => {
                         this.trigger('enablenav');
                         reject(err);
-                        feedback().error(__('It seems that there is an error during item preview loading. Please, try again.'));
+                        feedback().error(
+                            __('It seems that there is an error during item preview loading. Please, try again.')
+                        );
                     })
                     .on('init', function onItemRunnerInit() {
-                        const {state, portableElements} = itemData;
-                        this.render(areaBroker.getContentArea(), {state, portableElements});
+                        const { state, portableElements } = itemData;
+                        this.render(areaBroker.getContentArea(), { state, portableElements });
                     })
                     .on('render', function onItemRunnerRender() {
                         this.on('responsechange', changeState);
@@ -313,9 +325,7 @@ define([
 
             if (this.itemRunner) {
                 return new Promise(resolve => {
-                    this.itemRunner
-                        .on('clear', resolve)
-                        .clear();
+                    this.itemRunner.on('clear', resolve).clear();
                 });
             }
             return Promise.resolve();
@@ -333,9 +343,7 @@ define([
 
             // prevent the item to be displayed while test runner is destroying
             if (this.itemRunner) {
-                this.itemRunner
-                    .on('clear', restoreContext)
-                    .clear();
+                this.itemRunner.on('clear', restoreContext).clear();
             }
             this.itemRunner = null;
 
