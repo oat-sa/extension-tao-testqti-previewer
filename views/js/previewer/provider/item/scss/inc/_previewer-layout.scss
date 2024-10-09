@@ -15,6 +15,12 @@
 
     height: calc(100vh - #{(map-get($heights, header) + map-get($heights, footer)) * 1px});
 
+    &.view-viewer {
+        .action-bar {
+            display: none;
+        }
+    }
+
     .test-runner-sections {
 
         /* flex column value */
