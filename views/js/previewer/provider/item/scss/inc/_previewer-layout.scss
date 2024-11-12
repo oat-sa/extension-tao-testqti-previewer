@@ -13,7 +13,18 @@
     -ms-flex-direction: column;
     flex-direction: column;
 
-    height: calc(100vh - #{(map-get($heights, header) + map-get($heights, footer)) * 1px});
+    &.view-viewer {
+        .action-bar {
+            display: none;
+        }
+    }
+    &:not(.view-viewer) {
+        height: calc(100vh - #{(map-get($heights, header) + map-get($heights, footer)) * 1px});
+
+        .test-sidebar {
+            height: calc(100vh - #{(map-get($heights, header) + map-get($heights, footer) + map-get($heights, horizontal-action-bar) * 2) * 1px});
+        }
+    }
 
     .test-runner-sections {
 
@@ -40,8 +51,6 @@
         -webkit-flex: 0 1 auto;
         -ms-flex: 0 1 auto;
         flex: 0 1 auto;
-
-        height: calc(100vh - #{(map-get($heights, header) + map-get($heights, footer) + map-get($heights, horizontal-action-bar) * 2) * 1px});
 
         overflow-y: auto;
 
