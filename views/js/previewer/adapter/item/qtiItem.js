@@ -13,17 +13,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2019 (original work) Open Assessment Technologies SA ;
+ * Copyright (c) 2019-2024 (original work) Open Assessment Technologies SA ;
  */
 /**
  * @author Jean-Sébastien Conan <jean-sebastien@taotesting.com>
  */
-define([
-    'lodash',
-    'core/logger',
-    'taoQtiTestPreviewer/previewer/component/qtiItem',
-    'ui/feedback'
-], function (_, loggerFactory, qtiItemPreviewerFactory, feedback) {
+define(['lodash', 'core/logger', 'taoQtiTestPreviewer/previewer/component/qtiItem', 'ui/feedback'], function (
+    _,
+    loggerFactory,
+    qtiItemPreviewerFactory,
+    feedback
+) {
     'use strict';
 
     const logger = loggerFactory('taoQtiTest/previewer');
@@ -32,27 +32,33 @@ define([
      * List of required plugins that should be loaded in order to make the previewer work properly
      * @type {Object[]}
      */
-    const defaultPlugins = [{
-        module: 'taoQtiTestPreviewer/previewer/plugins/controls/close',
-        bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-        category: 'controls'
-    }, {
-        module: 'taoQtiTestPreviewer/previewer/plugins/navigation/submit/submit',
-        bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-        category: 'navigation'
-    }, {
-        module: 'taoQtiTestPreviewer/previewer/plugins/tools/scale/scale',
-        bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-        category: 'tools'
-    }, {
-        module: 'taoQtiTest/runner/plugins/tools/itemThemeSwitcher/itemThemeSwitcher',
-        bundle: 'taoQtiTest/loader/testPlugins.min',
-        category: 'tools'
-    }, {
-        module: 'taoQtiTestPreviewer/previewer/plugins/content/enhancedReadOnlyMode',
-        bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
-        category: 'content'
-    }];
+    const defaultPlugins = [
+        {
+            module: 'taoQtiTestPreviewer/previewer/plugins/controls/close',
+            bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+            category: 'controls'
+        },
+        {
+            module: 'taoQtiTestPreviewer/previewer/plugins/navigation/submit/submit',
+            bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+            category: 'navigation'
+        },
+        {
+            module: 'taoQtiTestPreviewer/previewer/plugins/tools/scale/scale',
+            bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+            category: 'tools'
+        },
+        {
+            module: 'taoQtiTest/runner/plugins/tools/itemThemeSwitcher/itemThemeSwitcher',
+            bundle: 'taoQtiTest/loader/testPlugins.min',
+            category: 'tools'
+        },
+        {
+            module: 'taoQtiTestPreviewer/previewer/plugins/content/enhancedReadOnlyMode',
+            bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+            category: 'content'
+        }
+    ];
 
     /**
      * Wraps the legacy item previewer in order to be loaded by the taoItems previewer factory
@@ -67,22 +73,30 @@ define([
          * @param {Object} state - The state of the item
          * @param {Object} [config] - Some config entries
          * @param {Object[]} [config.plugins] - Additional plugins to load
-         * @param {String} [config.fullPage] - Force the previewer to occupy the full window.
-         * @param {String} [config.readOnly] - Do not allow to modify the previewed item.
+         * @param {boolean} [config.fullPage] - Force the previewer to occupy the full window.
+         * @param {boolean} [config.readOnly] - Do not allow to modify the previewed item.
+         * @param {string} [config.viewer] - Instruct the previewer of the type of usage.
+         * @param {boolean} [config.disableDefaultPlugins] - Disable the plugins.
          * @returns {Object}
          */
         init(uri, state, config = {}) {
             config.itemUri = uri;
             config.itemState = state;
-            config.plugins = Array.isArray(config.plugins) ? [...defaultPlugins, ...config.plugins] : defaultPlugins;
-            return qtiItemPreviewerFactory(window.document.body, config)
-                .on('error', function (err) {
+            if (!config.disableDefaultPlugins) {
+                config.plugins = Array.isArray(config.plugins)
+                    ? [...defaultPlugins, ...config.plugins]
+                    : defaultPlugins;
+            }
+            return qtiItemPreviewerFactory(config.container || window.document.body, config).on(
+                'error',
+                function (err) {
                     if (!_.isUndefined(err.message)) {
                         feedback().error(err.message);
                     } else {
                         logger.error(err);
                     }
-                });
+                }
+            );
         }
     };
 });
