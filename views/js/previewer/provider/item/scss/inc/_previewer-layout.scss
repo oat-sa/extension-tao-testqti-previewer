@@ -131,6 +131,16 @@
         padding: 30px;
     }
 
+    .qti-itemBody.writing-mode-vertical-rl {
+        writing-mode: vertical-rl;
+        padding: 15px;
+        block-size: 100%;
+        inline-size: 100%;
+        overflow: auto;
+        overscroll-behavior: contain;
+        line-height: 1.8; /* assuming ruby tags */
+    }
+
     .size-wrapper {
         max-width: map-get($widths, size-wrapper) * 1px;
         margin: auto;
@@ -194,3 +204,10 @@
     }
 }
 
+.item-writing-mode-vertical-rl {
+    .item-previewer-scope {
+        .qti-item {
+            padding: 15px;
+        }
+    }
+}

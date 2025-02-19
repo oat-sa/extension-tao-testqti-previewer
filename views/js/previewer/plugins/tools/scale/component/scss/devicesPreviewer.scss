@@ -61,3 +61,12 @@
         }
     }
 }
+
+.item-writing-mode-vertical-rl {
+    .preview-container,
+    .preview-frame,
+    .preview-content,
+    #qti-content {
+         height: 100%;
+     }
+ }
