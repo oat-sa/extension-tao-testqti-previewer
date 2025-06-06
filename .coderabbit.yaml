@@ -1,2 +1,0 @@
-remote_config:
-    url: 'https://raw.githubusercontent.com/oat-sa/tao-code-quality/main/coderabbit/php/authoring/v1/.coderabbit.yaml'
