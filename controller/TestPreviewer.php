@@ -24,9 +24,7 @@ namespace oat\taoQtiTestPreviewer\controller;
 
 use common_exception_UserReadableException;
 use InvalidArgumentException;
-use oat\tao\model\accessControl\PermissionChecker;
 use oat\tao\model\http\HttpJsonResponseTrait;
-use oat\tao\model\resources\ResourceAccessDeniedException;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewConfig;
 use oat\taoQtiTestPreviewer\models\test\service\TestPreviewer as TestPreviewerService;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewRequest;
@@ -44,18 +42,13 @@ class TestPreviewer extends tao_actions_ServiceModule
     {
         try {
             $requestParams = $this->getPsrRequest()->getQueryParams();
-            $testUri = $requestParams['testUri'] ?? null;
 
-            if (empty($testUri)) {
+            if (empty($requestParams['testUri'])) {
                 throw  new InvalidArgumentException('Required `testUri` param is missing ');
             }
 
-            if (!$this->getPermissionChecker()->hasReadAccess($testUri)) {
-                throw new ResourceAccessDeniedException($testUri);
-            }
-
             $testPreviewRequest = new TestPreviewRequest(
-                $testUri,
+                $requestParams['testUri'],
                 new TestPreviewConfig([TestPreviewConfig::CHECK_INFORMATIONAL => true])
             );
             $response = $this->getTestPreviewerService()->createPreview($testPreviewRequest);
@@ -137,10 +130,5 @@ class TestPreviewer extends tao_actions_ServiceModule
             );
         }
         return $exception->getMessage();
-    }
-
-    private function getPermissionChecker(): PermissionChecker
-    {
-        return $this->getPsrContainer()->get(PermissionChecker::class);
     }
 }
