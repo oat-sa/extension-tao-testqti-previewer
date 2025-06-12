@@ -31,7 +31,7 @@
     "oat-sa/generis" : ">=15.39.0",
     "oat-sa/tao-core" : ">=54.32.1",
     "oat-sa/extension-tao-item" : ">=12.4.0",
-    "oat-sa/extension-tao-itemqti" : ">=30.31.0",
+    "oat-sa/extension-tao-itemqti" : "dev-feat/AUT-4151/compact-appearence as 99",
     "oat-sa/extension-tao-testqti" : ">=48.19.3",
     "oat-sa/extension-tao-test" : ">=16.3.0",
     "oat-sa/extension-tao-delivery" : ">=15.0.0",
@@ -41,6 +41,13 @@
   "autoload": {
     "psr-4": {
       "oat\\taoQtiTestPreviewer\\": ""
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "php-http/discovery": true,
+      "oat-sa/oatbox-extension-installer": true,
+      "oat-sa/composer-npm-bridge": true
     }
   }
 }
