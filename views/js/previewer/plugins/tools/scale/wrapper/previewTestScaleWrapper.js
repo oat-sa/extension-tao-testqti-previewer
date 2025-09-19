@@ -124,7 +124,7 @@ define([
     function render() {
       if (!areaBroker) {
         return Promise.reject(
-          new Error("[ScalePlugin] areaBroker is required")
+          new Error("[scalePlugin] areaBroker is required")
         );
       }
 
