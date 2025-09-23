@@ -34,11 +34,19 @@ define([
                 $element.find('.top-block-preview-info').append($info);
                 $element.find('.close').on('click', config.onClose);
                 const $icon = $element.find('.top-block-preview-collapser .icon');
+                const transitionDone = 'transition-done';
                 $element.find('.top-block-preview-collapser').on('click', () => {
                     $icon.toggleClass('icon-up');
                     $icon.toggleClass('icon-down');
                     $element.toggleClass('open');
                     $element.toggleClass('close');
+                    if(!$element.hasClass(transitionDone)) {
+                        setTimeout(()=> {
+                            $element.addClass(transitionDone);
+                        }, 500);
+                    } else {
+                        $element.removeClass(transitionDone);
+                    }
                 });
                 /**
                  * @event ready
