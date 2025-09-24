@@ -116,10 +116,8 @@ define([
         }
 
         function render() {
-            if (!options.wrapper || !options.container) {
-                return Promise.reject(
-                    new Error('[scalePlugin] both wrapper & container elements is required')
-                );
+            if (!options || !options.wrapper || !options.container) {
+                return Promise.reject(new Error('[scalePlugin] both wrapper and container elements are required'));
             }
 
             function resizeItem() {
