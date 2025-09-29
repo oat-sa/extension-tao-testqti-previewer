@@ -17,7 +17,7 @@
  */
 
 /**
- * Test Previewer Responsive Scale plugin wrapper : Scale
+ * NUI Previewer Responsive Scale plugin wrapper : Scale
  */
 define([
     'jquery',
@@ -40,22 +40,17 @@ define([
     /**
      * Functional factory that simulates a class instance.
      * Usage:
-     *   var scale = scalePlugin(runner, { areaBroker: runner.getAreaBroker() });
+     *   var scale = scalePlugin(runner, { wrapper: #wrapper, container: #container  });
      *   scale.init();
      *   scale.render();
      */
-    function scalePlugin(runner, opts) {
+    function scalePlugin(runner, options) {
         if (!runner) {
             throw new Error('[scalePlugin] runner is required');
         }
 
-        const name = (opts && opts.name) || 'scale';
-        const externalConfig = opts && opts.config;
-        const areaBroker =
-            (opts && opts.areaBroker) ||
-            (typeof runner.getAreaBroker === 'function'
-                ? runner.getAreaBroker()
-                : null);
+        const name = (options && options.name) || 'scale';
+        const externalConfig = options && options.config;
 
         const nsId = name + uuid(6);
         const state = { enabled: false, visible: false };
@@ -85,7 +80,7 @@ define([
                 const config = _getConfig();
                 return !(config && config.options && config.options.readOnly);
             }
-
+            
             if (!isPluginAllowed()) {
                 api.hide();
             }
@@ -121,10 +116,8 @@ define([
         }
 
         function render() {
-            if (!areaBroker) {
-                return Promise.reject(
-                    new Error('[scalePlugin] areaBroker is required')
-                );
+            if (!options || !options.wrapper || !options.container) {
+                return Promise.reject(new Error('[scalePlugin] both wrapper and container elements are required'));
             }
 
             function resizeItem() {
@@ -146,10 +139,12 @@ define([
                     }
                 }, 50)
             );
+            
 
-            const container = areaBroker.getContainer();
-            const $scaleTool = $('<div class="scale-bar"></div>').appendTo(container);
-            const $previewHost = $('<div class="scale-preview"></div>').appendTo(container);
+
+            const wrapper = options.wrapper;
+            const $scaleTool = $('<div class="scale-bar"></div>').appendTo(wrapper);
+            const $previewHost = $('<div class="scale-preview"></div>').appendTo(wrapper);
 
             return Promise.all([
                 new Promise(function (resolve) {
@@ -178,7 +173,7 @@ define([
                     devicesPreviewer = devicesPreviewerFactory($previewHost).on(
                         'ready',
                         function () {
-                            this.wrap(areaBroker.getTestRunnerArea());
+                            this.wrap(options.container);
                             resolve();
                         }
                     );
