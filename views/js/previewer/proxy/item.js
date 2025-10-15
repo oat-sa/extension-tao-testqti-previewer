@@ -120,6 +120,9 @@ define([
             // store config in a dedicated configStorage
             this.configStorage = configFactory(config || {});
 
+            // Initialize item data store for feedbacks
+            this.itemDataStore = {};
+
             // request for initialization
             return this.request(this.configStorage.getTestActionUrl('init'), params, void 0, true);
         },
@@ -174,7 +177,11 @@ define([
                 params,
                 void 0,
                 true
-            ).then(itemData => itemDataHandlers(itemData));
+            ).then(itemData => itemDataHandlers(itemData)).then(itemData => {
+                // Store item data for feedback extraction later
+                this.itemDataStore[itemIdentifier] = itemData;
+                return itemData;
+            });
         },
 
         /**
@@ -195,7 +202,26 @@ define([
                 params || {}
             );
 
-            return this.request(this.configStorage.getItemActionUrl(itemIdentifier, 'submitItem'), body, void 0, true);
+            return this.request(this.configStorage.getItemActionUrl(itemIdentifier, 'submitItem'), body, void 0, true)
+                .then(result => {
+                    // Get the stored item data to extract feedbacks
+                    const itemData = this.itemDataStore[itemIdentifier];
+
+                    return {
+                        displayFeedbacks: result.displayFeedback || false,
+                        itemSession: result.itemSession || {},
+                        feedbacks: (itemData && itemData.itemData && itemData.itemData.data && itemData.itemData.data.feedbacks) || {}
+                    };
+                })
+                .catch(err => {
+                    // If the request fails, return a safe default response
+                    console.error('Item preview submitItem failed:', err);
+                    return {
+                        displayFeedbacks: false,
+                        itemSession: {},
+                        feedbacks: {}
+                    };
+                });
         }
     };
 });

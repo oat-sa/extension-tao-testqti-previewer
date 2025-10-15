@@ -107,7 +107,8 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
                     'flagged' => false,
                     'viewed' => false,
                     'categories' => $itemRef->getCategories()->getArrayCopy(),
-                    'allowSkipping' => $allowSkipping
+                    'allowSkipping' => $allowSkipping,
+                    'hasFeedbacks' => $this->checkHasFeedbacks($itemRef)
                 ];
 
                 $isItemInformational = true;
@@ -250,5 +251,32 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
             $additionalCheck = true;
         }
         return $additionalCheck || in_array('x-tao-itemusage-informational', $categories, true);
+    }
+
+    /**
+     * Check if the item has feedbacks and if showFeedback is enabled
+     *
+     * @param AssessmentItemRef|ExtendedAssessmentItemRef $itemRef
+     * @return bool
+     */
+    private function checkHasFeedbacks($itemRef): bool
+    {
+        $sessionControl = $itemRef->getItemSessionControl();
+
+        // If there's no session control or showFeedback is false, no feedbacks
+        if ($sessionControl === null || !$sessionControl->mustShowFeedback()) {
+            return false;
+        }
+
+        // Check if the item has modal feedbacks defined
+        // We check if there are modal feedback declarations in the item
+        if (method_exists($itemRef, 'getModalFeedbacks')) {
+            $modalFeedbacks = $itemRef->getModalFeedbacks();
+            return $modalFeedbacks !== null && count($modalFeedbacks) > 0;
+        }
+
+        // For standard AssessmentItemRef, we assume it might have feedbacks if showFeedback is enabled
+        // The actual check will happen when the item is loaded and processed
+        return true;
     }
 }
