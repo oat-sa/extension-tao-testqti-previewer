@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2018-2022 (original work) Open Assessment Technologies SA ;
+ * Copyright (c) 2018-2025 (original work) Open Assessment Technologies SA ;
  */
 
 /**
@@ -202,18 +202,22 @@ define([
                 params || {}
             );
 
-            return this.request(this.configStorage.getItemActionUrl(itemIdentifier, 'submitItem'), body, void 0, true)
-                .then(result => {
-                    // Get the stored item data to extract feedbacks
-                    const itemData = this.itemDataStore[itemIdentifier];
+            const ensureItemData = this.itemDataStore[itemIdentifier]
+                ? Promise.resolve(this.itemDataStore[itemIdentifier])
+                : this.getItem(itemIdentifier);
 
-                    // Return original response with additional feedback data
-                    return _.merge({}, result, {
-                        displayFeedbacks: result.displayFeedback || false,
-                        itemSession: result.itemSession || {},
-                        feedbacks: (itemData && itemData.itemData && itemData.itemData.data && itemData.itemData.data.feedbacks) || {}
+            return ensureItemData.then(() => {
+                return this.request(this.configStorage.getItemActionUrl(itemIdentifier, 'submitItem'), body, void 0, true)
+                    .then(result => {
+                        const itemData = this.itemDataStore[itemIdentifier];
+
+                        return _.merge({}, result, {
+                            displayFeedbacks: result.displayFeedback || false,
+                            itemSession: result.itemSession || {},
+                            feedbacks: (itemData && itemData.itemData && itemData.itemData.data && itemData.itemData.data.feedbacks) || {}
+                        });
                     });
-                });
+            });
         }
     };
 });
