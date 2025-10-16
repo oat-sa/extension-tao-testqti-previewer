@@ -233,6 +233,7 @@ class TestPreviewMapperTest extends TestCase
                                     'viewed' => false,
                                     'categories' => $categories,
                                     'allowSkipping' => $allowSkipping,
+                                    'hasFeedbacks' => false,
                                 ],
                             ],
                             'stats' => [
