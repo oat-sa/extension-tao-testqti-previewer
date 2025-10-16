@@ -207,20 +207,12 @@ define([
                     // Get the stored item data to extract feedbacks
                     const itemData = this.itemDataStore[itemIdentifier];
 
-                    return {
+                    // Return original response with additional feedback data
+                    return _.merge({}, result, {
                         displayFeedbacks: result.displayFeedback || false,
                         itemSession: result.itemSession || {},
                         feedbacks: (itemData && itemData.itemData && itemData.itemData.data && itemData.itemData.data.feedbacks) || {}
-                    };
-                })
-                .catch(err => {
-                    // If the request fails, return a safe default response
-                    console.error('Item preview submitItem failed:', err);
-                    return {
-                        displayFeedbacks: false,
-                        itemSession: {},
-                        feedbacks: {}
-                    };
+                    });
                 });
         }
     };

@@ -531,7 +531,10 @@ define([
                 itemState: { response: [{}] },
                 itemResponse: { response: [{}] },
                 response: {
-                    success: true
+                    success: true,
+                    displayFeedbacks: false,
+                    itemSession: {},
+                    feedbacks: {}
                 },
                 ajaxSuccess: true,
                 success: true
