@@ -223,12 +223,17 @@ define([
                 itemUri: uri
             });
 
-            return request({
-                url: url,
-                data: {
+            const requestData = Object.assign(
+                {
                     itemResponse: JSON.stringify(response),
                     itemState: JSON.stringify(state)
                 },
+                params
+            );
+
+            return request({
+                url: url,
+                data: requestData,
                 method: 'POST',
                 noToken: true
             }).then(result => {
@@ -240,12 +245,8 @@ define([
                     feedbacks: (itemData && itemData.itemData && itemData.itemData.data && itemData.itemData.data.feedbacks) || {}
                 };
             }).catch(err => {
-                console.error('Preview submitItem failed:', err);
-                return {
-                    displayFeedbacks: false,
-                    itemSession: {},
-                    feedbacks: {}
-                };
+                // Re-throw the error so callers can handle it appropriately
+                return Promise.reject(err);
             });
         },
 
