@@ -199,12 +199,74 @@ class TestPreviewMapperTest extends TestCase
         ];
     }
 
+    /**
+     * @dataProvider provideHasFeedbacksVariations
+     */
+    public function testHasFeedbacks(bool $showFeedback, bool $hasModalFeedbacks, bool $expectedHasFeedbacks): void
+    {
+        $itemId = 'itemId';
+        $sectionTitle = 'sectionTitle';
+        $categories = ['x-tao-test'];
+
+        $config = new TestPreviewConfig([TestPreviewConfig::CHECK_INFORMATIONAL => true]);
+
+        $testPart = $this->expectsTestPart('partId');
+        $section = $this->expectSection('sectionId', $sectionTitle);
+
+        $sessionControl = $this->createMock(ItemSessionControl::class);
+        $sessionControl->expects($this->once())->method('mustShowFeedback')->willReturn($showFeedback);
+        $sessionControl->method('doesAllowSkipping')->willReturn(true);
+
+        $itemRef = $this->expectsExtendedItemRefWithFeedbacks(
+            'itemUri',
+            $itemId,
+            $categories,
+            $sessionControl,
+            $hasModalFeedbacks
+        );
+        $routeItem = $this->expectRouteItem($itemRef, $testPart, $section);
+
+        $this->expectsItemResource('itemUri', 'testLabel');
+
+        static::assertEquals(
+            new TestPreviewMap($this->getFullMapData($itemId, $sectionTitle, $categories, true, true, $expectedHasFeedbacks)),
+            $this->subject->map($this->expectsTest(), $this->expectsRoute([$routeItem]), $config)
+        );
+    }
+
+    public function provideHasFeedbacksVariations(): array
+    {
+        return [
+            'show-feedback-enabled-with-modal-feedbacks' => [
+                'showFeedback' => true,
+                'hasModalFeedbacks' => true,
+                'expectedHasFeedbacks' => true,
+            ],
+            'show-feedback-enabled-without-modal-feedbacks' => [
+                'showFeedback' => true,
+                'hasModalFeedbacks' => false,
+                'expectedHasFeedbacks' => false,
+            ],
+            'show-feedback-disabled-with-modal-feedbacks' => [
+                'showFeedback' => false,
+                'hasModalFeedbacks' => true,
+                'expectedHasFeedbacks' => false,
+            ],
+            'show-feedback-disabled-without-modal-feedbacks' => [
+                'showFeedback' => false,
+                'hasModalFeedbacks' => false,
+                'expectedHasFeedbacks' => false,
+            ],
+        ];
+    }
+
     private function getFullMapData(
         string $itemId,
         string $sectionTitle,
         array $categories,
         bool $isInformational = false,
-        bool $allowSkipping = true
+        bool $allowSkipping = true,
+        bool $hasFeedbacks = false
     ): array {
         $data = [
             'scope' => 'test',
@@ -233,7 +295,7 @@ class TestPreviewMapperTest extends TestCase
                                     'viewed' => false,
                                     'categories' => $categories,
                                     'allowSkipping' => $allowSkipping,
-                                    'hasFeedbacks' => false,
+                                    'hasFeedbacks' => $hasFeedbacks,
                                 ],
                             ],
                             'stats' => [
@@ -314,6 +376,29 @@ class TestPreviewMapperTest extends TestCase
 
         $itemRef->method('getResponseDeclarations')
             ->willReturn([]);
+
+        return $this->mockItemRefMethods($itemRef, $itemUri, $itemId, $categories, $sessionControl);
+    }
+
+    private function expectsExtendedItemRefWithFeedbacks(
+        string $itemUri,
+        string $itemId,
+        array $categories,
+        ItemSessionControl $sessionControl,
+        bool $hasModalFeedbacks
+    ): ExtendedAssessmentItemRef {
+        $itemRef = $this->getMockBuilder(ExtendedAssessmentItemRef::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getResponseDeclarations', 'getHref', 'getIdentifier', 'getCategories', 'getItemSessionControl'])
+            ->addMethods(['getModalFeedbacks'])
+            ->getMock();
+
+        $itemRef->method('getResponseDeclarations')
+            ->willReturn([]);
+
+        $modalFeedbacks = $hasModalFeedbacks ? ['feedback1'] : [];
+        $itemRef->method('getModalFeedbacks')
+            ->willReturn($modalFeedbacks);
 
         return $this->mockItemRefMethods($itemRef, $itemUri, $itemId, $categories, $sessionControl);
     }
