@@ -229,7 +229,9 @@ class TestPreviewMapperTest extends TestCase
         $this->expectsItemResource('itemUri', 'testLabel');
 
         static::assertEquals(
-            new TestPreviewMap($this->getFullMapData($itemId, $sectionTitle, $categories, true, true, $expectedHasFeedbacks)),
+            new TestPreviewMap(
+                $this->getFullMapData($itemId, $sectionTitle, $categories, true, true, $expectedHasFeedbacks)
+            ),
             $this->subject->map($this->expectsTest(), $this->expectsRoute([$routeItem]), $config)
         );
     }
@@ -389,7 +391,13 @@ class TestPreviewMapperTest extends TestCase
     ): ExtendedAssessmentItemRef {
         $itemRef = $this->getMockBuilder(ExtendedAssessmentItemRef::class)
             ->disableOriginalConstructor()
-            ->onlyMethods(['getResponseDeclarations', 'getHref', 'getIdentifier', 'getCategories', 'getItemSessionControl'])
+            ->onlyMethods([
+                'getResponseDeclarations',
+                'getHref',
+                'getIdentifier',
+                'getCategories',
+                'getItemSessionControl'
+            ])
             ->addMethods(['getModalFeedbacks'])
             ->getMock();
 
