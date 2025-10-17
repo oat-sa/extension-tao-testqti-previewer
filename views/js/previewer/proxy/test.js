@@ -205,6 +205,52 @@ define([
         },
 
         /**
+         * Submits the state and the response of a particular item
+         * @param {String} itemIdentifier - The identifier of the item to update
+         * @param {Object} state - The state to submit
+         * @param {Object} response - The response object to submit
+         * @param {Object} [params] - Some optional parameters to join to the call
+         * @returns {Promise} - Returns a promise. The result of the request will be provided on resolve.
+         *                      Any error will be provided if rejected.
+         */
+        submitItem(itemIdentifier, state, response, params = {}) {
+            const { uri } = mapHelper.getItem(this.builtTestMap, itemIdentifier) || {};
+            if (!uri) {
+                return Promise.reject(new Error(`There is no item ${itemIdentifier} in the testMap!`));
+            }
+
+            const url = urlUtil.route('submitItem', serviceControllerGetItem, serviceExtension, {
+                itemUri: uri
+            });
+
+            const requestData = Object.assign(
+                {
+                    itemResponse: JSON.stringify(response),
+                    itemState: JSON.stringify(state)
+                },
+                params
+            );
+
+            return request({
+                url: url,
+                data: requestData,
+                method: 'POST',
+                noToken: true
+            }).then(result => {
+                const itemData = this.itemStore[itemIdentifier];
+
+                return {
+                    displayFeedbacks: result.displayFeedback || false,
+                    itemSession: result.itemSession || {},
+                    feedbacks: (itemData && itemData.itemData && itemData.itemData.data && itemData.itemData.data.feedbacks) || {}
+                };
+            }).catch(err => {
+                // Re-throw the error so callers can handle it appropriately
+                return Promise.reject(err);
+            });
+        },
+
+        /**
          * Call action on the test
          * @param {string} itemIdentifier - the current item
          * @param {string} action - the action id
