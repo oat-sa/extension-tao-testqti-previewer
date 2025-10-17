@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2018-2022 (original work) Open Assessment Technologies SA ;
+ * Copyright (c) 2018-2025 (original work) Open Assessment Technologies SA ;
  */
 
 /**
@@ -120,6 +120,9 @@ define([
             // store config in a dedicated configStorage
             this.configStorage = configFactory(config || {});
 
+            // Initialize item data store for feedbacks
+            this.itemDataStore = {};
+
             // request for initialization
             return this.request(this.configStorage.getTestActionUrl('init'), params, void 0, true);
         },
@@ -174,7 +177,11 @@ define([
                 params,
                 void 0,
                 true
-            ).then(itemData => itemDataHandlers(itemData));
+            ).then(itemData => itemDataHandlers(itemData)).then(itemData => {
+                // Store item data for feedback extraction later
+                this.itemDataStore[itemIdentifier] = itemData;
+                return itemData;
+            });
         },
 
         /**
@@ -195,7 +202,22 @@ define([
                 params || {}
             );
 
-            return this.request(this.configStorage.getItemActionUrl(itemIdentifier, 'submitItem'), body, void 0, true);
+            const ensureItemData = this.itemDataStore[itemIdentifier]
+                ? Promise.resolve(this.itemDataStore[itemIdentifier])
+                : this.getItem(itemIdentifier);
+
+            return ensureItemData.then(() => {
+                return this.request(this.configStorage.getItemActionUrl(itemIdentifier, 'submitItem'), body, void 0, true)
+                    .then(result => {
+                        const itemData = this.itemDataStore[itemIdentifier];
+
+                        return _.merge({}, result, {
+                            displayFeedbacks: result.displayFeedback || false,
+                            itemSession: result.itemSession || {},
+                            feedbacks: (itemData && itemData.itemData && itemData.itemData.data && itemData.itemData.data.feedbacks) || {}
+                        });
+                    });
+            });
         }
     };
 });

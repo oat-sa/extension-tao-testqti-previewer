@@ -531,7 +531,10 @@ define([
                 itemState: { response: [{}] },
                 itemResponse: { response: [{}] },
                 response: {
-                    success: true
+                    success: true,
+                    displayFeedbacks: false,
+                    itemSession: {},
+                    feedbacks: {}
                 },
                 ajaxSuccess: true,
                 success: true
@@ -569,6 +572,16 @@ define([
                 }
             };
 
+            const getItemUrl = urlUtil.route(
+                'getItem',
+                initConfig.bootstrap.serviceController,
+                initConfig.bootstrap.serviceExtension,
+                {
+                    serviceCallId: initConfig.serviceCallId,
+                    itemUri: caseData.uri
+                }
+            );
+
             const expectedUrl = urlUtil.route(
                 'submitItem',
                 initConfig.bootstrap.serviceController,
@@ -592,7 +605,19 @@ define([
                     }
                 },
                 {
-                    url: '/*',
+                    url: getItemUrl,
+                    status: 200,
+                    responseText: {
+                        success: true,
+                        itemData: {
+                            data: {
+                                feedbacks: {}
+                            }
+                        }
+                    }
+                },
+                {
+                    url: expectedUrl,
                     status: caseData.ajaxSuccess ? 200 : 500,
                     responseText: caseData.response,
                     response(settings) {
