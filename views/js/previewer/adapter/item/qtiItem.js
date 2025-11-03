@@ -57,6 +57,11 @@ define(['lodash', 'core/logger', 'taoQtiTestPreviewer/previewer/component/qtiIte
             module: 'taoQtiTestPreviewer/previewer/plugins/content/enhancedReadOnlyMode',
             bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
             category: 'content'
+        },
+        {
+            module: 'taoQtiTest/runner/plugins/content/itemScrolling/itemScrolling',
+            bundle: 'taoQtiTest/loader/testPlugins.min',
+            category: 'content'
         }
     ];
 
