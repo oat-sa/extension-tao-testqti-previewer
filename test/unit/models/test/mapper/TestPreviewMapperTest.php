@@ -234,7 +234,17 @@ class TestPreviewMapperTest extends TestCase
             ->getMock();
         $item->method('getModalFeedbacks')->willReturn($hasModalFeedbacks ? ['feedback1'] : []);
         $item->method('getAttributeValue')->with('title')->willReturn('testLabel');
-        $this->service->method('getDataItemByRdfItem')->willReturn($item);
+        $serviceOverride = $this->createMock(Service::class);
+        $serviceOverride
+            ->method('getDataItemByRdfItem')
+            ->willReturn($item);
+        $serviceProp = new \ReflectionProperty(TestPreviewMapper::class, 'service');
+        $serviceProp->setAccessible(true);
+        $serviceProp->setValue($this->subject, $serviceOverride);
+
+        $checkHasFeedbacks = new \ReflectionMethod(TestPreviewMapper::class, 'checkHasFeedbacks');
+        $checkHasFeedbacks->setAccessible(true);
+        $this->assertSame($expectedHasFeedbacks, $checkHasFeedbacks->invoke($this->subject, $itemRef));
 
         static::assertEquals(
             new TestPreviewMap(
