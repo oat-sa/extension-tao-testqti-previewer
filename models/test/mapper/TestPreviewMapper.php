@@ -24,6 +24,7 @@ namespace oat\taoQtiTestPreviewer\models\test\mapper;
 
 use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
+use oat\taoQtiItem\model\qti\Item;
 use oat\taoQtiItem\model\qti\Service;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewConfig;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewMap;
@@ -265,7 +266,7 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
         $itemResource = $this->getResource($itemUri);
         $item = $this->getService()->getDataItemByRdfItem($itemResource);
 
-        if ($item === null || !method_exists($item, 'getModalFeedbacks')) {
+        if ($item === null || $item instanceof Item === false) {
             return false;
         }
 
