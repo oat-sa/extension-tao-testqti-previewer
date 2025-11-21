@@ -25,6 +25,7 @@ namespace oat\taoQtiTestPreviewer\test\unit\models\test\factory;
 use core_kernel_classes_Resource;
 use oat\generis\model\data\Ontology;
 use oat\generis\test\TestCase;
+use oat\taoQtiItem\model\qti\Item;
 use oat\taoQtiItem\model\qti\Service;
 use oat\taoQtiTestPreviewer\models\test\mapper\TestPreviewMapper;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewConfig;
@@ -229,8 +230,9 @@ class TestPreviewMapperTest extends TestCase
 
         $this->expectsItemResource('itemUri', 'testLabel');
 
-        $item = $this->getMockBuilder(\stdClass::class)
-            ->addMethods(['getModalFeedbacks', 'getAttributeValue'])
+        $item = $this->getMockBuilder(Item::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getModalFeedbacks', 'getAttributeValue'])
             ->getMock();
         $item->method('getModalFeedbacks')->willReturn($hasModalFeedbacks ? ['feedback1'] : []);
         $item->method('getAttributeValue')->with('title')->willReturn('testLabel');
