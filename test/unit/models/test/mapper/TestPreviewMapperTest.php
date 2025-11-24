@@ -25,6 +25,7 @@ namespace oat\taoQtiTestPreviewer\test\unit\models\test\factory;
 use core_kernel_classes_Resource;
 use oat\generis\model\data\Ontology;
 use oat\generis\test\TestCase;
+use oat\taoQtiItem\model\qti\Item;
 use oat\taoQtiItem\model\qti\Service;
 use oat\taoQtiTestPreviewer\models\test\mapper\TestPreviewMapper;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewConfig;
@@ -48,15 +49,20 @@ class TestPreviewMapperTest extends TestCase
     /** @var Ontology|MockObject */
     private $ontology;
 
+    /** @var Service|MockObject */
+    private $service;
+
     protected function setUp(): void
     {
         $this->ontology = $this->createMock(Ontology::class);
+        $this->service = $this->createMock(Service::class);
+        $this->service->method('getDataItemByRdfItem')->willReturn(null);
         $this->subject = new TestPreviewMapper();
         $this->subject->setServiceLocator(
             $this->getServiceLocatorMock(
                 [
                     Ontology::SERVICE_ID => $this->ontology,
-                    Service::class => $this->createMock(Service::class),
+                    Service::class => $this->service,
                 ]
             )
         );
@@ -202,7 +208,7 @@ class TestPreviewMapperTest extends TestCase
     /**
      * @dataProvider provideHasFeedbacksVariations
      */
-    public function testHasFeedbacks(bool $showFeedback, bool $hasModalFeedbacks, bool $expectedHasFeedbacks): void
+    public function testHasFeedbacks(bool $hasModalFeedbacks, bool $expectedHasFeedbacks): void
     {
         $itemId = 'itemId';
         $sectionTitle = 'sectionTitle';
@@ -213,20 +219,34 @@ class TestPreviewMapperTest extends TestCase
         $testPart = $this->expectsTestPart('partId');
         $section = $this->expectSection('sectionId', $sectionTitle);
 
-        $sessionControl = $this->createMock(ItemSessionControl::class);
-        $sessionControl->expects($this->once())->method('mustShowFeedback')->willReturn($showFeedback);
-        $sessionControl->method('doesAllowSkipping')->willReturn(true);
-
         $itemRef = $this->expectsExtendedItemRefWithFeedbacks(
             'itemUri',
             $itemId,
             $categories,
-            $sessionControl,
+            null,
             $hasModalFeedbacks
         );
         $routeItem = $this->expectRouteItem($itemRef, $testPart, $section);
 
         $this->expectsItemResource('itemUri', 'testLabel');
+
+        $item = $this->getMockBuilder(Item::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getModalFeedbacks', 'getAttributeValue'])
+            ->getMock();
+        $item->method('getModalFeedbacks')->willReturn($hasModalFeedbacks ? ['feedback1'] : []);
+        $item->method('getAttributeValue')->with('title')->willReturn('testLabel');
+        $serviceOverride = $this->createMock(Service::class);
+        $serviceOverride
+            ->method('getDataItemByRdfItem')
+            ->willReturn($item);
+        $serviceProp = new \ReflectionProperty(TestPreviewMapper::class, 'service');
+        $serviceProp->setAccessible(true);
+        $serviceProp->setValue($this->subject, $serviceOverride);
+
+        $checkHasFeedbacks = new \ReflectionMethod(TestPreviewMapper::class, 'checkHasFeedbacks');
+        $checkHasFeedbacks->setAccessible(true);
+        $this->assertSame($expectedHasFeedbacks, $checkHasFeedbacks->invoke($this->subject, $itemRef));
 
         static::assertEquals(
             new TestPreviewMap(
@@ -239,23 +259,11 @@ class TestPreviewMapperTest extends TestCase
     public function provideHasFeedbacksVariations(): array
     {
         return [
-            'show-feedback-enabled-with-modal-feedbacks' => [
-                'showFeedback' => true,
+            'with-modal-feedbacks' => [
                 'hasModalFeedbacks' => true,
                 'expectedHasFeedbacks' => true,
             ],
-            'show-feedback-enabled-without-modal-feedbacks' => [
-                'showFeedback' => true,
-                'hasModalFeedbacks' => false,
-                'expectedHasFeedbacks' => false,
-            ],
-            'show-feedback-disabled-with-modal-feedbacks' => [
-                'showFeedback' => false,
-                'hasModalFeedbacks' => true,
-                'expectedHasFeedbacks' => false,
-            ],
-            'show-feedback-disabled-without-modal-feedbacks' => [
-                'showFeedback' => false,
+            'without-modal-feedbacks' => [
                 'hasModalFeedbacks' => false,
                 'expectedHasFeedbacks' => false,
             ],
@@ -386,7 +394,7 @@ class TestPreviewMapperTest extends TestCase
         string $itemUri,
         string $itemId,
         array $categories,
-        ItemSessionControl $sessionControl,
+        ItemSessionControl $sessionControl = null,
         bool $hasModalFeedbacks
     ): ExtendedAssessmentItemRef {
         $itemRef = $this->getMockBuilder(ExtendedAssessmentItemRef::class)

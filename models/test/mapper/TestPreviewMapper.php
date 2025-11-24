@@ -24,6 +24,7 @@ namespace oat\taoQtiTestPreviewer\models\test\mapper;
 
 use oat\generis\model\OntologyAwareTrait;
 use oat\oatbox\service\ConfigurableService;
+use oat\taoQtiItem\model\qti\Item;
 use oat\taoQtiItem\model\qti\Service;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewConfig;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewMap;
@@ -254,29 +255,23 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
     }
 
     /**
-     * Check if the item has feedbacks and if showFeedback is enabled
+     * Check if the item has modal feedbacks defined
      *
      * @param AssessmentItemRef|ExtendedAssessmentItemRef $itemRef
      * @return bool
      */
     private function checkHasFeedbacks($itemRef): bool
     {
-        $sessionControl = $itemRef->getItemSessionControl();
+        $itemUri = $itemRef->getHref();
+        $itemResource = $this->getResource($itemUri);
+        $item = $this->getService()->getDataItemByRdfItem($itemResource);
 
-        // If there's no session control or showFeedback is false, no feedbacks
-        if ($sessionControl === null || !$sessionControl->mustShowFeedback()) {
+        if ($item === null || $item instanceof Item === false) {
             return false;
         }
 
-        // Check if the item has modal feedbacks defined
-        // We check if there are modal feedback declarations in the item
-        if (method_exists($itemRef, 'getModalFeedbacks')) {
-            $modalFeedbacks = $itemRef->getModalFeedbacks();
-            return $modalFeedbacks !== null && count($modalFeedbacks) > 0;
-        }
+        $modalFeedbacks = $item->getModalFeedbacks();
 
-        // For standard AssessmentItemRef, we assume it might have feedbacks if showFeedback is enabled
-        // The actual check will happen when the item is loaded and processed
-        return true;
+        return $modalFeedbacks !== null && count($modalFeedbacks) > 0;
     }
 }
