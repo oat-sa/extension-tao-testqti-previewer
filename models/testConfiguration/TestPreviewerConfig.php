@@ -39,7 +39,7 @@ class TestPreviewerConfig implements JsonSerializable
         $this->options = $options;
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
         return [
             'providers' => $this->getProviders(),
