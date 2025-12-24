@@ -28,14 +28,14 @@
   "minimum-stability": "dev",
   "require": {
     "oat-sa/oatbox-extension-installer": "~1.1||dev-master",
-    "oat-sa/generis" : ">=15.39.0",
-    "oat-sa/tao-core" : ">=54.49.1",
-    "oat-sa/extension-tao-item" : ">=12.4.0",
-    "oat-sa/extension-tao-itemqti" : ">=30.54.0",
-    "oat-sa/extension-tao-testqti" : ">=48.26.1",
-    "oat-sa/extension-tao-test" : ">=16.3.0",
-    "oat-sa/extension-tao-delivery" : ">=15.0.0",
-    "oat-sa/extension-tao-outcome" : ">=13.0.0",
+    "oat-sa/generis": ">=16.2.2",
+    "oat-sa/tao-core": ">=54.49.5",
+    "oat-sa/extension-tao-item": ">=12.4.0",
+    "oat-sa/extension-tao-itemqti": ">=30.54.0",
+    "oat-sa/extension-tao-testqti": ">=48.26.1",
+    "oat-sa/extension-tao-test": ">=16.3.0",
+    "oat-sa/extension-tao-delivery": ">=15.0.0",
+    "oat-sa/extension-tao-outcome": ">=13.0.0",
     "qtism/qtism": "~0"
   },
   "autoload": {
