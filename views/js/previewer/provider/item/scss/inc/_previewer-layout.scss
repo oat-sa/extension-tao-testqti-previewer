@@ -131,7 +131,7 @@
         padding: 30px;
     }
 
-    .qti-itemBody.writing-mode-vertical-rl {
+    .qti-itemBody.writing-mode-vertical-rl, .qti-itemBody:has(.writing-mode-vertical-rl) {
         writing-mode: vertical-rl;
         padding: 15px;
         block-size: 100%;
