@@ -131,7 +131,7 @@
         padding: 30px;
     }
 
-    .qti-itemBody.writing-mode-vertical-rl, .qti-itemBody:has(.writing-mode-vertical-rl) {
+    .qti-itemBody.writing-mode-vertical-rl {
         writing-mode: vertical-rl;
         padding: 15px;
         block-size: 100%;
@@ -139,6 +139,18 @@
         overflow: auto;
         overscroll-behavior: contain;
         line-height: 1.8; /* assuming ruby tags */
+
+        /* vertical writing mode is set for whole item, to fit wavy underlines and subscripts */
+        .custom-text-box {
+            padding-block-start: 12px;
+        }
+    }
+
+    .qti-itemBody {
+        /* vertical writing mode is set for A-block, to fit wavy underlines and subscripts */
+        .writing-mode-vertical-rl {
+            padding-block-start: 12px;
+        }
     }
 
     .size-wrapper {
