@@ -54,9 +54,12 @@ define([
 
         const nsId = name + uuid(6);
         const state = { enabled: false, visible: false };
+        let isInitialized = false;
 
         let devicesSelector = null;
         let devicesPreviewer = null;
+        let $scaleTool = null;
+        let $previewHost = null;
 
         function _getConfig() {
             if (externalConfig) return externalConfig;
@@ -76,6 +79,10 @@ define([
         }
 
         function init() {
+            if (isInitialized) {
+                return api;
+            }
+
             function isPluginAllowed() {
                 const config = _getConfig();
                 return !(config && config.options && config.options.readOnly);
@@ -112,12 +119,18 @@ define([
                     api.disable();
                 });
 
+            isInitialized = true;
             return api;
         }
 
         function render() {
             if (!options || !options.wrapper || !options.container) {
                 return Promise.reject(new Error('[scalePlugin] both wrapper and container elements are required'));
+            }
+
+            const $container = $(options.container);
+            if (!$container.length) {
+                return Promise.reject(new Error('[scalePlugin] container element cannot be resolved'));
             }
 
             function resizeItem() {
@@ -131,6 +144,7 @@ define([
                 }
             }
 
+            $(window).off('.' + nsId);
             $(window).on(
                 namespaceHelper.namespaceAll('resize orientationchange', nsId),
                 _.throttle(function () {
@@ -139,12 +153,21 @@ define([
                     }
                 }, 50)
             );
-            
 
+            if (devicesSelector) {
+                devicesSelector.destroy();
+                devicesSelector = null;
+            }
+            if (devicesPreviewer) {
+                devicesPreviewer.destroy();
+                devicesPreviewer = null;
+            }
 
             const wrapper = options.wrapper;
-            const $scaleTool = $('<div class="scale-bar"></div>').appendTo(wrapper);
-            const $previewHost = $('<div class="scale-preview"></div>').appendTo(wrapper);
+            $(wrapper).find('> .scale-bar, > .scale-preview').remove();
+
+            $scaleTool = $('<div class="scale-bar"></div>').appendTo(wrapper);
+            $previewHost = $('<div class="scale-preview"></div>').appendTo(wrapper);
 
             return Promise.all([
                 new Promise(function (resolve) {
@@ -173,7 +196,7 @@ define([
                     devicesPreviewer = devicesPreviewerFactory($previewHost).on(
                         'ready',
                         function () {
-                            this.wrap(options.container);
+                            this.wrap($container);
                             resolve();
                         }
                     );
@@ -191,8 +214,17 @@ define([
             if (devicesPreviewer) {
                 devicesPreviewer.destroy();
             }
+            if ($scaleTool) {
+                $scaleTool.remove();
+                $scaleTool = null;
+            }
+            if ($previewHost) {
+                $previewHost.remove();
+                $previewHost = null;
+            }
             devicesSelector = null;
             devicesPreviewer = null;
+            isInitialized = false;
             return api;
         }
 
