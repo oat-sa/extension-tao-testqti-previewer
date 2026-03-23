@@ -81,6 +81,11 @@ return [
         [
             AccessRule::GRANT,
             TaoItemsRoles::ITEM_PREVIEWER,
+            ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer', 'act' => 'configuration'],
+        ],
+        [
+            AccessRule::GRANT,
+            TaoItemsRoles::ITEM_PREVIEWER,
             ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer', 'act' => 'asset'],
         ],
     ],
