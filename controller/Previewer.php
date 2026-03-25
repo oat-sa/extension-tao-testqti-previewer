@@ -284,6 +284,9 @@ class Previewer extends ServiceModule
                             'elements' => [],
                             'options' => [
                                 'hideTooltips' => false
+                            ],
+                            'previewerMode' => [
+                                'submitResponseUrl' => ''
                             ]
                         ],
                         'proxy' => [
