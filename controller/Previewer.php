@@ -8,14 +8,14 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ * Foundation, Inc., 31 Milk St # 960789 Boston, MA 02196 USA.
  *
- * Copyright (c) 2018-2020 (original work) Open Assessment Technologies SA ;
+ * Copyright (c) 2018-2026 (original work) Open Assessment Technologies SA;
  */
 
 declare(strict_types=1);
@@ -24,7 +24,10 @@ namespace oat\taoQtiTestPreviewer\controller;
 
 use Exception;
 use common_exception_Error;
+use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\Request;
 use oat\tao\helpers\Base64;
+use oat\tao\model\http\HttpJsonResponseTrait;
 use tao_helpers_Http as HttpHelper;
 use oat\taoItems\model\pack\Packer;
 use common_Exception as CommonException;
@@ -53,6 +56,7 @@ use tao_models_classes_FileNotFoundException as FileNotFoundException;
 class Previewer extends ServiceModule
 {
     use OntologyAwareTrait;
+    use HttpJsonResponseTrait;
 
     /**
      * Previewer constructor.
@@ -219,10 +223,41 @@ class Previewer extends ServiceModule
         $this->returnJson($response, $code);
     }
 
+    public function getTokens(): void
+    {
+        $authUri = getEnv('ENV_AUTH_URI');
+        $clientId = getEnv('ENV_CLIENT_ID');
+        $clientSecret = getEnv('ENV_CLIENT_SECRET');
+
+        if (!$authUri || !$clientId || !$clientSecret) {
+            $this->setErrorJsonResponse('OAuth2 credentials not found.', errorCode: 404);
+            return;
+        }
+
+        $client = new Client();
+        $request = new Request('POST', "$authUri?with-refresh-token=true", [], json_encode([
+            'grant_type' => 'client_credentials',
+            'client_id' => $clientId,
+            'client_secret' => $clientSecret
+        ]));
+        $request = $request->withAddedHeader('Content-Type', 'application/json');
+
+        $response = $client->send($request);
+
+        $statusCode = $response->getStatusCode();
+        $content = $response->getBody()->getContents();
+        $content = json_decode($content, true);
+
+        if ($statusCode !== 200 || !isset($content['access_token'])) {
+            $this->setErrorJsonResponse("Failed to fetch Auth tokens.", $statusCode, statusCode: 424);
+            return;
+        }
+
+        $this->setSuccessJsonResponse($content);
+    }
+
     public function configuration(): void
     {
-        $code = 200;
-
         try {
             // mock configuration response needed by previewer-app
             $response = [
@@ -299,10 +334,11 @@ class Previewer extends ServiceModule
             ];
         } catch (Exception $e) {
             $response = $this->getErrorResponse($e);
-            $code = $this->getErrorCode($e);
+            $this->setErrorJsonResponse($e->getMessage(), $e->getCode(), statusCode: $this->getErrorCode($e));
+            return;
         }
 
-        $this->returnJson($response, $code);
+        $this->setSuccessJsonResponse($response);
     }
 
     /**
