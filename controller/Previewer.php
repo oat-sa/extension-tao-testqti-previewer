@@ -261,75 +261,73 @@ class Previewer extends ServiceModule
         try {
             // mock configuration response needed by previewer-app
             $response = [
-                'data' => [
-                    // we'll read from previewProviders, but serve as providers
-                    'providers' => [
-                        'runner' => [
-                          'category' => 'runner',
-                          'id' => 'qtiPreviewer',
-                          'module' => 'taoQtiNuiPreviewer/runner/qtiPreviewer',
-                                ],
-                        'proxy' => [
-                          'category' => 'proxy',
-                          'id' => 'qtiPreviewerProxy',
-                          'module' => 'taoQtiNuiPreviewer/runner/proxy/previewerProxy',
+                // we'll read from previewProviders, but serve as providers
+                'providers' => [
+                    'runner' => [
+                        'category' => 'runner',
+                        'id' => 'qtiPreviewer',
+                        'module' => 'taoQtiNuiPreviewer/runner/qtiPreviewer',
+                    ],
+                    'proxy' => [
+                        'category' => 'proxy',
+                        'id' => 'qtiPreviewerProxy',
+                        'module' => 'taoQtiNuiPreviewer/runner/proxy/previewerProxy',
+                    ],
+                    'itemRunner' => [
+                        'category' => 'runner',
+                        'id' => 'qtinui',
+                        'module' => 'taoQtiNuiItem/runner/qti',
+                    ],
+                    'plugins' => [
+                        [
+                            'id' => 'navigatorPlugin',
+                            'module' => 'taoQtiNuiPreviewer/runner/plugins/previewerNavigator/plugin',
+                            'category' => 'content'
                         ],
-                        'itemRunner' => [
-                          'category' => 'runner',
-                          'id' => 'qtinui',
-                          'module' => 'taoQtiNuiItem/runner/qti',
+                        [
+                            'id' => 'previewerHeader',
+                            'module' => 'taoQtiNuiPreviewer/runner/plugins/previewerHeader/plugin',
+                            'category' => 'content'
                         ],
-                        'plugins' => [
-                            [
-                                'id' => 'navigatorPlugin',
-                                'module' => 'taoQtiNuiPreviewer/runner/plugins/previewerNavigator/plugin',
-                                'category' => 'content'
-                            ],
-                            [
-                                'id' => 'previewerHeader',
-                                'module' => 'taoQtiNuiPreviewer/runner/plugins/previewerHeader/plugin',
-                                'category' => 'content'
-                            ],
-                            [
-                                'id' => 'bookletExport',
-                                'module' => 'taoQtiNuiTest/runner/plugins/export/bookletExport/plugin',
-                                'category' => 'content'
-                            ],
-                            [
-                                'id' => 'anchorBaseUrlConverter',
-                                'module' => 'taoQtiNuiTest/runner/plugins/content/anchorBaseUrlConverter/plugin',
-                                'category' => 'content'
-                            ],
-                            [
-                                'id' => 'customUIStyles',
-                                'module' => 'taoQtiNuiTest/runner/plugins/layout/customUIStyles/plugin',
-                                'category' => 'layout'
-                            ],
-                            [
-                                'id' => 'notify',
-                                'module' => 'taoQtiNuiTest/runner/plugins/integration/notify/plugin',
-                                'category' => 'integration'
-                            ]
+                        [
+                            'id' => 'bookletExport',
+                            'module' => 'taoQtiNuiTest/runner/plugins/export/bookletExport/plugin',
+                            'category' => 'content'
+                        ],
+                        [
+                            'id' => 'anchorBaseUrlConverter',
+                            'module' => 'taoQtiNuiTest/runner/plugins/content/anchorBaseUrlConverter/plugin',
+                            'category' => 'content'
+                        ],
+                        [
+                            'id' => 'customUIStyles',
+                            'module' => 'taoQtiNuiTest/runner/plugins/layout/customUIStyles/plugin',
+                            'category' => 'layout'
+                        ],
+                        [
+                            'id' => 'notify',
+                            'module' => 'taoQtiNuiTest/runner/plugins/integration/notify/plugin',
+                            'category' => 'integration'
+                        ]
+                    ]
+                ],
+                'options' => [
+                    'itemRunnerConfig' => [
+                        'hideFeedbacks' => true,
+                        'itemStyles' => '',
+                        'elements' => [],
+                        'options' => [
+                            'hideTooltips' => false
+                        ],
+                        'previewerMode' => [
+                            'submitResponseUrl' => ''
                         ]
                     ],
-                    'options' => [
-                        'itemRunnerConfig' => [
-                            'hideFeedbacks' => true,
-                            'itemStyles' => '',
-                            'elements' => [],
-                            'options' => [
-                                'hideTooltips' => false
-                            ],
-                            'previewerMode' => [
-                                'submitResponseUrl' => ''
-                            ]
-                        ],
-                        'proxy' => [
-                            'retryInterval' => 5 * 1000,
-                            'retryTimeout' => 2 * 60 * 1000
-                        ],
-                        'plugins' => []
-                    ]
+                    'proxy' => [
+                        'retryInterval' => 5 * 1000,
+                        'retryTimeout' => 2 * 60 * 1000
+                    ],
+                    'plugins' => []
                 ]
             ];
         } catch (Exception $e) {
