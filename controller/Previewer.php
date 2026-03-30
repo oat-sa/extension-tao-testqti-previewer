@@ -25,9 +25,12 @@ namespace oat\taoQtiTestPreviewer\controller;
 use Exception;
 use common_exception_Error;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Request;
+use JsonException;
 use oat\tao\helpers\Base64;
 use oat\tao\model\http\HttpJsonResponseTrait;
+use RuntimeException;
 use tao_helpers_Http as HttpHelper;
 use oat\taoItems\model\pack\Packer;
 use common_Exception as CommonException;
@@ -243,14 +246,23 @@ class Previewer extends ServiceModule
         ]));
         $request = $request->withAddedHeader('Content-Type', 'application/json');
 
-        $response = $client->send($request);
+        try {
+            $response = $client->send($request);
+        } catch (GuzzleException $exception) {
+            $this->setErrorJsonResponse(
+                "Failed to fetch Auth tokens. {$exception->getMessage()}",
+                $exception->getCode(),
+                statusCode: 424
+            );
+            return;
+        }
 
         $statusCode = $response->getStatusCode();
         $content = $response->getBody()->getContents();
         $content = json_decode($content, true);
 
         if ($statusCode !== 200 || !isset($content['access_token'])) {
-            $this->setErrorJsonResponse("Failed to fetch Auth tokens.", $statusCode, statusCode: 424);
+            $this->setErrorJsonResponse('Failed to fetch Auth tokens.', $statusCode, statusCode: 424);
             return;
         }
 
@@ -259,77 +271,49 @@ class Previewer extends ServiceModule
 
     public function configuration(): void
     {
+        // TODO encapsulate the configuration fetcher in tao-core
+        //  !IMPORTANT! the endpoint must remain here
+        @[$_, $payload, $_] = explode('.', $_SERVER['HTTP_AUTHORIZATION' ?? '']);
+        $rawToken = base64_decode($payload ?? '');
+        $token = json_decode($rawToken, true);
+        if (empty($token['tenant_id'])) {
+            $this->setErrorJsonResponse('Unauthorized', errorCode: 401);
+            return;
+        }
+
+        $uri = getenv('ENV_CONFIG_URI');
+        if (!$uri) {
+            $this->setErrorJsonResponse('Configuration not found.', errorCode: 404);
+            return;
+        }
+        $client = new Client();
+        $request = new Request(
+            'GET',
+            "$uri/api/v1/tenants/{$token['tenant_id']}/configurations/testRunnerConfiguration"
+        );
         try {
-            // mock configuration response needed by previewer-app
+            $response = json_decode(
+                $client->send($request)->getBody()->getContents(),
+                true,
+                flags: JSON_THROW_ON_ERROR
+            );
+            if (empty($response['value']['previewProviders']) || empty($response['value']['options'])) {
+                throw new RuntimeException('Previewer configuration missing.');
+            }
+        } catch (GuzzleException | JsonException | RuntimeException $exception) {
+            $this->setErrorJsonResponse(
+                "Failed to fetch Previewer configuration. {$exception->getMessage()}",
+                $exception->getCode(),
+                statusCode: 424
+            );
+            return;
+        }
+
+        try {
             $response = [
                 // we'll read from previewProviders, but serve as providers
-                'providers' => [
-                    'runner' => [
-                        'category' => 'runner',
-                        'id' => 'qtiPreviewer',
-                        'module' => 'taoQtiNuiPreviewer/runner/qtiPreviewer',
-                    ],
-                    'proxy' => [
-                        'category' => 'proxy',
-                        'id' => 'qtiPreviewerProxy',
-                        'module' => 'taoQtiNuiPreviewer/runner/proxy/previewerProxy',
-                    ],
-                    'itemRunner' => [
-                        'category' => 'runner',
-                        'id' => 'qtinui',
-                        'module' => 'taoQtiNuiItem/runner/qti',
-                    ],
-                    'plugins' => [
-                        [
-                            'id' => 'navigatorPlugin',
-                            'module' => 'taoQtiNuiPreviewer/runner/plugins/previewerNavigator/plugin',
-                            'category' => 'content'
-                        ],
-                        [
-                            'id' => 'previewerHeader',
-                            'module' => 'taoQtiNuiPreviewer/runner/plugins/previewerHeader/plugin',
-                            'category' => 'content'
-                        ],
-                        [
-                            'id' => 'bookletExport',
-                            'module' => 'taoQtiNuiTest/runner/plugins/export/bookletExport/plugin',
-                            'category' => 'content'
-                        ],
-                        [
-                            'id' => 'anchorBaseUrlConverter',
-                            'module' => 'taoQtiNuiTest/runner/plugins/content/anchorBaseUrlConverter/plugin',
-                            'category' => 'content'
-                        ],
-                        [
-                            'id' => 'customUIStyles',
-                            'module' => 'taoQtiNuiTest/runner/plugins/layout/customUIStyles/plugin',
-                            'category' => 'layout'
-                        ],
-                        [
-                            'id' => 'notify',
-                            'module' => 'taoQtiNuiTest/runner/plugins/integration/notify/plugin',
-                            'category' => 'integration'
-                        ]
-                    ]
-                ],
-                'options' => [
-                    'itemRunnerConfig' => [
-                        'hideFeedbacks' => true,
-                        'itemStyles' => '',
-                        'elements' => [],
-                        'options' => [
-                            'hideTooltips' => false
-                        ],
-                        'previewerMode' => [
-                            'submitResponseUrl' => ''
-                        ]
-                    ],
-                    'proxy' => [
-                        'retryInterval' => 5 * 1000,
-                        'retryTimeout' => 2 * 60 * 1000
-                    ],
-                    'plugins' => []
-                ]
+                'providers' => $response['value']['previewProviders'],
+                'options' => $response['value']['options']
             ];
         } catch (Exception $e) {
             $response = $this->getErrorResponse($e);
