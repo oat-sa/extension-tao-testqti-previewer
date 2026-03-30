@@ -225,6 +225,7 @@ class Previewer extends ServiceModule
 
     public function getTokens(): void
     {
+        // TODO encapsulate the implementation in tao-core; the endpoint itself may be moved there too
         $authUri = getEnv('ENV_AUTH_URI');
         $clientId = getEnv('ENV_CLIENT_ID');
         $clientSecret = getEnv('ENV_CLIENT_SECRET');
