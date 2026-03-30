@@ -36,6 +36,7 @@ use oat\taoItems\model\pack\Packer;
 use common_Exception as CommonException;
 use taoItems_models_classes_ItemsService;
 use oat\generis\model\OntologyAwareTrait;
+use oat\qtiItemPci\controller\PciLoader;
 use tao_actions_ServiceModule as ServiceModule;
 use oat\taoItems\model\media\ItemMediaResolver;
 use oat\taoQtiTestPreviewer\models\ItemPreviewer;
@@ -112,6 +113,8 @@ class Previewer extends ServiceModule
 
             $itemUri = $requestParams['itemUri'] ?? '';
             $resultId = $requestParams['resultId'] ?? '';
+            $pcis = $requestParams['pcis'] ?? false;
+            $itemData = $requestParams['itemData'] ?? false;
 
             $response = [
                 'baseUrl' => '',
@@ -166,6 +169,18 @@ class Previewer extends ServiceModule
                 ]);
             } else {
                 throw new BadRequestException('Either itemUri or resultId needs to be provided.');
+            }
+
+            // query params which can be used to modify the response structure:
+            if ($itemData) {
+                $response['itemIdentifier'] ??= $response['content']['data']['identifier'] ?? null;
+                $response['itemData'] = $response['content'];
+                $response['content'] = null;
+            }
+            if ($pcis) {
+                $response['portableElements'] = [
+                    'pci' => $this->getPcis()
+                ];
             }
 
             $response['success'] = true;
@@ -406,5 +421,102 @@ class Previewer extends ServiceModule
         $jsonPayload = $this->getPsrRequest()->getParsedBody();
 
         return json_decode($jsonPayload['itemResponse'], true);
+    }
+
+    private function getPcis(): array
+    {
+        $pcis = (new PciLoader())->getLatestPciRuntimes();
+        return $this->createIMSPCIs($pcis);
+    }
+
+    /**
+     * Create portableElements.pci section with IMS PCI only for itemData object
+     * Set absolute path in runtime.hook
+     * Implementation from @see https://github.com/oat-sa/extension-tao-test-preview-ui-loader/blob/master/views/js/previewer/helpers/getIMSPCIs.js
+     * @param array $pci - a parsed URL
+     * @return array $imsPCI
+     */
+    private function createIMSPCIs($pci) : array
+    {
+        $imsPCI = [];
+        foreach ($pci as $key => $value) {
+            $pciData = $value[0];
+            if ($pciData['model'] === 'IMSPCI') {
+                // if no runtime.hook then module path should be used
+                if (!$pciData['runtime']['hook']) {
+                    foreach ($pciData['runtime']['modules'] ?? [] as $paths) {
+                        if (is_string($paths)) {
+                            $pciData['runtime']['hook'] = $paths;
+                        } else if (is_array($paths) && count($paths)) {
+                            $pciData['runtime']['hook'] = $paths[0];
+                        }
+                    }
+                }
+                // runtime.hook should be absolute path for newUI test runner
+
+                $url = $this->parseUrlParts($pciData['runtime']['hook']);
+
+                if (is_string($pciData['baseUrl']) && empty($url['scheme'])) {
+                    $pciData['runtime']['hook'] = $this->prependToUrl($url, $pciData['baseUrl'], $pciData['slashcat'] ?? false);
+                    $imsPCI[$key] = [$pciData];
+                }
+            }
+        }
+        return $imsPCI;
+    }
+
+    /**
+     * Parse a URL/path string into directory and file components
+     * Implementation loosely based on @see https://github.com/oat-sa/tao-core-sdk-fe/blob/master/src/util/url.js
+     * @param string $url - the URL to parse
+     * @return array
+     */
+    private function parseUrlParts(string $url): array
+    {
+        $parsed = parse_url($url);
+        $path = $parsed['path'] ?? $url;
+
+        $lastSlash = strrpos($path, '/');
+        if ($lastSlash !== false) {
+            $directory = substr($path, 0, $lastSlash + 1);
+            $file = substr($path, $lastSlash + 1);
+        } else {
+            $directory = '';
+            $file = $path;
+        }
+
+        return [
+            'directory' => $directory,
+            'file' => $file,
+            'scheme' => $parsed['scheme'] ?? null,
+        ];
+    }
+
+    /**
+     * Prepend a base to an URL
+     * Implementation based on @see https://github.com/oat-sa/extension-tao-test-preview-ui-loader/blob/master/views/js/previewer/helpers/getIMSPCIs.js
+     * @param array $url - a parsed URL with 'directory' and 'file' keys
+     * @param string $base - the base to prepend
+     * @param bool $slashcat - remove dots, double slashes, etc.
+     * @return string the URL
+     */
+    private function prependToUrl(array $url, string $base, ?bool $slashcat): string
+    {
+        $slashcat = $slashcat ?? false;
+
+        if ($slashcat === true) {
+            // Remove leading ./ OR / from both directory and filename
+            $directory = preg_replace('#^\./#', '', $url['directory']);
+            $directory = ltrim($directory, '/');
+            $file = preg_replace('#^\./#', '', $url['file']);
+            $file = ltrim($file, '/');
+            return rtrim($base, '/') . '/' . $directory . urlencode($file);
+        }
+
+        // When slashcat is disabled, more permissive cleaning:
+        // Remove leading ./ or / both directory and filename
+        $directory = preg_replace('#^\.?/#', '', $url['directory']);
+        $file = preg_replace('#^\.?/#', '', $url['file']);
+        return $base . $directory . urlencode($file);
     }
 }
