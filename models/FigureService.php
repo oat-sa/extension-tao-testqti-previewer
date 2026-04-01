@@ -50,18 +50,27 @@ class FigureService
     private static function checkFigureInElement(array $element): array
     {
         foreach (['elements', 'choices'] as $elementCollection) {
-            if (!isset($element[$elementCollection])) {
+            if (!isset($element[$elementCollection]) || !is_array($element[$elementCollection])) {
                 continue;
             }
 
             if ($elementCollection === 'choices' && self::isIndexedArray($element[$elementCollection])) {
                 foreach ($element[$elementCollection] as $matchIndex => $choiceMatch) {
+                    if (!is_array($choiceMatch)) {
+                        continue;
+                    }
                     foreach ($choiceMatch as $choiceIndex => $choice) {
+                        if (!is_array($choice)) {
+                            continue;
+                        }
                         $element[$elementCollection][$matchIndex][$choiceIndex] = self::checkFigureInElement($choice);
                     }
                 }
             } else {
                 foreach ($element[$elementCollection] as $key => $childElement) {
+                    if (!is_array($childElement)) {
+                        continue;
+                    }
                     if (isset($childElement['qtiClass']) && $childElement['qtiClass'] === 'figure') {
                         $element[$elementCollection][$key] = self::processFigureElement($childElement);
                     } else {
