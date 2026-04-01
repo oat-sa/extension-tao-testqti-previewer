@@ -44,6 +44,7 @@ use oat\tao\model\media\sourceStrategy\HttpSource;
 use oat\tao\model\routing\AnnotationReader\security;
 use common_exception_BadRequest as BadRequestException;
 use taoQtiTest_helpers_TestRunnerUtils as TestRunnerUtils;
+use oat\taoQtiTestPreviewer\models\FigureService;
 use oat\taoQtiTestPreviewer\models\PreviewLanguageService;
 use common_exception_Unauthorized as UnauthorizedException;
 use common_exception_NotImplemented as NotImplementedException;
@@ -170,6 +171,8 @@ class Previewer extends ServiceModule
             } else {
                 throw new BadRequestException('Either itemUri or resultId needs to be provided.');
             }
+
+            $response['content'] = FigureService::checkFigureInItemData($response['content']);
 
             // query params which can be used to modify the response structure:
             if ($itemData) {
