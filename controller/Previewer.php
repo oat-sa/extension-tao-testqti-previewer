@@ -46,7 +46,9 @@ use common_exception_BadRequest as BadRequestException;
 use taoQtiTest_helpers_TestRunnerUtils as TestRunnerUtils;
 use oat\taoQtiTestPreviewer\models\FigureService;
 use oat\taoQtiTestPreviewer\models\NamespaceService;
+use oat\taoQtiTestPreviewer\models\PassageStylesService;
 use oat\taoQtiTestPreviewer\models\PreviewLanguageService;
+use oat\taoMediaManager\model\sharedStimulus\css\service\ListStylesheetsService;
 use common_exception_Unauthorized as UnauthorizedException;
 use common_exception_NotImplemented as NotImplementedException;
 use common_exception_MissingParameter as MissingParameterException;
@@ -173,11 +175,14 @@ class Previewer extends ServiceModule
                 throw new BadRequestException('Either itemUri or resultId needs to be provided.');
             }
 
-            $response['content'] = FigureService::checkFigureInItemData($response['content']);
-            $response['content'] = NamespaceService::removeNamespacesInItemData($response['content']);
-
             // query params which can be used to modify the response structure:
             if ($itemData) {
+                $response['content'] = FigureService::checkFigureInItemData($response['content']);
+                $response['content'] = NamespaceService::removeNamespacesInItemData($response['content']);
+                $response['content'] = PassageStylesService::checkAndInjectStylesInItemData(
+                    $response['content'],
+                    $this->getServiceLocator()->get(ListStylesheetsService::class)
+                );
                 $response['itemIdentifier'] ??= $response['content']['data']['identifier'] ?? null;
                 $response['itemData'] = $response['content'];
                 $response['content'] = null;
