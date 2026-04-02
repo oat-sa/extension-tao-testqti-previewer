@@ -61,7 +61,7 @@ class NamespaceService
                 continue;
             }
 
-            if ($elementCollection === 'choices' && self::isIndexedArray($element[$elementCollection])) {
+            if ($elementCollection === 'choices' && array_is_list($element[$elementCollection])) {
                 foreach ($element[$elementCollection] as $matchIndex => $choiceMatch) {
                     if (!is_array($choiceMatch)) {
                         continue;
@@ -116,19 +116,5 @@ class NamespaceService
         $markup = preg_replace($closePattern, '</$1>', $markup);
 
         return $markup;
-    }
-
-    /**
-     * Check if an array is an indexed (sequential) array rather than associative
-     *
-     * @param array $array
-     * @return bool
-     */
-    private static function isIndexedArray(array $array): bool
-    {
-        if (empty($array)) {
-            return true;
-        }
-        return array_keys($array) === range(0, count($array) - 1);
     }
 }
