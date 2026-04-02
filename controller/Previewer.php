@@ -446,7 +446,7 @@ class Previewer extends ServiceModule
      * @param array $pci - a parsed URL
      * @return array $imsPCI
      */
-    private function createIMSPCIs($pci) : array
+    private function createIMSPCIs($pci): array
     {
         $imsPCI = [];
         foreach ($pci as $key => $value) {
@@ -457,7 +457,7 @@ class Previewer extends ServiceModule
                     foreach ($pciData['runtime']['modules'] ?? [] as $paths) {
                         if (is_string($paths)) {
                             $pciData['runtime']['hook'] = $paths;
-                        } else if (is_array($paths) && count($paths)) {
+                        } elseif (is_array($paths) && count($paths)) {
                             $pciData['runtime']['hook'] = $paths[0];
                         }
                     }
@@ -467,7 +467,8 @@ class Previewer extends ServiceModule
                 $url = $this->parseUrlParts($pciData['runtime']['hook']);
 
                 if (is_string($pciData['baseUrl']) && empty($url['scheme'])) {
-                    $pciData['runtime']['hook'] = $this->prependToUrl($url, $pciData['baseUrl'], $pciData['slashcat'] ?? false);
+                    $pciData['runtime']['hook'] =
+                        $this->prependToUrl($url, $pciData['baseUrl'], $pciData['slashcat'] ?? false);
                     $imsPCI[$key] = [$pciData];
                 }
             }

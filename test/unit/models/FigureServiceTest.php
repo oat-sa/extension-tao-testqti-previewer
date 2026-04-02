@@ -183,7 +183,8 @@ class FigureServiceTest extends TestCase
 
         $result = FigureService::checkFigureInItemData($itemData);
 
-        $promptFigureBody = $result['data']['body']['elements']['choice-interaction']['prompt']['elements']['prompt-figure']['body'];
+        $promptFigureBody =
+            $result['data']['body']['elements']['choice-interaction']['prompt']['elements']['prompt-figure']['body'];
 
         $this->assertStringContainsString(
             '<figcaption>Figure 1: Sample diagram</figcaption>',
