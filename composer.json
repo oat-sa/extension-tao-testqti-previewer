@@ -35,7 +35,6 @@
     "oat-sa/extension-tao-testqti": ">=48.26.1",
     "oat-sa/extension-tao-test": ">=16.3.0",
     "oat-sa/extension-tao-delivery": ">=15.0.0",
-    "oat-sa/extension-tao-mediamanager": ">=14.0.0",
     "oat-sa/extension-tao-outcome": ">=13.0.0",
     "qtism/qtism": "~0"
   },
