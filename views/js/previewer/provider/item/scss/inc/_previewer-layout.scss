@@ -220,13 +220,6 @@
     .item-previewer-scope {
         .qti-item {
             padding: 15px;
-            table td:has(span:is(.txt-wavy)) {
-                padding-right: 5px;
-            }
         }
     }
-}
-
-.writing-mode-vertical-rl table td:has(span:is(.txt-wavy)) {
-    padding-right: 7px;
 }
