@@ -336,13 +336,13 @@ class Previewer extends ServiceModule
 
         try {
             $runnerProviders = $response['value']['providers'];
-            $constructPreviewProviders = $response['value']['constructPreviewProviders'] ?? [];
+            $previewProviders = $response['value']['previewProviders'] ?? [];
             $providers = [];
             foreach (['runner', 'itemRunner', 'plugins'] as $key) {
-                $providers[$key] = $constructPreviewProviders[$key] ?? $runnerProviders[$key];
+                $providers[$key] = $previewProviders[$key] ?? $runnerProviders[$key];
             }
-            if (isset($constructPreviewProviders['proxy'])) {
-                $providers['proxy'] = $constructPreviewProviders['proxy'];
+            if (isset($previewProviders['proxy'])) {
+                $providers['proxy'] = $previewProviders['proxy'];
             }
             $response = [
                 'providers' => $providers,
