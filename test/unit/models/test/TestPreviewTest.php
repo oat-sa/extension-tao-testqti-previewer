@@ -44,4 +44,12 @@ class TestPreviewTest extends TestCase
         $this->assertSame(self::MAP, $this->subject->getMap()->getMap());
         $this->assertSame(self::TIMER, $this->subject->getTimer());
     }
+
+    public function testConstructWithoutTimer(): void
+    {
+        $subject = new TestPreview(new TestPreviewMap(self::MAP));
+
+        $this->assertSame(self::MAP, $subject->getMap()->getMap());
+        $this->assertNull($subject->getTimer());
+    }
 }

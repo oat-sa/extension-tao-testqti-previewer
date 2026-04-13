@@ -256,6 +256,7 @@ components:
 
     TimerDetail:
       type: object
+      description: All time values are expressed in milliseconds.
       properties:
         id:
           type: string
@@ -263,15 +264,19 @@ components:
           type: boolean
           example: false
         minTime:
+          description: Minimum time assigned to the timer, in milliseconds.
           type: integer
           example: 0
         maxTime:
+          description: Maximum time assigned to the timer, in milliseconds.
           type: integer
           example: 60000
         maxTimeRemaining:
+          description: Remaining time for the timer, in milliseconds.
           type: integer
           example: 60000
         initialValue:
+          description: Initial timer value, in milliseconds.
           type: integer
           nullable: true
 
