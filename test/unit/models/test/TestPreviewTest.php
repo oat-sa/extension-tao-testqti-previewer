@@ -29,17 +29,19 @@ use oat\taoQtiTestPreviewer\models\test\TestPreviewMap;
 class TestPreviewTest extends TestCase
 {
     private const MAP = ['map'];
+    private const TIMER = ['test' => ['id' => 'testId']];
 
     /** @var TestPreview */
     private $subject;
 
     protected function setUp(): void
     {
-        $this->subject = new TestPreview(new TestPreviewMap(self::MAP));
+        $this->subject = new TestPreview(new TestPreviewMap(self::MAP), self::TIMER);
     }
 
     public function testConstruct(): void
     {
         $this->assertSame(self::MAP, $this->subject->getMap()->getMap());
+        $this->assertSame(self::TIMER, $this->subject->getTimer());
     }
 }

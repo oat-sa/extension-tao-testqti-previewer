@@ -15,34 +15,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2020 (original work) Open Assessment Technologies SA ;
+ * Copyright (c) 2026 (original work) Open Assessment Technologies SA ;
  */
 
 declare(strict_types=1);
 
-namespace oat\taoQtiTestPreviewer\models\test;
+namespace oat\taoQtiTestPreviewer\models\test\service;
 
-class TestPreview
+use qtism\data\AssessmentTest;
+use qtism\runtime\tests\Route;
+
+interface TestPreviewTimerBuilderInterface
 {
-    /** @var TestPreviewMap */
-    private $testMap;
-
-    /** @var array|null */
-    private $timer;
-
-    public function __construct(TestPreviewMap $testMap, ?array $timer = null)
-    {
-        $this->testMap = $testMap;
-        $this->timer = $timer;
-    }
-
-    public function getMap(): TestPreviewMap
-    {
-        return $this->testMap;
-    }
-
-    public function getTimer(): ?array
-    {
-        return $this->timer;
-    }
+    public function build(AssessmentTest $test, Route $route): ?array;
 }

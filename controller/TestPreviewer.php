@@ -68,6 +68,7 @@ class TestPreviewer extends tao_actions_ServiceModule
                     'testData' => [],
                     'testContext' => [],
                     'testMap' => $response->getMap()->getMap(),
+                    'timer' => $response->getTimer(),
                     'presetMap' => $this->getTestPreviewerPresetsMapService()->getMap()
                 ]
             );

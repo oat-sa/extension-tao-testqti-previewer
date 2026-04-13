@@ -43,7 +43,8 @@ class TestPreviewer extends ConfigurableService implements TestPreviewerInterfac
         $route = $this->getRouteFactory()->create($testAssessment);
 
         return new TestPreview(
-            $this->getMapper()->map($testAssessment, $route, $testPreviewRequest->getConfig())
+            $this->getMapper()->map($testAssessment, $route, $testPreviewRequest->getConfig()),
+            $this->getTimerBuilder()->build($testAssessment, $route)
         );
     }
 
@@ -60,5 +61,10 @@ class TestPreviewer extends ConfigurableService implements TestPreviewerInterfac
     private function getMapper(): TestPreviewMapperInterface
     {
         return $this->getServiceLocator()->get(TestPreviewMapper::class);
+    }
+
+    private function getTimerBuilder(): TestPreviewTimerBuilderInterface
+    {
+        return $this->getServiceLocator()->get(TestPreviewTimerBuilder::class);
     }
 }

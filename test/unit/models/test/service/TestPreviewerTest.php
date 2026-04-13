@@ -31,6 +31,8 @@ use oat\taoQtiTestPreviewer\models\test\mapper\TestPreviewMapperInterface;
 use oat\taoQtiTestPreviewer\models\test\service\TestPreviewer;
 use oat\taoQtiTestPreviewer\models\test\service\TestPreviewerAssessmentTestGenerator;
 use oat\taoQtiTestPreviewer\models\test\service\TestPreviewerAssessmentTestGeneratorInterface;
+use oat\taoQtiTestPreviewer\models\test\service\TestPreviewTimerBuilder;
+use oat\taoQtiTestPreviewer\models\test\service\TestPreviewTimerBuilderInterface;
 use oat\taoQtiTestPreviewer\models\test\TestPreview;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewMap;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewRequest;
@@ -48,6 +50,9 @@ class TestPreviewerTest extends TestCase
     /** @var TestPreviewRouteFactoryInterface|MockObject */
     private $factory;
 
+    /** @var TestPreviewTimerBuilderInterface|MockObject */
+    private $timerBuilder;
+
     /** @var TestPreviewer */
     private $subject;
 
@@ -56,6 +61,7 @@ class TestPreviewerTest extends TestCase
         $this->generator = $this->createMock(TestPreviewerAssessmentTestGeneratorInterface::class);
         $this->factory = $this->createMock(TestPreviewRouteFactoryInterface::class);
         $this->mapper = $this->createMock(TestPreviewMapperInterface::class);
+        $this->timerBuilder = $this->createMock(TestPreviewTimerBuilderInterface::class);
 
         $this->subject = new TestPreviewer();
         $this->subject->setServiceLocator(
@@ -64,6 +70,7 @@ class TestPreviewerTest extends TestCase
                     TestPreviewMapper::class => $this->mapper,
                     TestPreviewerAssessmentTestGenerator::class => $this->generator,
                     TestPreviewRouteFactory::class => $this->factory,
+                    TestPreviewTimerBuilder::class => $this->timerBuilder,
                 ]
             )
         );
@@ -73,10 +80,15 @@ class TestPreviewerTest extends TestCase
     {
         $assessmentTest = $this->createMock(AssessmentTest::class);
         $route = $this->createMock(Route::class);
+        $timer = ['test' => ['id' => 'testId']];
 
         $this->mapper
             ->method('map')
             ->willReturn(new TestPreviewMap([]));
+
+        $this->timerBuilder
+            ->method('build')
+            ->willReturn($timer);
 
         $this->generator
             ->method('generate')
@@ -87,7 +99,7 @@ class TestPreviewerTest extends TestCase
             ->willReturn($route);
 
         $this->assertEquals(
-            new TestPreview(new TestPreviewMap([])),
+            new TestPreview(new TestPreviewMap([]), $timer),
             $this->subject->createPreview(new TestPreviewRequest('uri'))
         );
     }

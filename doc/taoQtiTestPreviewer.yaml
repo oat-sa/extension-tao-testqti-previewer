@@ -83,6 +83,9 @@ components:
               $ref: '#/components/schemas/TestContext'
             testMap:
               $ref: '#/components/schemas/TestMap'
+            timer:
+              $ref: '#/components/schemas/TimerDefinition'
+              nullable: true
             toolStates:
               description: the current tools states
               type: array
@@ -228,6 +231,49 @@ components:
         position:
           type: integer
           example: 20
+
+    TimerDefinition:
+      type: object
+      properties:
+        test:
+          $ref: '#/components/schemas/TimerDetail'
+          nullable: true
+        testParts:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimerDetail'
+        sections:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimerDetail'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimerDetail'
+        extra:
+          $ref: '#/components/schemas/TimerDetail'
+          nullable: true
+
+    TimerDetail:
+      type: object
+      properties:
+        id:
+          type: string
+        started:
+          type: boolean
+          example: false
+        minTime:
+          type: integer
+          example: 0
+        maxTime:
+          type: integer
+          example: 60000
+        maxTimeRemaining:
+          type: integer
+          example: 60000
+        initialValue:
+          type: integer
+          nullable: true
 
     ErrorResponse:
       properties:
