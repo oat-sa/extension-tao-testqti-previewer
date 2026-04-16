@@ -1,9 +1,9 @@
-.previewer, .previewer-component {
+.previewer,
+.previewer-component {
     position: relative;
 }
 
 .item-previewer-scope {
-
     position: relative;
 
     display: -ms-flexbox;
@@ -22,12 +22,16 @@
         height: calc(100vh - #{(map-get($heights, header) + map-get($heights, footer)) * 1px});
 
         .test-sidebar {
-            height: calc(100vh - #{(map-get($heights, header) + map-get($heights, footer) + map-get($heights, horizontal-action-bar) * 2) * 1px});
+            height: calc(
+                100vh - #{(
+                        map-get($heights, header) + map-get($heights, footer) + map-get($heights, horizontal-action-bar) *
+                            2
+                    ) * 1px}
+            );
         }
     }
 
     .test-runner-sections {
-
         /* flex column value */
         -webkit-flex: 1 1 0%;
         -ms-flex: 1 1 0%;
@@ -104,7 +108,7 @@
             top: 0;
             bottom: 0;
             width: 100%;
-            opacity: .9;
+            opacity: 0.9;
 
             &-full {
                 background-color: $uiGeneralContentBg;
@@ -148,7 +152,7 @@
 
     .qti-itemBody {
         /* vertical writing mode is set for A-block, to fit wavy underlines and subscripts */
-        .writing-mode-vertical-rl {
+        .custom-text-box.writing-mode-vertical-rl {
             padding-block-start: 12px;
         }
     }
