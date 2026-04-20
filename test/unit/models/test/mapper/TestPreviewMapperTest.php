@@ -157,9 +157,14 @@ class TestPreviewMapperTest extends TestCase
     }
 
     /**
-     * @dataProvider provideAllowSkippingVariations
+     * @dataProvider provideSessionControlVariations
      */
-    public function testAllowSkipping(bool $doesAllowSkipping, bool $hasSessionControl = true): void
+    public function testSessionControl(
+        bool $doesAllowSkipping,
+        bool $mustValidateResponses,
+        int $expectedRemainingAttempts,
+        bool $hasSessionControl = true
+    ): void
     {
         $itemId = 'itemId';
         $sectionTitle = 'sectionTitle';
@@ -176,6 +181,9 @@ class TestPreviewMapperTest extends TestCase
         if ($hasSessionControl) {
             $sessionControl = $this->createMock(ItemSessionControl::class);
             $sessionControl->expects($this->once())->method('doesAllowSkipping')->willReturn($doesAllowSkipping);
+            $sessionControl->expects($this->once())->method('mustValidateResponses')->willReturn($mustValidateResponses);
+            $sessionControl->expects($this->once())->method('getMaxAttempts')
+                ->willReturn($expectedRemainingAttempts + 1);
         }
 
         $itemRef = $this->expectsExtendedItemRef('itemUri', $itemId, $categories, $sessionControl);
@@ -184,23 +192,39 @@ class TestPreviewMapperTest extends TestCase
         $this->expectsItemResource('itemUri', 'testLabel');
 
         static::assertEquals(
-            new TestPreviewMap($this->getFullMapData($itemId, $sectionTitle, $categories, true, $doesAllowSkipping)),
+            new TestPreviewMap(
+                $this->getFullMapData(
+                    $itemId,
+                    $sectionTitle,
+                    $categories,
+                    true,
+                    $doesAllowSkipping,
+                    $mustValidateResponses,
+                    $expectedRemainingAttempts
+                )
+            ),
             $this->subject->map($this->expectsTest(), $this->expectsRoute([$routeItem]), $config)
         );
     }
 
-    public function provideAllowSkippingVariations(): array
+    public function provideSessionControlVariations(): array
     {
         return [
-            'without-session-control-set-default-allow-skipping' => [
+            'without-session-control-set-default-values' => [
                 'doesAllowSkipping' => true,
+                'mustValidateResponses' => false,
+                'expectedRemainingAttempts' => -1,
                 'hasSessionControl' => false,
             ],
-            'allow-skipping-disabled' => [
+            'session-control-disables-skipping-and-enables-validation' => [
                 'doesAllowSkipping' => false,
+                'mustValidateResponses' => true,
+                'expectedRemainingAttempts' => 2,
             ],
-            'allow-skipping-enabled' => [
+            'session-control-enables-skipping-and-disables-validation' => [
                 'doesAllowSkipping' => true,
+                'mustValidateResponses' => false,
+                'expectedRemainingAttempts' => 0,
             ],
         ];
     }
@@ -250,7 +274,7 @@ class TestPreviewMapperTest extends TestCase
 
         static::assertEquals(
             new TestPreviewMap(
-                $this->getFullMapData($itemId, $sectionTitle, $categories, true, true, $expectedHasFeedbacks)
+                $this->getFullMapData($itemId, $sectionTitle, $categories, true, true, false, -1, $expectedHasFeedbacks)
             ),
             $this->subject->map($this->expectsTest(), $this->expectsRoute([$routeItem]), $config)
         );
@@ -276,6 +300,8 @@ class TestPreviewMapperTest extends TestCase
         array $categories,
         bool $isInformational = false,
         bool $allowSkipping = true,
+        bool $validateResponses = false,
+        int $remainingAttempts = -1,
         bool $hasFeedbacks = false
     ): array {
         $data = [
@@ -299,12 +325,13 @@ class TestPreviewMapperTest extends TestCase
                                     'label' => 'testLabel',
                                     'position' => 0,
                                     'occurrence' => null,
-                                    'remainingAttempts' => -1,
+                                    'remainingAttempts' => $remainingAttempts,
                                     'answered' => 0,
                                     'flagged' => false,
                                     'viewed' => false,
                                     'categories' => $categories,
                                     'allowSkipping' => $allowSkipping,
+                                    'validateResponses' => $validateResponses,
                                     'hasFeedbacks' => $hasFeedbacks,
                                 ],
                             ],
