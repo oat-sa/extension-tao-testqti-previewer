@@ -322,7 +322,7 @@ class Previewer extends ServiceModule
                 true,
                 flags: JSON_THROW_ON_ERROR
             );
-            if (empty($response['value']['providers']) || empty($response['value']['options'])) {
+            if (empty($response['value']['previewProviders']) || empty($response['value']['options'])) {
                 throw new RuntimeException('Previewer configuration missing.');
             }
         } catch (GuzzleException | JsonException | RuntimeException $exception) {
@@ -335,17 +335,9 @@ class Previewer extends ServiceModule
         }
 
         try {
-            $runnerProviders = $response['value']['providers'];
-            $previewProviders = $response['value']['previewProviders'] ?? [];
-            $providers = [];
-            foreach (['runner', 'itemRunner', 'plugins'] as $key) {
-                $providers[$key] = $previewProviders[$key] ?? $runnerProviders[$key];
-            }
-            if (isset($previewProviders['proxy'])) {
-                $providers['proxy'] = $previewProviders['proxy'];
-            }
             $response = [
-                'providers' => $providers,
+                // we'll read from previewProviders, but serve as providers
+                'providers' => $response['value']['previewProviders'],
                 'options' => $response['value']['options']
             ];
         } catch (Exception $e) {
