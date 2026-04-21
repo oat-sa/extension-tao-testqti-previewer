@@ -312,17 +312,17 @@ class Previewer extends ServiceModule
             return;
         }
         $client = new Client();
-        $request = new Request(
+        $configRequest = new Request(
             'GET',
             "$uri/api/v1/tenants/{$token['tenant_id']}/configurations/testRunnerConfiguration"
         );
         try {
-            $response = json_decode(
-                $client->send($request)->getBody()->getContents(),
+            $configResponse = json_decode(
+                $client->send($configRequest)->getBody()->getContents(),
                 true,
                 flags: JSON_THROW_ON_ERROR
             );
-            if (empty($response['value']['previewProviders']) || empty($response['value']['options'])) {
+            if (empty($configResponse['value']['previewProviders']) || empty($configResponse['value']['options'])) {
                 throw new RuntimeException('Previewer configuration missing.');
             }
         } catch (GuzzleException | JsonException | RuntimeException $exception) {
@@ -333,12 +333,34 @@ class Previewer extends ServiceModule
             );
             return;
         }
+        $themesRequest = new Request(
+            'GET',
+            "$uri/api/v1/tenants/{$token['tenant_id']}/configurations/testRunnerTheme"
+        );
+        try {
+            $themesResponse = json_decode(
+                $client->send($themesRequest)->getBody()->getContents(),
+                true,
+                flags: JSON_THROW_ON_ERROR
+            );
+            if (empty($themesResponse['value'])) {
+                throw new RuntimeException('Previewer theme missing.');
+            }
+        } catch (GuzzleException | JsonException | RuntimeException $exception) {
+            $this->setErrorJsonResponse(
+                "Failed to fetch Previewer theme. {$exception->getMessage()}",
+                $exception->getCode(),
+                statusCode: 424
+            );
+            return;
+        }
 
         try {
             $response = [
                 // we'll read from previewProviders, but serve as providers
-                'providers' => $response['value']['previewProviders'],
-                'options' => $response['value']['options']
+                'providers' => $configResponse['value']['previewProviders'],
+                'options' => $configResponse['value']['options'],
+                'themes' => $themesResponse['value']
             ];
         } catch (Exception $e) {
             $response = $this->getErrorResponse($e);
