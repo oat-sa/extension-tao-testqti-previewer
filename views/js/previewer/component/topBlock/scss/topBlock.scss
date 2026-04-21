@@ -21,8 +21,8 @@ $collapserHeight: 30px;
     }
     & button {
         &:focus-visible {
-            outline: 1px dotted $borderGray;
-            outline-offset: -3px;
+            outline: 2px dotted $infoBorderColor;
+            outline-offset: 2px;
         }
     }
 }
