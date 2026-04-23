@@ -8,14 +8,14 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ * Foundation, Inc., 31 Milk St # 960789 Boston, MA 02196 USA.
  *
- * Copyright (c) 2020 (original work) Open Assessment Technologies SA;
+ * Copyright (c) 2020-2026 (original work) Open Assessment Technologies SA;
  */
 
 declare(strict_types=1);
@@ -40,6 +40,8 @@ use qtism\data\ItemSessionControl;
 use qtism\data\TestPart;
 use qtism\runtime\tests\Route;
 use qtism\runtime\tests\RouteItem;
+use ReflectionMethod;
+use ReflectionProperty;
 
 class TestPreviewMapperTest extends TestCase
 {
@@ -164,8 +166,7 @@ class TestPreviewMapperTest extends TestCase
         bool $mustValidateResponses,
         int $expectedRemainingAttempts,
         bool $hasSessionControl = true
-    ): void
-    {
+    ): void {
         $itemId = 'itemId';
         $sectionTitle = 'sectionTitle';
         $categories = [
@@ -180,8 +181,14 @@ class TestPreviewMapperTest extends TestCase
         $sessionControl = null;
         if ($hasSessionControl) {
             $sessionControl = $this->createMock(ItemSessionControl::class);
-            $sessionControl->expects($this->once())->method('doesAllowSkipping')->willReturn($doesAllowSkipping);
-            $sessionControl->expects($this->once())->method('mustValidateResponses')->willReturn($mustValidateResponses);
+            $sessionControl
+                ->expects($this->once())
+                ->method('doesAllowSkipping')
+                ->willReturn($doesAllowSkipping);
+            $sessionControl
+                ->expects($this->once())
+                ->method('mustValidateResponses')
+                ->willReturn($mustValidateResponses);
             $sessionControl->expects($this->once())->method('getMaxAttempts')
                 ->willReturn($expectedRemainingAttempts + 1);
         }
@@ -264,12 +271,10 @@ class TestPreviewMapperTest extends TestCase
         $serviceOverride
             ->method('getDataItemByRdfItem')
             ->willReturn($item);
-        $serviceProp = new \ReflectionProperty(TestPreviewMapper::class, 'service');
-        $serviceProp->setAccessible(true);
+        $serviceProp = new ReflectionProperty(TestPreviewMapper::class, 'service');
         $serviceProp->setValue($this->subject, $serviceOverride);
 
-        $checkHasFeedbacks = new \ReflectionMethod(TestPreviewMapper::class, 'checkHasFeedbacks');
-        $checkHasFeedbacks->setAccessible(true);
+        $checkHasFeedbacks = new ReflectionMethod(TestPreviewMapper::class, 'checkHasFeedbacks');
         $this->assertSame($expectedHasFeedbacks, $checkHasFeedbacks->invoke($this->subject, $itemRef));
 
         static::assertEquals(
@@ -447,11 +452,11 @@ class TestPreviewMapperTest extends TestCase
     }
 
     /**
-     * @param AssessmentItemRef|ExtendedAssessmentItemRef $itemRef
-     * @return AssessmentItemRef|ExtendedAssessmentItemRef
+     * @param (AssessmentItemRef|ExtendedAssessmentItemRef)&MockObject $itemRef
+     * @return (AssessmentItemRef|ExtendedAssessmentItemRef)&MockObject
      */
     private function mockItemRefMethods(
-        $itemRef,
+        MockObject $itemRef,
         string $itemUri,
         string $itemId,
         array $categories,
