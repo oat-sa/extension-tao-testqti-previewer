@@ -157,10 +157,6 @@ class Previewer extends ServiceModule
                 }
 
                 $response = $this->createItemResponse($item, $lang);
-                $response['baseUrl'] = _url('asset', null, null, [
-                    'uri' => $itemUri,
-                    'path' => '',
-                ]);
             } else {
                 throw new BadRequestException('Either itemUri or resultId needs to be provided.');
             }
@@ -349,7 +345,18 @@ class Previewer extends ServiceModule
         $packer->setServiceLocator($this->getServiceLocator());
 
         $itemPack = $packer->pack();
-        return ['content' => $itemPack->JsonSerialize()];
+        return [
+            'content' => $itemPack->JsonSerialize(),
+            'baseUrl' => _url('asset', null, null, $this->createBaseUriParameters($item)),
+        ];
+    }
+
+    protected function createBaseUriParameters(core_kernel_classes_Resource $item): array
+    {
+        return [
+            'uri' => $item->getUri(),
+            'path' => '',
+        ];
     }
 
     /**
