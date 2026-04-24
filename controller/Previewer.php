@@ -25,11 +25,8 @@ namespace oat\taoQtiTestPreviewer\controller;
 use core_kernel_classes_Resource;
 use Exception;
 use common_exception_Error;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\Psr7\Request;
-use JsonException;
 use oat\tao\helpers\Base64;
+use oat\tao\model\accessControl\Service\AccessTokenService;
 use oat\tao\model\http\HttpJsonResponseTrait;
 use RuntimeException;
 use tao_helpers_Http as HttpHelper;
@@ -221,122 +218,17 @@ class Previewer extends ServiceModule
 
     public function getTokens(): void
     {
-        // TODO encapsulate the implementation in tao-core; the endpoint itself may be moved there too
-        $authUri = getEnv('ENV_AUTH_URI');
-        $clientId = getEnv('ENV_CLIENT_ID');
-        $clientSecret = getEnv('ENV_CLIENT_SECRET');
-
-        if (!$authUri || !$clientId || !$clientSecret) {
-            $this->setErrorJsonResponse('OAuth2 credentials not found.', errorCode: 404);
-            return;
-        }
-
-        $client = new Client();
-        $request = new Request('POST', "$authUri?with-refresh-token=true", [], json_encode([
-            'grant_type' => 'client_credentials',
-            'client_id' => $clientId,
-            'client_secret' => $clientSecret
-        ]));
-        $request = $request->withAddedHeader('Content-Type', 'application/json');
-
         try {
-            $response = $client->send($request);
-        } catch (GuzzleException $exception) {
+            $this->setSuccessJsonResponse(
+                $this->getAccessTokenService()->fetchTokens()
+            );
+        } catch (RuntimeException $exception) {
             $this->setErrorJsonResponse(
-                "Failed to fetch Auth tokens. {$exception->getMessage()}",
+                $exception->getMessage(),
                 $exception->getCode(),
-                statusCode: 424
+                statusCode: $exception->getCode()
             );
-            return;
         }
-
-        $statusCode = $response->getStatusCode();
-        $content = $response->getBody()->getContents();
-        $content = json_decode($content, true);
-
-        if ($statusCode !== 200 || !isset($content['access_token'])) {
-            $this->setErrorJsonResponse('Failed to fetch Auth tokens.', $statusCode, statusCode: 424);
-            return;
-        }
-
-        $this->setSuccessJsonResponse($content);
-    }
-
-    public function configuration(): void
-    {
-        // TODO encapsulate the configuration fetcher in tao-core
-        //  !IMPORTANT! the endpoint must remain here
-        @[$_, $payload, $_] = explode('.', $_SERVER['HTTP_AUTHORIZATION' ?? '']);
-        $rawToken = base64_decode($payload ?? '');
-        $token = json_decode($rawToken, true);
-        if (empty($token['tenant_id'])) {
-            $this->setErrorJsonResponse('Unauthorized', errorCode: 401);
-            return;
-        }
-
-        $uri = getenv('ENV_CONFIG_URI');
-        if (!$uri) {
-            $this->setErrorJsonResponse('Configuration not found.', errorCode: 404);
-            return;
-        }
-        $client = new Client();
-        $configRequest = new Request(
-            'GET',
-            "$uri/api/v1/tenants/{$token['tenant_id']}/configurations/testRunnerConfiguration"
-        );
-        try {
-            $configResponse = json_decode(
-                $client->send($configRequest)->getBody()->getContents(),
-                true,
-                flags: JSON_THROW_ON_ERROR
-            );
-            if (empty($configResponse['value']['previewProviders']) || empty($configResponse['value']['options'])) {
-                throw new RuntimeException('Previewer configuration missing.');
-            }
-        } catch (GuzzleException | JsonException | RuntimeException $exception) {
-            $this->setErrorJsonResponse(
-                "Failed to fetch Previewer configuration. {$exception->getMessage()}",
-                $exception->getCode(),
-                statusCode: 424
-            );
-            return;
-        }
-        $themesRequest = new Request(
-            'GET',
-            "$uri/api/v1/tenants/{$token['tenant_id']}/configurations/testRunnerTheme"
-        );
-        try {
-            $themesResponse = json_decode(
-                $client->send($themesRequest)->getBody()->getContents(),
-                true,
-                flags: JSON_THROW_ON_ERROR
-            );
-            if (empty($themesResponse['value'])) {
-                throw new RuntimeException('Previewer theme missing.');
-            }
-        } catch (GuzzleException | JsonException | RuntimeException $exception) {
-            $this->setErrorJsonResponse(
-                "Failed to fetch Previewer theme. {$exception->getMessage()}",
-                $exception->getCode(),
-                statusCode: 424
-            );
-            return;
-        }
-
-        try {
-            $response = [
-                // we'll read from previewProviders, but serve as providers
-                'providers' => $configResponse['value']['previewProviders'],
-                'options' => $configResponse['value']['options'],
-                'themes' => $themesResponse['value']
-            ];
-        } catch (Exception $e) {
-            $response = $this->getErrorResponse($e);
-            $this->setErrorJsonResponse($e->getMessage(), $e->getCode(), statusCode: $this->getErrorCode($e));
-            return;
-        }
-
-        $this->setSuccessJsonResponse($response);
     }
 
     protected function createItemResponse(core_kernel_classes_Resource $item, string $lang): array
@@ -429,6 +321,11 @@ class Previewer extends ServiceModule
         $itemPreviewer = $this->getServiceLocator()->get(ItemPreviewer::class);
 
         return $itemPreviewer;
+    }
+
+    private function getAccessTokenService(): AccessTokenService
+    {
+        return $this->getPsrContainer()->get(AccessTokenService::class);
     }
 
     /**
