@@ -64,9 +64,9 @@ class TestPreviewerTest extends TestCase
         $this->timerBuilder = $this->createMock(TestPreviewTimerBuilderInterface::class);
 
         $this->subject = new TestPreviewer(
-            $this->mapper,
-            $this->generator,
             $this->factory,
+            $this->generator,
+            $this->mapper,
             $this->timerBuilder
         );
     }
