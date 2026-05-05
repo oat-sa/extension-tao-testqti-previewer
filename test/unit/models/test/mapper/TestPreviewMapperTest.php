@@ -8,14 +8,14 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ * Foundation, Inc., 31 Milk St # 960789 Boston, MA 02196 USA.
  *
- * Copyright (c) 2020 (original work) Open Assessment Technologies SA;
+ * Copyright (c) 2020-2026 (original work) Open Assessment Technologies SA;
  */
 
 declare(strict_types=1);
@@ -40,6 +40,8 @@ use qtism\data\ItemSessionControl;
 use qtism\data\TestPart;
 use qtism\runtime\tests\Route;
 use qtism\runtime\tests\RouteItem;
+use ReflectionMethod;
+use ReflectionProperty;
 
 class TestPreviewMapperTest extends TestCase
 {
@@ -157,10 +159,14 @@ class TestPreviewMapperTest extends TestCase
     }
 
     /**
-     * @dataProvider provideAllowSkippingVariations
+     * @dataProvider provideSessionControlVariations
      */
-    public function testAllowSkipping(bool $doesAllowSkipping, bool $hasSessionControl = true): void
-    {
+    public function testSessionControl(
+        bool $doesAllowSkipping,
+        bool $mustValidateResponses,
+        int $expectedRemainingAttempts,
+        bool $hasSessionControl = true
+    ): void {
         $itemId = 'itemId';
         $sectionTitle = 'sectionTitle';
         $categories = [
@@ -175,7 +181,16 @@ class TestPreviewMapperTest extends TestCase
         $sessionControl = null;
         if ($hasSessionControl) {
             $sessionControl = $this->createMock(ItemSessionControl::class);
-            $sessionControl->expects($this->once())->method('doesAllowSkipping')->willReturn($doesAllowSkipping);
+            $sessionControl
+                ->expects($this->once())
+                ->method('doesAllowSkipping')
+                ->willReturn($doesAllowSkipping);
+            $sessionControl
+                ->expects($this->once())
+                ->method('mustValidateResponses')
+                ->willReturn($mustValidateResponses);
+            $sessionControl->expects($this->once())->method('getMaxAttempts')
+                ->willReturn($expectedRemainingAttempts + 1);
         }
 
         $itemRef = $this->expectsExtendedItemRef('itemUri', $itemId, $categories, $sessionControl);
@@ -184,23 +199,39 @@ class TestPreviewMapperTest extends TestCase
         $this->expectsItemResource('itemUri', 'testLabel');
 
         static::assertEquals(
-            new TestPreviewMap($this->getFullMapData($itemId, $sectionTitle, $categories, true, $doesAllowSkipping)),
+            new TestPreviewMap(
+                $this->getFullMapData(
+                    $itemId,
+                    $sectionTitle,
+                    $categories,
+                    true,
+                    $doesAllowSkipping,
+                    $mustValidateResponses,
+                    $expectedRemainingAttempts
+                )
+            ),
             $this->subject->map($this->expectsTest(), $this->expectsRoute([$routeItem]), $config)
         );
     }
 
-    public function provideAllowSkippingVariations(): array
+    public function provideSessionControlVariations(): array
     {
         return [
-            'without-session-control-set-default-allow-skipping' => [
+            'without-session-control-set-default-values' => [
                 'doesAllowSkipping' => true,
+                'mustValidateResponses' => false,
+                'expectedRemainingAttempts' => -1,
                 'hasSessionControl' => false,
             ],
-            'allow-skipping-disabled' => [
+            'session-control-disables-skipping-and-enables-validation' => [
                 'doesAllowSkipping' => false,
+                'mustValidateResponses' => true,
+                'expectedRemainingAttempts' => 2,
             ],
-            'allow-skipping-enabled' => [
+            'session-control-enables-skipping-and-disables-validation' => [
                 'doesAllowSkipping' => true,
+                'mustValidateResponses' => false,
+                'expectedRemainingAttempts' => 0,
             ],
         ];
     }
@@ -240,17 +271,15 @@ class TestPreviewMapperTest extends TestCase
         $serviceOverride
             ->method('getDataItemByRdfItem')
             ->willReturn($item);
-        $serviceProp = new \ReflectionProperty(TestPreviewMapper::class, 'service');
-        $serviceProp->setAccessible(true);
+        $serviceProp = new ReflectionProperty(TestPreviewMapper::class, 'service');
         $serviceProp->setValue($this->subject, $serviceOverride);
 
-        $checkHasFeedbacks = new \ReflectionMethod(TestPreviewMapper::class, 'checkHasFeedbacks');
-        $checkHasFeedbacks->setAccessible(true);
+        $checkHasFeedbacks = new ReflectionMethod(TestPreviewMapper::class, 'checkHasFeedbacks');
         $this->assertSame($expectedHasFeedbacks, $checkHasFeedbacks->invoke($this->subject, $itemRef));
 
         static::assertEquals(
             new TestPreviewMap(
-                $this->getFullMapData($itemId, $sectionTitle, $categories, true, true, $expectedHasFeedbacks)
+                $this->getFullMapData($itemId, $sectionTitle, $categories, true, true, false, -1, $expectedHasFeedbacks)
             ),
             $this->subject->map($this->expectsTest(), $this->expectsRoute([$routeItem]), $config)
         );
@@ -276,6 +305,8 @@ class TestPreviewMapperTest extends TestCase
         array $categories,
         bool $isInformational = false,
         bool $allowSkipping = true,
+        bool $validateResponses = false,
+        int $remainingAttempts = -1,
         bool $hasFeedbacks = false
     ): array {
         $data = [
@@ -299,12 +330,13 @@ class TestPreviewMapperTest extends TestCase
                                     'label' => 'testLabel',
                                     'position' => 0,
                                     'occurrence' => null,
-                                    'remainingAttempts' => -1,
+                                    'remainingAttempts' => $remainingAttempts,
                                     'answered' => 0,
                                     'flagged' => false,
                                     'viewed' => false,
                                     'categories' => $categories,
                                     'allowSkipping' => $allowSkipping,
+                                    'validateResponses' => $validateResponses,
                                     'hasFeedbacks' => $hasFeedbacks,
                                 ],
                             ],
@@ -420,11 +452,11 @@ class TestPreviewMapperTest extends TestCase
     }
 
     /**
-     * @param AssessmentItemRef|ExtendedAssessmentItemRef $itemRef
-     * @return AssessmentItemRef|ExtendedAssessmentItemRef
+     * @param (AssessmentItemRef|ExtendedAssessmentItemRef)&MockObject $itemRef
+     * @return (AssessmentItemRef|ExtendedAssessmentItemRef)&MockObject
      */
     private function mockItemRefMethods(
-        $itemRef,
+        MockObject $itemRef,
         string $itemUri,
         string $itemId,
         array $categories,

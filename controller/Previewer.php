@@ -22,13 +22,11 @@ declare(strict_types=1);
 
 namespace oat\taoQtiTestPreviewer\controller;
 
+use core_kernel_classes_Resource;
 use Exception;
 use common_exception_Error;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\Psr7\Request;
-use JsonException;
 use oat\tao\helpers\Base64;
+use oat\tao\model\accessControl\Service\AccessTokenService;
 use oat\tao\model\http\HttpJsonResponseTrait;
 use RuntimeException;
 use tao_helpers_Http as HttpHelper;
@@ -36,7 +34,6 @@ use oat\taoItems\model\pack\Packer;
 use common_Exception as CommonException;
 use taoItems_models_classes_ItemsService;
 use oat\generis\model\OntologyAwareTrait;
-use oat\qtiItemPci\controller\PciLoader;
 use tao_actions_ServiceModule as ServiceModule;
 use oat\taoItems\model\media\ItemMediaResolver;
 use oat\taoQtiTestPreviewer\models\ItemPreviewer;
@@ -44,11 +41,7 @@ use oat\tao\model\media\sourceStrategy\HttpSource;
 use oat\tao\model\routing\AnnotationReader\security;
 use common_exception_BadRequest as BadRequestException;
 use taoQtiTest_helpers_TestRunnerUtils as TestRunnerUtils;
-use oat\taoQtiTestPreviewer\models\FigureService;
-use oat\taoQtiTestPreviewer\models\NamespaceService;
-use oat\taoQtiTestPreviewer\models\PassageStylesService;
 use oat\taoQtiTestPreviewer\models\PreviewLanguageService;
-use oat\taoMediaManager\model\sharedStimulus\css\service\ListStylesheetsService;
 use common_exception_Unauthorized as UnauthorizedException;
 use common_exception_NotImplemented as NotImplementedException;
 use common_exception_MissingParameter as MissingParameterException;
@@ -117,8 +110,6 @@ class Previewer extends ServiceModule
 
             $itemUri = $requestParams['itemUri'] ?? '';
             $resultId = $requestParams['resultId'] ?? '';
-            $pcis = $requestParams['pcis'] ?? false;
-            $itemData = $requestParams['itemData'] ?? false;
 
             $response = [
                 'baseUrl' => '',
@@ -162,35 +153,9 @@ class Previewer extends ServiceModule
                     return;
                 }
 
-                $packer = new Packer($item, $lang, true);
-                $packer->setServiceLocator($this->getServiceLocator());
-
-                $itemPack = $packer->pack();
-                $response['content'] = $itemPack->JsonSerialize();
-                $response['baseUrl'] = _url('asset', null, null, [
-                    'uri' => $itemUri,
-                    'path' => '',
-                ]);
+                $response = $this->createItemResponse($item, $lang);
             } else {
                 throw new BadRequestException('Either itemUri or resultId needs to be provided.');
-            }
-
-            // query params which can be used to modify the response structure:
-            if ($itemData) {
-                $response['content'] = FigureService::checkFigureInItemData($response['content']);
-                $response['content'] = NamespaceService::removeNamespacesInItemData($response['content']);
-                $response['content'] = PassageStylesService::checkAndInjectStylesInItemData(
-                    $response['content'],
-                    $this->getServiceLocator()->get(ListStylesheetsService::class)
-                );
-                $response['itemIdentifier'] ??= $response['content']['data']['identifier'] ?? null;
-                $response['itemData'] = $response['content'];
-                $response['content'] = null;
-            }
-            if ($pcis) {
-                $response['portableElements'] = [
-                    'pci' => $this->getPcis()
-                ];
             }
 
             $response['success'] = true;
@@ -253,100 +218,37 @@ class Previewer extends ServiceModule
 
     public function getTokens(): void
     {
-        // TODO encapsulate the implementation in tao-core; the endpoint itself may be moved there too
-        $authUri = getEnv('ENV_AUTH_URI');
-        $clientId = getEnv('ENV_CLIENT_ID');
-        $clientSecret = getEnv('ENV_CLIENT_SECRET');
-
-        if (!$authUri || !$clientId || !$clientSecret) {
-            $this->setErrorJsonResponse('OAuth2 credentials not found.', errorCode: 404);
-            return;
-        }
-
-        $client = new Client();
-        $request = new Request('POST', "$authUri?with-refresh-token=true", [], json_encode([
-            'grant_type' => 'client_credentials',
-            'client_id' => $clientId,
-            'client_secret' => $clientSecret
-        ]));
-        $request = $request->withAddedHeader('Content-Type', 'application/json');
-
         try {
-            $response = $client->send($request);
-        } catch (GuzzleException $exception) {
-            $this->setErrorJsonResponse(
-                "Failed to fetch Auth tokens. {$exception->getMessage()}",
-                $exception->getCode(),
-                statusCode: 424
+            $this->setSuccessJsonResponse(
+                $this->getAccessTokenService()->fetchTokens()
             );
-            return;
+        } catch (RuntimeException $exception) {
+            $this->setErrorJsonResponse(
+                $exception->getMessage(),
+                $exception->getCode(),
+                statusCode: $exception->getCode()
+            );
         }
-
-        $statusCode = $response->getStatusCode();
-        $content = $response->getBody()->getContents();
-        $content = json_decode($content, true);
-
-        if ($statusCode !== 200 || !isset($content['access_token'])) {
-            $this->setErrorJsonResponse('Failed to fetch Auth tokens.', $statusCode, statusCode: 424);
-            return;
-        }
-
-        $this->setSuccessJsonResponse($content);
     }
 
-    public function configuration(): void
+    protected function createItemResponse(core_kernel_classes_Resource $item, string $lang): array
     {
-        // TODO encapsulate the configuration fetcher in tao-core
-        //  !IMPORTANT! the endpoint must remain here
-        @[$_, $payload, $_] = explode('.', $_SERVER['HTTP_AUTHORIZATION' ?? '']);
-        $rawToken = base64_decode($payload ?? '');
-        $token = json_decode($rawToken, true);
-        if (empty($token['tenant_id'])) {
-            $this->setErrorJsonResponse('Unauthorized', errorCode: 401);
-            return;
-        }
+        $packer = new Packer($item, $lang, true);
+        $packer->setServiceLocator($this->getServiceLocator());
 
-        $uri = getenv('ENV_CONFIG_URI');
-        if (!$uri) {
-            $this->setErrorJsonResponse('Configuration not found.', errorCode: 404);
-            return;
-        }
-        $client = new Client();
-        $request = new Request(
-            'GET',
-            "$uri/api/v1/tenants/{$token['tenant_id']}/configurations/testRunnerConfiguration"
-        );
-        try {
-            $response = json_decode(
-                $client->send($request)->getBody()->getContents(),
-                true,
-                flags: JSON_THROW_ON_ERROR
-            );
-            if (empty($response['value']['previewProviders']) || empty($response['value']['options'])) {
-                throw new RuntimeException('Previewer configuration missing.');
-            }
-        } catch (GuzzleException | JsonException | RuntimeException $exception) {
-            $this->setErrorJsonResponse(
-                "Failed to fetch Previewer configuration. {$exception->getMessage()}",
-                $exception->getCode(),
-                statusCode: 424
-            );
-            return;
-        }
+        $itemPack = $packer->pack();
+        return [
+            'content' => $itemPack->JsonSerialize(),
+            'baseUrl' => _url('asset', null, null, $this->createBaseUriParameters($item)),
+        ];
+    }
 
-        try {
-            $response = [
-                // we'll read from previewProviders, but serve as providers
-                'providers' => $response['value']['previewProviders'],
-                'options' => $response['value']['options']
-            ];
-        } catch (Exception $e) {
-            $response = $this->getErrorResponse($e);
-            $this->setErrorJsonResponse($e->getMessage(), $e->getCode(), statusCode: $this->getErrorCode($e));
-            return;
-        }
-
-        $this->setSuccessJsonResponse($response);
+    protected function createBaseUriParameters(core_kernel_classes_Resource $item): array
+    {
+        return [
+            'uri' => $item->getUri(),
+            'path' => '',
+        ];
     }
 
     /**
@@ -421,6 +323,11 @@ class Previewer extends ServiceModule
         return $itemPreviewer;
     }
 
+    private function getAccessTokenService(): AccessTokenService
+    {
+        return $this->getPsrContainer()->get(AccessTokenService::class);
+    }
+
     /**
      * Gets payload from the request
      *
@@ -431,103 +338,5 @@ class Previewer extends ServiceModule
         $jsonPayload = $this->getPsrRequest()->getParsedBody();
 
         return json_decode($jsonPayload['itemResponse'], true);
-    }
-
-    private function getPcis(): array
-    {
-        $pcis = (new PciLoader())->getLatestPciRuntimes();
-        return $this->createIMSPCIs($pcis);
-    }
-
-    /**
-     * Create portableElements.pci section with IMS PCI only for itemData object
-     * Set absolute path in runtime.hook
-     * Implementation from @see https://github.com/oat-sa/extension-tao-test-preview-ui-loader/blob/master/views/js/previewer/helpers/getIMSPCIs.js
-     * @param array $pci - a parsed URL
-     * @return array $imsPCI
-     */
-    private function createIMSPCIs($pci): array
-    {
-        $imsPCI = [];
-        foreach ($pci as $key => $value) {
-            $pciData = $value[0];
-            if ($pciData['model'] === 'IMSPCI') {
-                // if no runtime.hook then module path should be used
-                if (!$pciData['runtime']['hook']) {
-                    foreach ($pciData['runtime']['modules'] ?? [] as $paths) {
-                        if (is_string($paths)) {
-                            $pciData['runtime']['hook'] = $paths;
-                        } elseif (is_array($paths) && count($paths)) {
-                            $pciData['runtime']['hook'] = $paths[0];
-                        }
-                    }
-                }
-                // runtime.hook should be absolute path for newUI test runner
-
-                $url = $this->parseUrlParts($pciData['runtime']['hook']);
-
-                if (is_string($pciData['baseUrl']) && empty($url['scheme'])) {
-                    $pciData['runtime']['hook'] =
-                        $this->prependToUrl($url, $pciData['baseUrl'], $pciData['slashcat'] ?? false);
-                    $imsPCI[$key] = [$pciData];
-                }
-            }
-        }
-        return $imsPCI;
-    }
-
-    /**
-     * Parse a URL/path string into directory and file components
-     * Implementation loosely based on @see https://github.com/oat-sa/tao-core-sdk-fe/blob/master/src/util/url.js
-     * @param string $url - the URL to parse
-     * @return array
-     */
-    private function parseUrlParts(string $url): array
-    {
-        $parsed = parse_url($url);
-        $path = $parsed['path'] ?? $url;
-
-        $lastSlash = strrpos($path, '/');
-        if ($lastSlash !== false) {
-            $directory = substr($path, 0, $lastSlash + 1);
-            $file = substr($path, $lastSlash + 1);
-        } else {
-            $directory = '';
-            $file = $path;
-        }
-
-        return [
-            'directory' => $directory,
-            'file' => $file,
-            'scheme' => $parsed['scheme'] ?? null,
-        ];
-    }
-
-    /**
-     * Prepend a base to an URL
-     * Implementation based on @see https://github.com/oat-sa/extension-tao-test-preview-ui-loader/blob/master/views/js/previewer/helpers/getIMSPCIs.js
-     * @param array $url - a parsed URL with 'directory' and 'file' keys
-     * @param string $base - the base to prepend
-     * @param bool $slashcat - remove dots, double slashes, etc.
-     * @return string the URL
-     */
-    private function prependToUrl(array $url, string $base, ?bool $slashcat): string
-    {
-        $slashcat = $slashcat ?? false;
-
-        if ($slashcat === true) {
-            // Remove leading ./ OR / from both directory and filename
-            $directory = preg_replace('#^\./#', '', $url['directory']);
-            $directory = ltrim($directory, '/');
-            $file = preg_replace('#^\./#', '', $url['file']);
-            $file = ltrim($file, '/');
-            return rtrim($base, '/') . '/' . $directory . urlencode($file);
-        }
-
-        // When slashcat is disabled, more permissive cleaning:
-        // Remove leading ./ or / both directory and filename
-        $directory = preg_replace('#^\.?/#', '', $url['directory']);
-        $file = preg_replace('#^\.?/#', '', $url['file']);
-        return $base . $directory . urlencode($file);
     }
 }

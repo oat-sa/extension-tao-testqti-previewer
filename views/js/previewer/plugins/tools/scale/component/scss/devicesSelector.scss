@@ -35,5 +35,9 @@
         .select2-container {
             text-shadow: none;
         }
+        &:has(select:focus-visible) .select2-container {
+            outline: 2px dotted white;
+            outline-offset: 2px;
+        }
     }
 }
