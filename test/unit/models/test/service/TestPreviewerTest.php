@@ -71,6 +71,33 @@ class TestPreviewerTest extends TestCase
     {
         $assessmentTest = $this->createMock(AssessmentTest::class);
         $route = $this->createMock(Route::class);
+
+        $this->mapper
+            ->method('map')
+            ->willReturn(new TestPreviewMap([]));
+
+        $this->timerBuilder
+            ->expects($this->never())
+            ->method('build');
+
+        $this->generator
+            ->method('generate')
+            ->willReturn($assessmentTest);
+
+        $this->factory
+            ->method('create')
+            ->willReturn($route);
+
+        $this->assertEquals(
+            new TestPreview(new TestPreviewMap([])),
+            $this->subject->createPreview(new TestPreviewRequest('uri'))
+        );
+    }
+
+    public function testPreviewWithTimeConstraint(): void
+    {
+        $assessmentTest = $this->createMock(AssessmentTest::class);
+        $route = $this->createMock(Route::class);
         $timer = ['test' => ['id' => 'testId']];
 
         $this->mapper
@@ -78,6 +105,7 @@ class TestPreviewerTest extends TestCase
             ->willReturn(new TestPreviewMap([]));
 
         $this->timerBuilder
+            ->expects($this->once())
             ->method('build')
             ->willReturn($timer);
 
@@ -91,7 +119,7 @@ class TestPreviewerTest extends TestCase
 
         $this->assertEquals(
             new TestPreview(new TestPreviewMap([]), $timer),
-            $this->subject->createPreview(new TestPreviewRequest('uri'))
+            $this->subject->createPreview(new TestPreviewRequest('uri', isTimeConstraintRequired: true))
         );
     }
 }

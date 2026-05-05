@@ -24,16 +24,19 @@ namespace oat\taoQtiTestPreviewer\models\test;
 
 class TestPreviewRequest
 {
-    /** @var string */
-    private $testUri;
+    private string $testUri;
 
-    /** @var TestPreviewConfig */
-    private $config;
+    private TestPreviewConfig $config;
+    private bool $isTimeConstraintRequired;
 
-    public function __construct(string $testUri, TestPreviewConfig $config = null)
-    {
+    public function __construct(
+        string $testUri,
+        TestPreviewConfig $config = null,
+        bool $isTimeConstraintRequired = false
+    ) {
         $this->testUri = $testUri;
         $this->config = $config ?? new TestPreviewConfig();
+        $this->isTimeConstraintRequired = $isTimeConstraintRequired;
     }
 
     public function getTestUri(): string
@@ -44,5 +47,10 @@ class TestPreviewRequest
     public function getConfig(): TestPreviewConfig
     {
         return $this->config;
+    }
+
+    public function isTimeConstraintRequired(): bool
+    {
+        return $this->isTimeConstraintRequired;
     }
 }

@@ -9,7 +9,7 @@ servers:
       server:
         default: https://community.docker.localhost/
 security:
-  - cookieAuth: []
+  - cookieAuth: [ ]
 paths:
   /taoQtiTestPreviewer/TestPreviewer/init:
     get:
@@ -21,6 +21,15 @@ paths:
           required: true
           example: 'https%3A%2F%2Fcommunity.docker.localhost%2Fontologies%2Ftao.rdf%23i5efb42fced1ce7064796c08b38ee176'
           description: Url encoded test identifier
+        - in: query
+          name: timer
+          schema:
+            type: integer
+            enum:
+              - 0
+              - 1
+          required: false
+          description: If set to `1`, returns `timer` in the response
 
       summary: Returns a test map
       responses:
@@ -85,7 +94,6 @@ components:
               $ref: '#/components/schemas/TestMap'
             timer:
               $ref: '#/components/schemas/TimerDefinition'
-              nullable: true
             toolStates:
               description: the current tools states
               type: array
@@ -234,10 +242,10 @@ components:
 
     TimerDefinition:
       type: object
+      nullable: true
       properties:
         test:
           $ref: '#/components/schemas/TimerDetail'
-          nullable: true
         testParts:
           type: array
           items:
@@ -252,9 +260,9 @@ components:
             $ref: '#/components/schemas/TimerDetail'
         extra:
           $ref: '#/components/schemas/TimerDetail'
-          nullable: true
 
     TimerDetail:
+      nullable: true
       type: object
       description: All time values are expressed in milliseconds.
       properties:

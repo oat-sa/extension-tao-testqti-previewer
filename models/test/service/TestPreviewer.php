@@ -59,7 +59,9 @@ class TestPreviewer implements TestPreviewerInterface
 
         return new TestPreview(
             $this->mapper->map($testAssessment, $route, $testPreviewRequest->getConfig()),
-            $this->timerBuilder->build($testAssessment, $route)
+            $testPreviewRequest->isTimeConstraintRequired()
+                ? $this->timerBuilder->build($testAssessment, $route)
+                : null
         );
     }
 }

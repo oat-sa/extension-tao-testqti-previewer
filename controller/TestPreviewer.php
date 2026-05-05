@@ -56,7 +56,8 @@ class TestPreviewer extends tao_actions_ServiceModule
 
             $testPreviewRequest = new TestPreviewRequest(
                 $testUri,
-                new TestPreviewConfig([TestPreviewConfig::CHECK_INFORMATIONAL => true])
+                new TestPreviewConfig([TestPreviewConfig::CHECK_INFORMATIONAL => true]),
+                (bool)($requestParams['timer'] ?? false),
             );
             $response = $this->getTestPreviewerService()->createPreview($testPreviewRequest);
 
