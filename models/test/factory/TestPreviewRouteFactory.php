@@ -22,12 +22,11 @@ declare(strict_types=1);
 
 namespace oat\taoQtiTestPreviewer\models\test\factory;
 
-use oat\oatbox\service\ConfigurableService;
 use qtism\data\AssessmentTest;
 use qtism\runtime\tests\Route;
 use qtism\runtime\tests\SessionManager;
 
-class TestPreviewRouteFactory extends ConfigurableService implements TestPreviewRouteFactoryInterface
+class TestPreviewRouteFactory implements TestPreviewRouteFactoryInterface
 {
     public function create(AssessmentTest $test): Route
     {
