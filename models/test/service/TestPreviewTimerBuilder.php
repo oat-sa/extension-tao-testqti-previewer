@@ -22,13 +22,12 @@ declare(strict_types=1);
 
 namespace oat\taoQtiTestPreviewer\models\test\service;
 
-use oat\oatbox\service\ConfigurableService;
 use qtism\data\AssessmentTest;
 use qtism\data\QtiComponent;
 use qtism\runtime\tests\Route;
 use qtism\runtime\tests\RouteItem;
 
-class TestPreviewTimerBuilder extends ConfigurableService implements TestPreviewTimerBuilderInterface
+class TestPreviewTimerBuilder implements TestPreviewTimerBuilderInterface
 {
     public function build(AssessmentTest $test, Route $route): ?array
     {

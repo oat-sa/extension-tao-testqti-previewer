@@ -24,14 +24,10 @@ namespace oat\taoQtiTestPreviewer\test\unit\models\test\service;
 
 use oat\generis\test\MockObject;
 use oat\generis\test\TestCase;
-use oat\taoQtiTestPreviewer\models\test\factory\TestPreviewRouteFactory;
 use oat\taoQtiTestPreviewer\models\test\factory\TestPreviewRouteFactoryInterface;
-use oat\taoQtiTestPreviewer\models\test\mapper\TestPreviewMapper;
 use oat\taoQtiTestPreviewer\models\test\mapper\TestPreviewMapperInterface;
 use oat\taoQtiTestPreviewer\models\test\service\TestPreviewer;
-use oat\taoQtiTestPreviewer\models\test\service\TestPreviewerAssessmentTestGenerator;
 use oat\taoQtiTestPreviewer\models\test\service\TestPreviewerAssessmentTestGeneratorInterface;
-use oat\taoQtiTestPreviewer\models\test\service\TestPreviewTimerBuilder;
 use oat\taoQtiTestPreviewer\models\test\service\TestPreviewTimerBuilderInterface;
 use oat\taoQtiTestPreviewer\models\test\TestPreview;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewMap;
@@ -63,16 +59,11 @@ class TestPreviewerTest extends TestCase
         $this->mapper = $this->createMock(TestPreviewMapperInterface::class);
         $this->timerBuilder = $this->createMock(TestPreviewTimerBuilderInterface::class);
 
-        $this->subject = new TestPreviewer();
-        $this->subject->setServiceLocator(
-            $this->getServiceLocatorMock(
-                [
-                    TestPreviewMapper::class => $this->mapper,
-                    TestPreviewerAssessmentTestGenerator::class => $this->generator,
-                    TestPreviewRouteFactory::class => $this->factory,
-                    TestPreviewTimerBuilder::class => $this->timerBuilder,
-                ]
-            )
+        $this->subject = new TestPreviewer(
+            $this->factory,
+            $this->generator,
+            $this->mapper,
+            $this->timerBuilder
         );
     }
 
