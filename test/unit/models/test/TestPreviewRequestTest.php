@@ -22,9 +22,9 @@ declare(strict_types=1);
 
 namespace oat\taoQtiTestPreviewer\test\unit\models\test;
 
-use oat\generis\test\TestCase;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewConfig;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewRequest;
+use PHPUnit\Framework\TestCase;
 
 class TestPreviewRequestTest extends TestCase
 {
@@ -42,5 +42,12 @@ class TestPreviewRequestTest extends TestCase
     {
         $this->assertInstanceOf(TestPreviewConfig::class, $this->subject->getConfig());
         $this->assertSame(self::TEST_URI, $this->subject->getTestUri());
+        $this->assertFalse($this->subject->isTimeConstraintRequired());
+    }
+
+    public function testIsTimeConstraintRequired(): void
+    {
+        $subject = new TestPreviewRequest(self::TEST_URI, isTimeConstraintRequired: true);
+        $this->assertTrue($subject->isTimeConstraintRequired());
     }
 }
