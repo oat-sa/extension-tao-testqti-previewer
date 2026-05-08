@@ -22,43 +22,46 @@ declare(strict_types=1);
 
 namespace oat\taoQtiTestPreviewer\models\test\service;
 
-use oat\oatbox\service\ConfigurableService;
-use oat\taoQtiTestPreviewer\models\test\mapper\TestPreviewMapper;
-use oat\taoQtiTestPreviewer\models\test\mapper\TestPreviewMapperInterface;
-use oat\taoQtiTestPreviewer\models\test\factory\TestPreviewRouteFactory;
 use oat\taoQtiTestPreviewer\models\test\factory\TestPreviewRouteFactoryInterface;
+use oat\taoQtiTestPreviewer\models\test\mapper\TestPreviewMapperInterface;
 use oat\taoQtiTestPreviewer\models\test\TestPreview;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewRequest;
+use qtism\data\storage\xml\XmlStorageException;
 
-class TestPreviewer extends ConfigurableService implements TestPreviewerInterface
+class TestPreviewer implements TestPreviewerInterface
 {
+    private TestPreviewRouteFactoryInterface $routeFactory;
+    private TestPreviewerAssessmentTestGeneratorInterface $generator;
+    private TestPreviewMapperInterface $mapper;
+    private TestPreviewTimerBuilderInterface $timerBuilder;
+
+    public function __construct(
+        TestPreviewRouteFactoryInterface $routeFactory,
+        TestPreviewerAssessmentTestGeneratorInterface $generator,
+        TestPreviewMapperInterface $mapper,
+        TestPreviewTimerBuilderInterface $timerBuilder
+    ) {
+        $this->routeFactory = $routeFactory;
+        $this->generator = $generator;
+        $this->mapper = $mapper;
+        $this->timerBuilder = $timerBuilder;
+    }
+
     /**
      * @param TestPreviewRequest $testPreviewRequest
      * @return TestPreview
-     * @throws \qtism\data\storage\xml\XmlStorageException
+     * @throws XmlStorageException
      */
     public function createPreview(TestPreviewRequest $testPreviewRequest): TestPreview
     {
-        $testAssessment = $this->getAssessmentTestGenerator()->generate($testPreviewRequest);
-        $route = $this->getRouteFactory()->create($testAssessment);
+        $testAssessment = $this->generator->generate($testPreviewRequest);
+        $route = $this->routeFactory->create($testAssessment);
 
         return new TestPreview(
-            $this->getMapper()->map($testAssessment, $route, $testPreviewRequest->getConfig())
+            $this->mapper->map($testAssessment, $route, $testPreviewRequest->getConfig()),
+            $testPreviewRequest->isTimeConstraintRequired()
+                ? $this->timerBuilder->build($testAssessment, $route)
+                : null
         );
-    }
-
-    private function getAssessmentTestGenerator(): TestPreviewerAssessmentTestGeneratorInterface
-    {
-        return $this->getServiceLocator()->get(TestPreviewerAssessmentTestGenerator::class);
-    }
-
-    private function getRouteFactory(): TestPreviewRouteFactoryInterface
-    {
-        return $this->getServiceLocator()->get(TestPreviewRouteFactory::class);
-    }
-
-    private function getMapper(): TestPreviewMapperInterface
-    {
-        return $this->getServiceLocator()->get(TestPreviewMapper::class);
     }
 }

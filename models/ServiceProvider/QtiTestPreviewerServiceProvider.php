@@ -23,7 +23,18 @@ declare(strict_types=1);
 namespace oat\taoQtiTestPreviewer\models\ServiceProvider;
 
 use oat\generis\model\DependencyInjection\ContainerServiceProviderInterface;
+use oat\oatbox\service\ServiceManager;
 use oat\taoQtiTest\models\TestCategoryPresetProvider;
+use oat\taoQtiTestPreviewer\models\test\factory\TestPreviewRouteFactory;
+use oat\taoQtiTestPreviewer\models\test\factory\TestPreviewRouteFactoryInterface;
+use oat\taoQtiTestPreviewer\models\test\mapper\TestPreviewMapper;
+use oat\taoQtiTestPreviewer\models\test\mapper\TestPreviewMapperInterface;
+use oat\taoQtiTestPreviewer\models\test\service\TestPreviewer;
+use oat\taoQtiTestPreviewer\models\test\service\TestPreviewerAssessmentTestGenerator;
+use oat\taoQtiTestPreviewer\models\test\service\TestPreviewerAssessmentTestGeneratorInterface;
+use oat\taoQtiTestPreviewer\models\test\service\TestPreviewerInterface;
+use oat\taoQtiTestPreviewer\models\test\service\TestPreviewTimerBuilder;
+use oat\taoQtiTestPreviewer\models\test\service\TestPreviewTimerBuilderInterface;
 use oat\taoQtiTestPreviewer\models\TestCategoryPresetMap;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
@@ -41,6 +52,28 @@ class QtiTestPreviewerServiceProvider implements ContainerServiceProviderInterfa
             ->args(
                 [
                     service(TestCategoryPresetProvider::SERVICE_ID),
+                ]
+            );
+
+        $services
+            ->set(TestPreviewRouteFactoryInterface::class, TestPreviewRouteFactory::class);
+        $services
+            ->set(TestPreviewerAssessmentTestGeneratorInterface::class, TestPreviewerAssessmentTestGenerator::class)
+            ->call('setServiceManager', [service(ServiceManager::class)]);
+        $services
+            ->set(TestPreviewMapperInterface::class, TestPreviewMapper::class)
+            ->call('setServiceManager', [service(ServiceManager::class)]);
+        $services
+            ->set(TestPreviewTimerBuilderInterface::class, TestPreviewTimerBuilder::class);
+        $services
+            ->set(TestPreviewerInterface::class, TestPreviewer::class)
+            ->public()
+            ->args(
+                [
+                    service(TestPreviewRouteFactoryInterface::class),
+                    service(TestPreviewerAssessmentTestGeneratorInterface::class),
+                    service(TestPreviewMapperInterface::class),
+                    service(TestPreviewTimerBuilderInterface::class),
                 ]
             );
     }

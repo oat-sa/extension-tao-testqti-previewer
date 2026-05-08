@@ -9,7 +9,7 @@ servers:
       server:
         default: https://community.docker.localhost/
 security:
-  - cookieAuth: []
+  - cookieAuth: [ ]
 paths:
   /taoQtiTestPreviewer/TestPreviewer/init:
     get:
@@ -21,6 +21,15 @@ paths:
           required: true
           example: 'https%3A%2F%2Fcommunity.docker.localhost%2Fontologies%2Ftao.rdf%23i5efb42fced1ce7064796c08b38ee176'
           description: Url encoded test identifier
+        - in: query
+          name: timer
+          schema:
+            type: integer
+            enum:
+              - 0
+              - 1
+          required: false
+          description: If set to `1`, returns `timer` in the response
 
       summary: Returns a test map
       responses:
@@ -83,6 +92,8 @@ components:
               $ref: '#/components/schemas/TestContext'
             testMap:
               $ref: '#/components/schemas/TestMap'
+            timer:
+              $ref: '#/components/schemas/TimerDefinition'
             toolStates:
               description: the current tools states
               type: array
@@ -228,6 +239,54 @@ components:
         position:
           type: integer
           example: 20
+
+    TimerDefinition:
+      type: object
+      nullable: true
+      properties:
+        test:
+          $ref: '#/components/schemas/TimerDetail'
+        testParts:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimerDetail'
+        sections:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimerDetail'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimerDetail'
+        extra:
+          $ref: '#/components/schemas/TimerDetail'
+
+    TimerDetail:
+      nullable: true
+      type: object
+      description: All time values are expressed in milliseconds.
+      properties:
+        id:
+          type: string
+        started:
+          type: boolean
+          example: false
+        minTime:
+          description: Minimum time assigned to the timer, in milliseconds.
+          type: integer
+          example: 0
+        maxTime:
+          description: Maximum time assigned to the timer, in milliseconds.
+          type: integer
+          example: 60000
+        maxTimeRemaining:
+          description: Remaining time for the timer, in milliseconds.
+          type: integer
+          example: 60000
+        initialValue:
+          description: Initial timer value, in milliseconds.
+          type: integer
+          nullable: true
 
     ErrorResponse:
       properties:
