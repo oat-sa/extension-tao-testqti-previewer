@@ -19,6 +19,12 @@ $collapserHeight: 30px;
         transform: translate(-50%, calc(#{$collapserHeight} - 100%));
         transition: transform .5s ease-out;
     }
+    & button {
+        &:focus-visible {
+            outline: 2px dotted $infoBorderColor;
+            outline-offset: 2px;
+        }
+    }
 }
 .top-block-preview-main {
     display: flex;

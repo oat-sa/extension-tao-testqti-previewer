@@ -27,8 +27,8 @@ use InvalidArgumentException;
 use oat\tao\model\accessControl\PermissionChecker;
 use oat\tao\model\http\HttpJsonResponseTrait;
 use oat\tao\model\resources\ResourceAccessDeniedException;
+use oat\taoQtiTestPreviewer\models\test\service\TestPreviewerInterface;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewConfig;
-use oat\taoQtiTestPreviewer\models\test\service\TestPreviewer as TestPreviewerService;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewRequest;
 use oat\taoQtiTestPreviewer\models\TestCategoryPresetMap;
 use oat\taoQtiTestPreviewer\models\testConfiguration\service\TestPreviewerConfigurationService;
@@ -56,7 +56,8 @@ class TestPreviewer extends tao_actions_ServiceModule
 
             $testPreviewRequest = new TestPreviewRequest(
                 $testUri,
-                new TestPreviewConfig([TestPreviewConfig::CHECK_INFORMATIONAL => true])
+                new TestPreviewConfig([TestPreviewConfig::CHECK_INFORMATIONAL => true]),
+                (bool)($requestParams['timer'] ?? false),
             );
             $response = $this->getTestPreviewerService()->createPreview($testPreviewRequest);
 
@@ -68,6 +69,7 @@ class TestPreviewer extends tao_actions_ServiceModule
                     'testData' => [],
                     'testContext' => [],
                     'testMap' => $response->getMap()->getMap(),
+                    'timer' => $response->getTimer(),
                     'presetMap' => $this->getTestPreviewerPresetsMapService()->getMap()
                 ]
             );
@@ -113,9 +115,9 @@ class TestPreviewer extends tao_actions_ServiceModule
         return $this->getServiceLocator()->get(TestPreviewerConfigurationService::class);
     }
 
-    private function getTestPreviewerService(): TestPreviewerService
+    private function getTestPreviewerService(): TestPreviewerInterface
     {
-        return $this->getServiceLocator()->get(TestPreviewerService::class);
+        return $this->getPsrContainer()->get(TestPreviewerInterface::class);
     }
 
     private function getTestPreviewerPresetsMapService(): TestCategoryPresetMap

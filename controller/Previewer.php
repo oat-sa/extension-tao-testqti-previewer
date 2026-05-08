@@ -8,23 +8,27 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ * Foundation, Inc., 31 Milk St # 960789 Boston, MA 02196 USA.
  *
- * Copyright (c) 2018-2020 (original work) Open Assessment Technologies SA ;
+ * Copyright (c) 2018-2026 (original work) Open Assessment Technologies SA;
  */
 
 declare(strict_types=1);
 
 namespace oat\taoQtiTestPreviewer\controller;
 
+use core_kernel_classes_Resource;
 use Exception;
 use common_exception_Error;
 use oat\tao\helpers\Base64;
+use oat\tao\model\accessControl\Service\AccessTokenService;
+use oat\tao\model\http\HttpJsonResponseTrait;
+use RuntimeException;
 use tao_helpers_Http as HttpHelper;
 use oat\taoItems\model\pack\Packer;
 use common_Exception as CommonException;
@@ -53,6 +57,7 @@ use tao_models_classes_FileNotFoundException as FileNotFoundException;
 class Previewer extends ServiceModule
 {
     use OntologyAwareTrait;
+    use HttpJsonResponseTrait;
 
     /**
      * Previewer constructor.
@@ -148,15 +153,7 @@ class Previewer extends ServiceModule
                     return;
                 }
 
-                $packer = new Packer($item, $lang, true);
-                $packer->setServiceLocator($this->getServiceLocator());
-
-                $itemPack = $packer->pack();
-                $response['content'] = $itemPack->JsonSerialize();
-                $response['baseUrl'] = _url('asset', null, null, [
-                    'uri' => $itemUri,
-                    'path' => '',
-                ]);
+                $response = $this->createItemResponse($item, $lang);
             } else {
                 throw new BadRequestException('Either itemUri or resultId needs to be provided.');
             }
@@ -217,6 +214,41 @@ class Previewer extends ServiceModule
         }
 
         $this->returnJson($response, $code);
+    }
+
+    public function getTokens(): void
+    {
+        try {
+            $this->setSuccessJsonResponse(
+                $this->getAccessTokenService()->fetchTokens()
+            );
+        } catch (RuntimeException $exception) {
+            $this->setErrorJsonResponse(
+                $exception->getMessage(),
+                $exception->getCode(),
+                statusCode: $exception->getCode()
+            );
+        }
+    }
+
+    protected function createItemResponse(core_kernel_classes_Resource $item, string $lang): array
+    {
+        $packer = new Packer($item, $lang, true);
+        $packer->setServiceLocator($this->getServiceLocator());
+
+        $itemPack = $packer->pack();
+        return [
+            'content' => $itemPack->JsonSerialize(),
+            'baseUrl' => _url('asset', null, null, $this->createBaseUriParameters($item)),
+        ];
+    }
+
+    protected function createBaseUriParameters(core_kernel_classes_Resource $item): array
+    {
+        return [
+            'uri' => $item->getUri(),
+            'path' => '',
+        ];
     }
 
     /**
@@ -289,6 +321,11 @@ class Previewer extends ServiceModule
         $itemPreviewer = $this->getServiceLocator()->get(ItemPreviewer::class);
 
         return $itemPreviewer;
+    }
+
+    private function getAccessTokenService(): AccessTokenService
+    {
+        return $this->getPsrContainer()->get(AccessTokenService::class);
     }
 
     /**
