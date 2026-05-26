@@ -15,28 +15,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2020 (original work) Open Assessment Technologies SA ;
+ * Copyright (c) 2026 (original work) Open Assessment Technologies SA ;
  */
 
 declare(strict_types=1);
 
-namespace oat\taoQtiTestPreviewer\models\test\factory;
+namespace oat\taoQtiTestPreviewer\models\test\service;
 
 use qtism\data\AssessmentTest;
 use qtism\runtime\tests\Route;
-use qtism\runtime\tests\SessionManager;
 
-class TestPreviewRouteFactory implements TestPreviewRouteFactoryInterface
+interface TestPreviewTimerBuilderInterface
 {
-    public function create(AssessmentTest $test): Route
-    {
-        $manager = new class () extends SessionManager {
-            public function createRoute(AssessmentTest $test)
-            {
-                return parent::createRoute($test);
-            }
-        };
-
-        return $manager->createRoute($test);
-    }
+    public function build(AssessmentTest $test, Route $route): ?array;
 }

@@ -8,14 +8,14 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ * Foundation, Inc., 31 Milk St # 960789 Boston, MA 02196 USA.
  *
- * Copyright (c) 2020 (original work) Open Assessment Technologies SA ;
+ * Copyright (c) 2020-2026 (original work) Open Assessment Technologies SA;
  */
 
 declare(strict_types=1);
@@ -24,16 +24,19 @@ namespace oat\taoQtiTestPreviewer\models\test;
 
 class TestPreviewRequest
 {
-    /** @var string */
-    private $testUri;
+    private string $testUri;
 
-    /** @var TestPreviewConfig */
-    private $config;
+    private TestPreviewConfig $config;
+    private bool $isTimeConstraintRequired;
 
-    public function __construct(string $testUri, TestPreviewConfig $config = null)
-    {
+    public function __construct(
+        string $testUri,
+        TestPreviewConfig $config = null,
+        ?bool $isTimeConstraintRequired = false
+    ) {
         $this->testUri = $testUri;
         $this->config = $config ?? new TestPreviewConfig();
+        $this->isTimeConstraintRequired = $isTimeConstraintRequired;
     }
 
     public function getTestUri(): string
@@ -44,5 +47,10 @@ class TestPreviewRequest
     public function getConfig(): TestPreviewConfig
     {
         return $this->config;
+    }
+
+    public function isTimeConstraintRequired(): bool
+    {
+        return $this->isTimeConstraintRequired;
     }
 }

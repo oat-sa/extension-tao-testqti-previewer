@@ -92,9 +92,13 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
                 $itemUri = $itemRef->getHref();
 
                 $allowSkipping = true;
+                $validateResponses = false;
+                $remainingAttempts = -1;
                 $sessionControl = $itemRef->getItemSessionControl();
                 if ($sessionControl !== null) {
                     $allowSkipping = $sessionControl->doesAllowSkipping();
+                    $validateResponses = $sessionControl->mustValidateResponses();
+                    $remainingAttempts = $sessionControl->getMaxAttempts() - 1;
                 }
 
                 $itemInfos = [
@@ -103,12 +107,13 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
                     'label' => $this->getItemLabel($itemUri),
                     'position' => $offset,
                     'occurrence' => $occurrence,
-                    'remainingAttempts' => -1,
+                    'remainingAttempts' => $remainingAttempts,
                     'answered' => 0,
                     'flagged' => false,
                     'viewed' => false,
                     'categories' => $itemRef->getCategories()->getArrayCopy(),
                     'allowSkipping' => $allowSkipping,
+                    'validateResponses' => $validateResponses,
                     'hasFeedbacks' => $this->checkHasFeedbacks($itemRef)
                 ];
 
