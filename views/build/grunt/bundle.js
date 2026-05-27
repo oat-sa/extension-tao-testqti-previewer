@@ -32,6 +32,7 @@ module.exports = function(grunt) {
                     extension : 'taoQtiTestPreviewer',
                     outputDir : 'loader',
                     dependencies : ['taoItems', 'taoQtiItem', 'taoTests', 'taoQtiTest'],
+                    babelPreTransform: { enabled: true, exclude: ['mathjax'] },
                     bundles : [{
                         name : 'qtiPreviewer',
                         babel : true,
