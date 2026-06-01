@@ -1,5 +1,5 @@
 msgid ""
-msgstr ""
+msgstr " {ruby}{rb}6{/rb}{rt}7{/rt}{/ruby}"
 "Project-Id-Version: TAO 2023.02 LTS\n"
 "PO-Revision-Date: 2023-03-02T15:43:34\n"
 "Last-Translator: TAO Translation Team <translation@tao.lu>\n"
@@ -14,68 +14,68 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 
 msgid "Actual size"
-msgstr "実サイズ"
+msgstr "実サイズ {ruby}{rb}6{/rb}{rt}7{/rt}{/ruby}"
 
 msgid "An error occurred during results submission. Please retry."
-msgstr "結果の送信中にエラーが発生しました。再試行してください。"
+msgstr "結果の送信中にエラーが発生しました。再試行してください。 {ruby}{rb}6{/rb}{rt}7{/rt}{/ruby}"
 
 msgid "An error occurred!"
-msgstr "エラーが発生しました"
+msgstr "エラーが発生しました {ruby}{rb}6{/rb}{rt}7{/rt}{/ruby}"
 
 msgid "Close"
-msgstr "閉じる"
+msgstr "閉じる {ruby}{rb}6{/rb}{rt}7{/rt}{/ruby}"
 
 msgid "Close console"
-msgstr "コンソールを閉じる"
+msgstr "コンソールを閉じる {ruby}{rb}6{/rb}{rt}7{/rt}{/ruby}"
 
 msgid "Close the previewer"
-msgstr "プレビュアを閉じる"
+msgstr "プレビュアを閉じる {ruby}{rb}6{/rb}{rt}7{/rt}{/ruby}"
 
 msgid "Desktop preview"
-msgstr "デスクトッププレビュー"
+msgstr "デスクトッププレビュー {ruby}{rb}6{/rb}{rt}7{/rt}{/ruby}"
 
 msgid "File not found"
-msgstr "ファイルが見つかりません"
+msgstr "ファイルが見つかりません {ruby}{rb}6{/rb}{rt}7{/rt}{/ruby}"
 
 msgid "Go back to tests selection"
-msgstr "テスト一覧に戻る"
+msgstr "テスト一覧に戻る {ruby}{rb}6{/rb}{rt}7{/rt}{/ruby}"
 
 msgid "It seems that some items have been deleted. Please remove the items with empty labels from the test and save before trying again."
-msgstr ""
+msgstr "It seems that some items have been deleted. Please remove the items with empty labels from the test and save before trying again. {ruby}{rb}6{/rb}{rt}7{/rt}{/ruby}"
 
 msgid "It seems that there is an error during item preview loading. Please, try again."
-msgstr "アイテムプレビューの読み込み中にエラーが発生したようです。お手数ですが、もう一度お試しください。"
+msgstr "アイテムプレビューの読み込み中にエラーが発生したようです。お手数ですが、もう一度お試しください。 {ruby}{rb}6{/rb}{rt}7{/rt}{/ruby}"
 
 msgid "Item Preview:"
-msgstr "アイテムプレビュ"
+msgstr "アイテムプレビュ {ruby}{rb}6{/rb}{rt}7{/rt}{/ruby}"
 
 msgid "Landscape"
-msgstr "ランドスケープ"
+msgstr "ランドスケープ {ruby}{rb}6{/rb}{rt}7{/rt}{/ruby}"
 
 msgid "Logout"
-msgstr "ログアウト"
+msgstr "ログアウト {ruby}{rb}6{/rb}{rt}7{/rt}{/ruby}"
 
 msgid "Mobile preview"
-msgstr "モバイルプレビュ"
+msgstr "モバイルプレビュ {ruby}{rb}6{/rb}{rt}7{/rt}{/ruby}"
 
 msgid "Output data"
-msgstr "アウトプットデータ"
+msgstr "アウトプットデータ {ruby}{rb}6{/rb}{rt}7{/rt}{/ruby}"
 
 msgid "Portrait"
-msgstr "ポートレート"
+msgstr "ポートレート {ruby}{rb}6{/rb}{rt}7{/rt}{/ruby}"
 
 msgid "Submit"
-msgstr "送信"
+msgstr "送信 {ruby}{rb}6{/rb}{rt}7{/rt}{/ruby}"
 
 msgid "Submit and show the result"
-msgstr "提出して結果を表示"
+msgstr "提出して結果を表示 {ruby}{rb}6{/rb}{rt}7{/rt}{/ruby}"
 
 msgid "Submitted data"
-msgstr "送信済みデータ"
+msgstr "送信済みデータ {ruby}{rb}6{/rb}{rt}7{/rt}{/ruby}"
 
 msgid "TAO Guest"
-msgstr "TAOゲスト"
+msgstr "TAOゲスト {ruby}{rb}6{/rb}{rt}7{/rt}{/ruby}"
 
 msgid "Test Preview:"
-msgstr "プレビュー:"
+msgstr "プレビュー: {ruby}{rb}6{/rb}{rt}7{/rt}{/ruby}"
 
