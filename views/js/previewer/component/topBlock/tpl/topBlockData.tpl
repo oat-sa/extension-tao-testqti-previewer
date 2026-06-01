@@ -1,1 +1,1 @@
-<p>{{name}} <b>{{title}}</b></p>
+<p>{{{name}}} <b>{{{title}}}</b></p>
