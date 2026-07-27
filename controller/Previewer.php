@@ -22,14 +22,20 @@ declare(strict_types=1);
 
 namespace oat\taoQtiTestPreviewer\controller;
 
+use common_session_Session;
+use common_session_SessionManager;
 use core_kernel_classes_Resource;
 use Exception;
 use common_exception_Error;
+use oat\generis\model\user\UserRdf;
+use oat\oatbox\user\User;
 use oat\tao\helpers\Base64;
 use oat\tao\model\accessControl\Service\AccessTokenService;
 use oat\tao\model\http\HttpJsonResponseTrait;
 use RuntimeException;
 use tao_helpers_Http as HttpHelper;
+use oat\taoEventLog\model\eventLog\LoggerService;
+use oat\taoItems\model\event\ItemContentViewEvent;
 use oat\taoItems\model\pack\Packer;
 use common_Exception as CommonException;
 use taoItems_models_classes_ItemsService;
@@ -154,6 +160,7 @@ class Previewer extends ServiceModule
                 }
 
                 $response = $this->createItemResponse($item, $lang);
+                $this->getLoggerService()->log(new ItemContentViewEvent($item->getUri()));
             } else {
                 throw new BadRequestException('Either itemUri or resultId needs to be provided.');
             }
@@ -326,6 +333,11 @@ class Previewer extends ServiceModule
     private function getAccessTokenService(): AccessTokenService
     {
         return $this->getPsrContainer()->get(AccessTokenService::class);
+    }
+
+    private function getLoggerService(): LoggerService
+    {
+        return $this->getPsrContainer()->get(LoggerService::SERVICE_ID);
     }
 
     /**
