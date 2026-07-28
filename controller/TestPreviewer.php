@@ -27,13 +27,11 @@ use InvalidArgumentException;
 use oat\tao\model\accessControl\PermissionChecker;
 use oat\tao\model\http\HttpJsonResponseTrait;
 use oat\tao\model\resources\ResourceAccessDeniedException;
-use oat\taoEventLog\model\eventLog\LoggerService;
 use oat\taoQtiTestPreviewer\models\test\service\TestPreviewerInterface;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewConfig;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewRequest;
 use oat\taoQtiTestPreviewer\models\TestCategoryPresetMap;
 use oat\taoQtiTestPreviewer\models\testConfiguration\service\TestPreviewerConfigurationService;
-use oat\taoTests\models\event\TestContentViewEvent;
 use qtism\data\storage\xml\XmlStorageException;
 use tao_actions_ServiceModule;
 use Throwable;
@@ -62,7 +60,6 @@ class TestPreviewer extends tao_actions_ServiceModule
                 (bool)($requestParams['timer'] ?? false),
             );
             $response = $this->getTestPreviewerService()->createPreview($testPreviewRequest);
-            $this->getLoggerService()->log(new TestContentViewEvent($testUri));
 
             $this->setNoCacheHeaders();
 
@@ -147,10 +144,5 @@ class TestPreviewer extends tao_actions_ServiceModule
     private function getPermissionChecker(): PermissionChecker
     {
         return $this->getPsrContainer()->get(PermissionChecker::class);
-    }
-
-    private function getLoggerService(): LoggerService
-    {
-        return $this->getPsrContainer()->get(LoggerService::SERVICE_ID);
     }
 }

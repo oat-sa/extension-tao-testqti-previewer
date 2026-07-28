@@ -22,21 +22,19 @@ declare(strict_types=1);
 
 namespace oat\taoQtiTestPreviewer\controller;
 
-use common_session_Session;
-use common_session_SessionManager;
 use core_kernel_classes_Resource;
 use Exception;
 use common_exception_Error;
-use oat\generis\model\user\UserRdf;
-use oat\oatbox\user\User;
 use oat\tao\helpers\Base64;
 use oat\tao\model\accessControl\Service\AccessTokenService;
 use oat\tao\model\http\HttpJsonResponseTrait;
+use oat\tao\model\TaoOntology;
 use RuntimeException;
 use tao_helpers_Http as HttpHelper;
 use oat\taoEventLog\model\eventLog\LoggerService;
 use oat\taoItems\model\event\ItemContentViewEvent;
 use oat\taoItems\model\pack\Packer;
+use oat\taoTests\models\event\TestContentViewEvent;
 use common_Exception as CommonException;
 use taoItems_models_classes_ItemsService;
 use oat\generis\model\OntologyAwareTrait;
@@ -44,7 +42,6 @@ use tao_actions_ServiceModule as ServiceModule;
 use oat\taoItems\model\media\ItemMediaResolver;
 use oat\taoQtiTestPreviewer\models\ItemPreviewer;
 use oat\tao\model\media\sourceStrategy\HttpSource;
-use oat\tao\model\routing\AnnotationReader\security;
 use common_exception_BadRequest as BadRequestException;
 use taoQtiTest_helpers_TestRunnerUtils as TestRunnerUtils;
 use oat\taoQtiTestPreviewer\models\PreviewLanguageService;
@@ -54,6 +51,7 @@ use common_exception_MissingParameter as MissingParameterException;
 use common_exception_NoImplementation as NoImplementationException;
 use common_exception_UserReadableException as UserReadableException;
 use tao_models_classes_FileNotFoundException as FileNotFoundException;
+use Throwable;
 
 /**
  * Class Previewer
@@ -160,7 +158,6 @@ class Previewer extends ServiceModule
                 }
 
                 $response = $this->createItemResponse($item, $lang);
-                $this->getLoggerService()->log(new ItemContentViewEvent($item->getUri()));
             } else {
                 throw new BadRequestException('Either itemUri or resultId needs to be provided.');
             }
@@ -226,14 +223,48 @@ class Previewer extends ServiceModule
     public function getTokens(): void
     {
         try {
-            $this->setSuccessJsonResponse(
-                $this->getAccessTokenService()->fetchTokens()
-            );
+            $this->setSuccessJsonResponse($this->getAccessTokenService()->fetchTokens());
+            $this->logPreviewViewEventFromTokenRequest($this->getPsrRequest()->getQueryParams());
         } catch (RuntimeException $exception) {
             $this->setErrorJsonResponse(
                 $exception->getMessage(),
                 $exception->getCode(),
                 statusCode: $exception->getCode()
+            );
+            return;
+        }
+    }
+
+    /**
+     * TODO EP-693 TEMPORARY HACK:
+     * remove token-request based preview logging and move to proper preview-user attribution flow
+     * once EP-765 is delivered: https://oat-sa.atlassian.net/browse/EP-765
+     */
+    private function logPreviewViewEventFromTokenRequest(array $requestParams): void
+    {
+        try {
+            $resourceUri = $requestParams['resourceUri'] ?? null;
+
+            if (!is_string($resourceUri) || $resourceUri === '') {
+                throw new BadRequestException('Resource URI must be a non-empty string.');
+            }
+
+            $resource = $this->getResource($resourceUri);
+
+            if ($resource->isInstanceOf($this->getClass(TaoOntology::CLASS_URI_ITEM))) {
+                $this->getLoggerService()->log(new ItemContentViewEvent($resourceUri));
+                return;
+            }
+
+            if ($resource->isInstanceOf($this->getClass(TaoOntology::CLASS_URI_TEST))) {
+                $this->getLoggerService()->log(new TestContentViewEvent($resourceUri));
+            }
+        } catch (Throwable $exception) {
+            $this->logError(
+                sprintf(
+                    'Preview logging skipped after successful token fetch: %s',
+                    $exception->getMessage()
+                )
             );
         }
     }
