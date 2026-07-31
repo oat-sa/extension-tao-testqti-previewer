@@ -25,13 +25,13 @@ namespace oat\taoQtiTestPreviewer\controller;
 use core_kernel_classes_Resource;
 use Exception;
 use common_exception_Error;
+use oat\oatbox\event\EventManager;
 use oat\tao\helpers\Base64;
 use oat\tao\model\accessControl\Service\AccessTokenService;
 use oat\tao\model\http\HttpJsonResponseTrait;
 use oat\tao\model\TaoOntology;
 use RuntimeException;
 use tao_helpers_Http as HttpHelper;
-use oat\taoEventLog\model\eventLog\LoggerService;
 use oat\taoItems\model\event\ItemContentViewEvent;
 use oat\taoItems\model\pack\Packer;
 use oat\taoTests\models\event\TestContentViewEvent;
@@ -252,12 +252,12 @@ class Previewer extends ServiceModule
             $resource = $this->getResource($resourceUri);
 
             if ($resource->isInstanceOf($this->getClass(TaoOntology::CLASS_URI_ITEM))) {
-                $this->getLoggerService()->log(new ItemContentViewEvent($resourceUri));
+                $this->getEventManager()->trigger(new ItemContentViewEvent($resource));
                 return;
             }
 
             if ($resource->isInstanceOf($this->getClass(TaoOntology::CLASS_URI_TEST))) {
-                $this->getLoggerService()->log(new TestContentViewEvent($resourceUri));
+                $this->getEventManager()->trigger(new TestContentViewEvent($resource));
             }
         } catch (Throwable $exception) {
             $this->logError(
@@ -366,11 +366,6 @@ class Previewer extends ServiceModule
         return $this->getPsrContainer()->get(AccessTokenService::class);
     }
 
-    private function getLoggerService(): LoggerService
-    {
-        return $this->getPsrContainer()->get(LoggerService::SERVICE_ID);
-    }
-
     /**
      * Gets payload from the request
      *
@@ -381,5 +376,10 @@ class Previewer extends ServiceModule
         $jsonPayload = $this->getPsrRequest()->getParsedBody();
 
         return json_decode($jsonPayload['itemResponse'], true);
+    }
+
+    private function getEventManager(): EventManager
+    {
+        return $this->getPsrContainer()->get(EventManager::SERVICE_ID);
     }
 }
