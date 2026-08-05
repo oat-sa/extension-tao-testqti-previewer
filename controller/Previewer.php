@@ -220,7 +220,9 @@ class Previewer extends ServiceModule
     {
         try {
             $this->setSuccessJsonResponse(
-                $this->getAccessTokenService()->fetchTokens()
+                $this->getAccessTokenService()->fetchTokens(
+                    'http://www.tao.lu/Ontologies/TAOTest.rdf#TaoQtiTestPreviewerRole'
+                )
             );
         } catch (RuntimeException $exception) {
             $this->setErrorJsonResponse(
