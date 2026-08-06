@@ -30,6 +30,7 @@ use oat\tao\helpers\Base64;
 use oat\tao\model\accessControl\Service\AccessTokenService;
 use oat\tao\model\http\HttpJsonResponseTrait;
 use oat\taoItems\model\event\ItemContentViewEvent;
+use oat\taoQtiTestPreviewer\models\User\TaoQtiTestPreviewerRoles;
 use RuntimeException;
 use tao_helpers_Http as HttpHelper;
 use oat\taoItems\model\pack\Packer;
@@ -222,9 +223,7 @@ class Previewer extends ServiceModule
     {
         try {
             $this->setSuccessJsonResponse(
-                $this->getAccessTokenService()->fetchTokens(
-                    'http://www.tao.lu/Ontologies/TAOTest.rdf#TaoQtiTestPreviewerRole'
-                )
+                $this->getAccessTokenService()->fetchTokens(TaoQtiTestPreviewerRoles::TEST_PREVIEWER)
             );
         } catch (RuntimeException $exception) {
             $this->setErrorJsonResponse(

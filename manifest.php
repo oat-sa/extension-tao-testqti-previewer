@@ -21,9 +21,11 @@
 use oat\taoItems\model\user\TaoItemsRoles;
 use oat\tao\model\accessControl\func\AccessRule;
 use oat\taoQtiTestPreviewer\models\ServiceProvider\QtiTestPreviewerServiceProvider;
+use oat\taoQtiTestPreviewer\models\User\TaoQtiTestPreviewerRoles;
 use oat\taoQtiTestPreviewer\scripts\update\Updater;
 use oat\taoQtiTestPreviewer\scripts\install\RegisterPreviewers;
 use oat\taoQtiTestPreviewer\scripts\install\RegisterTestPreviewer;
+use oat\taoTests\models\user\TaoTestsRoles;
 
 return [
     'name' => 'taoQtiTestPreviewer',
@@ -31,31 +33,31 @@ return [
     'description' => 'extension that provides QTI test previewer',
     'license'     => 'GPL-2.0',
     'author' => 'Open Assessment Technologies SA',
-    'managementRole' => 'http://www.tao.lu/Ontologies/TAOTest.rdf#TaoQtiTestPreviewerRole',
+    'managementRole' => TaoQtiTestPreviewerRoles::TEST_PREVIEWER,
     'acl' => [
         [
             AccessRule::GRANT,
-            'http://www.tao.lu/Ontologies/TAOTest.rdf#TaoQtiTestPreviewerRole',
+            TaoQtiTestPreviewerRoles::TEST_PREVIEWER,
             ['ext' => 'taoQtiTestPreviewer'],
         ],
         [
             AccessRule::GRANT,
-            'http://www.tao.lu/Ontologies/TAOItem.rdf#TestAuthor',
+            TaoTestsRoles::TEST_AUTHOR,
             ['ext' => 'taoQtiTestPreviewer', 'mod' => 'TestPreviewer', 'act' => 'init'],
         ],
         [
             AccessRule::GRANT,
-            'http://www.tao.lu/Ontologies/TAOItem.rdf#TestAuthor',
+            TaoTestsRoles::TEST_AUTHOR,
             ['ext' => 'taoQtiTestPreviewer', 'mod' => 'TestPreviewer', 'act' => 'configuration'],
         ],
         [
             AccessRule::GRANT,
-            'http://www.tao.lu/Ontologies/TAOItem.rdf#TestAuthor',
+            TaoTestsRoles::TEST_AUTHOR,
             ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer', 'act' => 'getItem'],
         ],
         [
             AccessRule::GRANT,
-            'http://www.tao.lu/Ontologies/TAOItem.rdf#TestAuthor',
+            TaoTestsRoles::TEST_AUTHOR,
             ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer', 'act' => 'asset'],
         ],
         [
