@@ -23,7 +23,10 @@ declare(strict_types=1);
 namespace oat\taoQtiTestPreviewer\controller;
 
 use common_exception_UserReadableException;
+use Exception;
 use InvalidArgumentException;
+use oat\generis\model\OntologyAwareTrait;
+use oat\oatbox\event\EventManager;
 use oat\tao\model\accessControl\PermissionChecker;
 use oat\tao\model\http\HttpJsonResponseTrait;
 use oat\tao\model\resources\ResourceAccessDeniedException;
@@ -32,6 +35,7 @@ use oat\taoQtiTestPreviewer\models\test\TestPreviewConfig;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewRequest;
 use oat\taoQtiTestPreviewer\models\TestCategoryPresetMap;
 use oat\taoQtiTestPreviewer\models\testConfiguration\service\TestPreviewerConfigurationService;
+use oat\taoTests\models\event\TestContentViewEvent;
 use qtism\data\storage\xml\XmlStorageException;
 use tao_actions_ServiceModule;
 use Throwable;
@@ -39,6 +43,7 @@ use Throwable;
 class TestPreviewer extends tao_actions_ServiceModule
 {
     use HttpJsonResponseTrait;
+    use OntologyAwareTrait;
 
     public function init()
     {
@@ -82,6 +87,17 @@ class TestPreviewer extends tao_actions_ServiceModule
                 : $exception->getMessage();
 
             $this->setErrorJsonResponse($message);
+        }
+
+        try {
+            $this->getEventManager()->trigger(new TestContentViewEvent($this->getResource($testUri)));
+        } catch (Exception $exception) {
+            $this->logError(
+                sprintf(
+                    'Test preview log skipped: %s',
+                    $exception->getMessage()
+                )
+            );
         }
     }
 
@@ -144,5 +160,10 @@ class TestPreviewer extends tao_actions_ServiceModule
     private function getPermissionChecker(): PermissionChecker
     {
         return $this->getPsrContainer()->get(PermissionChecker::class);
+    }
+
+    private function getEventManager(): EventManager
+    {
+        return $this->getPsrContainer()->get(EventManager::class);
     }
 }
