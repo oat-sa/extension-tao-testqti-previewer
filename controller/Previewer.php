@@ -29,12 +29,11 @@ use oat\oatbox\event\EventManager;
 use oat\tao\helpers\Base64;
 use oat\tao\model\accessControl\Service\AccessTokenService;
 use oat\tao\model\http\HttpJsonResponseTrait;
-use oat\tao\model\TaoOntology;
+use oat\taoItems\model\event\ItemContentViewEvent;
+use oat\taoQtiTestPreviewer\models\User\TaoQtiTestPreviewerRoles;
 use RuntimeException;
 use tao_helpers_Http as HttpHelper;
-use oat\taoItems\model\event\ItemContentViewEvent;
 use oat\taoItems\model\pack\Packer;
-use oat\taoTests\models\event\TestContentViewEvent;
 use common_Exception as CommonException;
 use taoItems_models_classes_ItemsService;
 use oat\generis\model\OntologyAwareTrait;
@@ -42,6 +41,7 @@ use tao_actions_ServiceModule as ServiceModule;
 use oat\taoItems\model\media\ItemMediaResolver;
 use oat\taoQtiTestPreviewer\models\ItemPreviewer;
 use oat\tao\model\media\sourceStrategy\HttpSource;
+use oat\tao\model\routing\AnnotationReader\security;
 use common_exception_BadRequest as BadRequestException;
 use taoQtiTest_helpers_TestRunnerUtils as TestRunnerUtils;
 use oat\taoQtiTestPreviewer\models\PreviewLanguageService;
@@ -51,7 +51,6 @@ use common_exception_MissingParameter as MissingParameterException;
 use common_exception_NoImplementation as NoImplementationException;
 use common_exception_UserReadableException as UserReadableException;
 use tao_models_classes_FileNotFoundException as FileNotFoundException;
-use Throwable;
 
 /**
  * Class Previewer
@@ -223,54 +222,30 @@ class Previewer extends ServiceModule
     public function getTokens(): void
     {
         try {
-            $this->setSuccessJsonResponse($this->getAccessTokenService()->fetchTokens());
-            $this->logPreviewViewEventFromTokenRequest($this->getPsrRequest()->getQueryParams());
+            $this->setSuccessJsonResponse(
+                $this->getAccessTokenService()->fetchTokens(TaoQtiTestPreviewerRoles::TEST_PREVIEWER)
+            );
         } catch (RuntimeException $exception) {
             $this->setErrorJsonResponse(
                 $exception->getMessage(),
                 $exception->getCode(),
                 statusCode: $exception->getCode()
             );
-            return;
-        }
-    }
-
-    /**
-     * TODO EP-693 TEMPORARY HACK:
-     * remove token-request based preview logging and move to proper preview-user attribution flow
-     * once EP-765 is delivered: https://oat-sa.atlassian.net/browse/EP-765
-     */
-    private function logPreviewViewEventFromTokenRequest(array $requestParams): void
-    {
-        try {
-            $resourceUri = $requestParams['resourceUri'] ?? null;
-
-            if (!is_string($resourceUri) || $resourceUri === '') {
-                throw new BadRequestException('Resource URI must be a non-empty string.');
-            }
-
-            $resource = $this->getResource($resourceUri);
-
-            if ($resource->isInstanceOf($this->getClass(TaoOntology::CLASS_URI_ITEM))) {
-                $this->getEventManager()->trigger(new ItemContentViewEvent($resource));
-                return;
-            }
-
-            if ($resource->isInstanceOf($this->getClass(TaoOntology::CLASS_URI_TEST))) {
-                $this->getEventManager()->trigger(new TestContentViewEvent($resource));
-            }
-        } catch (Throwable $exception) {
-            $this->logError(
-                sprintf(
-                    'Preview logging skipped after successful token fetch: %s',
-                    $exception->getMessage()
-                )
-            );
         }
     }
 
     protected function createItemResponse(core_kernel_classes_Resource $item, string $lang): array
     {
+        try {
+            $this->getEventManager()->trigger(new ItemContentViewEvent($item));
+        } catch (Exception $exception) {
+            $this->logError(
+                sprintf(
+                    'Item preview log skipped: %s',
+                    $exception->getMessage()
+                )
+            );
+        }
         $packer = new Packer($item, $lang, true);
         $packer->setServiceLocator($this->getServiceLocator());
 
@@ -366,6 +341,11 @@ class Previewer extends ServiceModule
         return $this->getPsrContainer()->get(AccessTokenService::class);
     }
 
+    private function getEventManager(): EventManager
+    {
+        return $this->getPsrContainer()->get(EventManager::class);
+    }
+
     /**
      * Gets payload from the request
      *
@@ -376,10 +356,5 @@ class Previewer extends ServiceModule
         $jsonPayload = $this->getPsrRequest()->getParsedBody();
 
         return json_decode($jsonPayload['itemResponse'], true);
-    }
-
-    private function getEventManager(): EventManager
-    {
-        return $this->getPsrContainer()->get(EventManager::SERVICE_ID);
     }
 }
