@@ -25,9 +25,12 @@ namespace oat\taoQtiTestPreviewer\controller;
 use core_kernel_classes_Resource;
 use Exception;
 use common_exception_Error;
+use oat\oatbox\event\EventManager;
 use oat\tao\helpers\Base64;
 use oat\tao\model\accessControl\Service\AccessTokenService;
 use oat\tao\model\http\HttpJsonResponseTrait;
+use oat\taoItems\model\event\ItemContentViewEvent;
+use oat\taoQtiTestPreviewer\models\User\TaoQtiTestPreviewerRoles;
 use RuntimeException;
 use tao_helpers_Http as HttpHelper;
 use oat\taoItems\model\pack\Packer;
@@ -220,7 +223,7 @@ class Previewer extends ServiceModule
     {
         try {
             $this->setSuccessJsonResponse(
-                $this->getAccessTokenService()->fetchTokens()
+                $this->getAccessTokenService()->fetchTokens(TaoQtiTestPreviewerRoles::TEST_PREVIEWER)
             );
         } catch (RuntimeException $exception) {
             $this->setErrorJsonResponse(
@@ -233,6 +236,16 @@ class Previewer extends ServiceModule
 
     protected function createItemResponse(core_kernel_classes_Resource $item, string $lang): array
     {
+        try {
+            $this->getEventManager()->trigger(new ItemContentViewEvent($item));
+        } catch (Exception $exception) {
+            $this->logError(
+                sprintf(
+                    'Item preview log skipped: %s',
+                    $exception->getMessage()
+                )
+            );
+        }
         $packer = new Packer($item, $lang, true);
         $packer->setServiceLocator($this->getServiceLocator());
 
@@ -326,6 +339,11 @@ class Previewer extends ServiceModule
     private function getAccessTokenService(): AccessTokenService
     {
         return $this->getPsrContainer()->get(AccessTokenService::class);
+    }
+
+    private function getEventManager(): EventManager
+    {
+        return $this->getPsrContainer()->get(EventManager::class);
     }
 
     /**
