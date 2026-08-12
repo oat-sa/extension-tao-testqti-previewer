@@ -139,7 +139,15 @@ define([
                                 this.disable();
                             }
 
-                            this.on('typechange devicechange orientationchange', function () {
+                            // Actual size has no devicechange — sync clearScale on typechange only when leaving device mode.
+                            // Desktop/mobile still wait for devicechange so resizeitem gets device size data.
+                            this.on('typechange', function () {
+                                if (!this.isDeviceMode()) {
+                                    resizeItem();
+                                }
+                            });
+
+                            this.on('devicechange orientationchange', function () {
                                 resizeItem();
                             });
 
