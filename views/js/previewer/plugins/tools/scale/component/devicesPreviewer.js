@@ -247,7 +247,6 @@ define([
 
                 if (this.is('rendered')) {
                     deviceType = this.getDeviceType();
-                    // Only desktop/mobile get a device frame; anything else (standard, null, unexpected) stays frameless.
                     if (this.is('disabled') || (deviceType !== 'desktop' && deviceType !== 'mobile')) {
                         // standard mode and disabled state both should be reflected by a "no scale" view
                         this.clearScale();
