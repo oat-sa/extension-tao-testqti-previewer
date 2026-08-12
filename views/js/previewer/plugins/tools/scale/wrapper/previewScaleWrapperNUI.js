@@ -178,13 +178,8 @@ define([
                                 this.disable();
                             }
 
-                            this.on('typechange', function () {
-                                if (!this.isDeviceMode()) {
-                                    resizeItem();
-                                }
-                            });
-
-                            this.on('devicechange orientationchange', function () {
+                            // Always sync the previewer with the selector, including Actual size → clearScale.
+                            this.on('typechange devicechange orientationchange', function () {
                                 resizeItem();
                             });
 

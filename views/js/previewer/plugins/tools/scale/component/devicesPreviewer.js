@@ -98,6 +98,7 @@ define([
          */
         var resetScale = function resetScale() {
             if (controls) {
+                transformer.reset(controls.$previewContainer);
                 controls.$previewContent.removeAttr('style');
                 controls.$previewContainer.removeAttr('style');
             }
@@ -198,7 +199,8 @@ define([
              * @returns {Boolean}
              */
             isDeviceMode: function isDeviceMode() {
-                return this.getDeviceType() !== 'standard';
+                var deviceType = this.getDeviceType();
+                return deviceType === 'desktop' || deviceType === 'mobile';
             },
 
             /**
@@ -241,9 +243,12 @@ define([
              */
             previewDevice: function previewDevice() {
                 var width, height;
+                var deviceType;
 
                 if (this.is('rendered')) {
-                    if (this.is('disabled') || this.getDeviceType() === 'standard') {
+                    deviceType = this.getDeviceType();
+                    // Only desktop/mobile get a device frame; anything else (standard, null, unexpected) stays frameless.
+                    if (this.is('disabled') || (deviceType !== 'desktop' && deviceType !== 'mobile')) {
                         // standard mode and disabled state both should be reflected by a "no scale" view
                         this.clearScale();
                     } else {

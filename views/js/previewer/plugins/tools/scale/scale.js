@@ -139,13 +139,7 @@ define([
                                 this.disable();
                             }
 
-                            this.on('typechange', function () {
-                                if (!this.isDeviceMode()) {
-                                    resizeItem();
-                                }
-                            });
-
-                            this.on('devicechange orientationchange', function () {
+                            this.on('typechange devicechange orientationchange', function () {
                                 resizeItem();
                             });
 
