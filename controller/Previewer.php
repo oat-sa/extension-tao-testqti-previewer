@@ -31,7 +31,17 @@ use oat\tao\model\accessControl\Service\AccessTokenService;
 use oat\tao\model\http\HttpJsonResponseTrait;
 use oat\taoItems\model\event\ItemContentViewEvent;
 use oat\taoQtiTestPreviewer\models\User\TaoQtiTestPreviewerRoles;
+use oat\taoMediaManager\model\sharedStimulus\css\dto\ListStylesheets as ListSharedStimulusStylesheets;
+use oat\taoMediaManager\model\sharedStimulus\css\dto\LoadStylesheet as LoadSharedStimulusStylesheet;
+use oat\taoMediaManager\model\sharedStimulus\css\service\LoadStylesheetService;
+use oat\taoMediaManager\model\sharedStimulus\css\service\ListStylesheetsService;
+use oat\taoMediaManager\model\sharedStimulus\FindQuery;
+use oat\taoMediaManager\model\sharedStimulus\parser\JsonQtiAttributeParser;
+use oat\taoMediaManager\model\sharedStimulus\repository\SharedStimulusRepository;
+use oat\taoMediaManager\model\sharedStimulus\specification\SharedStimulusResourceSpecification;
+use oat\taoMediaManager\model\validation\RequestValidator;
 use RuntimeException;
+use stdClass;
 use tao_helpers_Http as HttpHelper;
 use oat\taoItems\model\pack\Packer;
 use common_Exception as CommonException;
@@ -152,15 +162,20 @@ class Previewer extends ServiceModule
                 $lang = $this->getSession()->getDataLanguage();
 
                 if (!$itemsService->hasItemContent($item, $lang)) {
-                    $this->returnJson($response, $code);
-                    return;
+                    if ($this->isSharedStimulus($item)) {
+                        $response = $this->createSharedStimulusResponse($item);
+                    } else {
+                        $this->returnJson($response, $code);
+                        return;
+                    }
+                } else {
+                    $response = $this->createItemResponse($item, $lang);
                 }
-
-                $response = $this->createItemResponse($item, $lang);
             } else {
                 throw new BadRequestException('Either itemUri or resultId needs to be provided.');
             }
 
+            $response = $this->normalizeItemResponse($response);
             $response['success'] = true;
         } catch (Exception $e) {
             $response = $this->getErrorResponse($e);
@@ -182,10 +197,25 @@ class Previewer extends ServiceModule
         $requestParams = $this->getPsrRequest()->getQueryParams();
 
         $item = $this->getResource($requestParams['uri']);
+        $path = $requestParams['path'] ?? '';
+
+        if ($path !== '' && $this->isSharedStimulus($item)) {
+            RequestValidator::securityCheckPath($path);
+
+            if (str_starts_with($path, 'css/')) {
+                $stream = $this->getSharedStimulusStylesheetService()->load(
+                    new LoadSharedStimulusStylesheet($item->getUri(), basename($path))
+                );
+
+                HttpHelper::returnStream($stream, 'text/css');
+                return;
+            }
+        }
+
         $lang = $this->getSession()->getDataLanguage();
         $resolver = new ItemMediaResolver($item, $lang);
 
-        $asset = $resolver->resolve($requestParams['path']);
+        $asset = $resolver->resolve($path);
         $mediaSource = $asset->getMediaSource();
         $mediaIdentifier = $asset->getMediaIdentifier();
 
@@ -253,6 +283,54 @@ class Previewer extends ServiceModule
         return [
             'content' => $itemPack->JsonSerialize(),
             'baseUrl' => _url('asset', null, null, $this->createBaseUriParameters($item)),
+        ];
+    }
+
+    private function createSharedStimulusResponse(core_kernel_classes_Resource $item): array
+    {
+        $sharedStimulus = $this->getSharedStimulusRepository()->find(new FindQuery($item->getUri()));
+        $parsedBody = $this->getSharedStimulusAttributesParser()->parse($sharedStimulus);
+        $sharedStimulusData = $sharedStimulus->jsonSerialize();
+        $identifier = $this->extractIdentifier($item->getUri());
+        $body = is_array($parsedBody['body'] ?? null)
+            ? $parsedBody['body']
+            : [
+                'serial' => 'container_' . $identifier,
+                'body' => '',
+                'elements' => [],
+            ];
+        $bodySerial = $parsedBody['serial'] ?? ('container_' . $identifier);
+
+        return [
+            'baseUrl' => _url('asset', null, null, $this->createBaseUriParameters($item)),
+            'content' => [
+                'type' => 'qti',
+                'data' => [
+                    'identifier' => $identifier,
+                    'serial' => 'item_' . $identifier,
+                    'qtiClass' => 'assessmentItem',
+                    'attributes' => array_filter([
+                        'identifier' => $identifier,
+                        'title' => $sharedStimulusData['name'] ?? '',
+                        'xml:lang' => $parsedBody['attributes']['xml:lang'] ?? null,
+                        'class' => $parsedBody['attributes']['class'] ?? null,
+                    ], static fn($value): bool => $value !== null),
+                    'body' => $body,
+                    'namespaces' => new stdClass(),
+                    'stylesheets' => $this->getSharedStimulusStylesheets($item->getUri()),
+                    'outcomes' => [],
+                    'response' => new stdClass(),
+                    'responses' => new stdClass(),
+                    'feedbacks' => [],
+                    'responseProcessing' => [
+                        'attributes' => new stdClass(),
+                        'qtiClass' => 'responseProcessing',
+                        'responseRules' => [],
+                        'serial' => 'response_' . $bodySerial,
+                    ],
+                ],
+                'assets' => [],
+            ],
         ];
     }
 
@@ -344,6 +422,89 @@ class Previewer extends ServiceModule
     private function getEventManager(): EventManager
     {
         return $this->getPsrContainer()->get(EventManager::class);
+    }
+
+    private function isSharedStimulus(core_kernel_classes_Resource $item): bool
+    {
+        return $this->getSharedStimulusResourceSpecification()->isSatisfiedBy($item);
+    }
+
+    private function getSharedStimulusRepository(): SharedStimulusRepository
+    {
+        return $this->getServiceLocator()->get(SharedStimulusRepository::class);
+    }
+
+    private function getSharedStimulusAttributesParser(): JsonQtiAttributeParser
+    {
+        return $this->getServiceLocator()->get(JsonQtiAttributeParser::class);
+    }
+
+    private function getSharedStimulusResourceSpecification(): SharedStimulusResourceSpecification
+    {
+        return $this->getServiceLocator()->get(SharedStimulusResourceSpecification::class);
+    }
+
+    private function getSharedStimulusStylesheetsService(): ListStylesheetsService
+    {
+        return $this->getServiceLocator()->get(ListStylesheetsService::class);
+    }
+
+    private function getSharedStimulusStylesheetService(): LoadStylesheetService
+    {
+        return $this->getServiceLocator()->get(LoadStylesheetService::class);
+    }
+
+    private function getSharedStimulusStylesheets(string $itemUri): array
+    {
+        $stylesheets = $this->getSharedStimulusStylesheetsService()
+            ->getList(new ListSharedStimulusStylesheets($itemUri));
+
+        $result = [];
+        foreach ($stylesheets['children'] ?? [] as $index => $stylesheet) {
+            if (!isset($stylesheet['name'])) {
+                continue;
+            }
+
+            $serial = sprintf('preview_%s', $index);
+            $result[$serial] = [
+                'qtiClass' => 'stylesheet',
+                'attributes' => [
+                    'href' => 'css/' . $stylesheet['name'],
+                    'media' => 'all',
+                    'title' => '',
+                    'type' => 'text/css',
+                ],
+                'serial' => $serial,
+            ];
+        }
+
+        return $result;
+    }
+
+    private function normalizeItemResponse(array $response): array
+    {
+        if (isset($response['content']) && !isset($response['itemData'])) {
+            $response['itemData'] = $response['content'];
+        }
+
+        if (
+            !isset($response['itemIdentifier'])
+            && isset($response['itemData']['data']['identifier'])
+            && is_string($response['itemData']['data']['identifier'])
+        ) {
+            $response['itemIdentifier'] = $response['itemData']['data']['identifier'];
+        }
+
+        $response['portableElements'] = $response['portableElements'] ?? new stdClass();
+
+        return $response;
+    }
+
+    private function extractIdentifier(string $uri): string
+    {
+        $position = strrpos($uri, '#');
+
+        return $position === false ? md5($uri) : substr($uri, $position + 1);
     }
 
     /**
