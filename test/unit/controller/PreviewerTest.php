@@ -102,10 +102,30 @@ namespace oat\taoMediaManager\model\sharedStimulus\css\dto {
             }
         }
     }
+
+    if (!class_exists(LoadStylesheet::class)) {
+        class LoadStylesheet
+        {
+            public function __construct(private string $uri, private string $stylesheetUri)
+            {
+            }
+
+            public function getUri(): string
+            {
+                return $this->uri;
+            }
+
+            public function getStylesheetUri(): string
+            {
+                return $this->stylesheetUri;
+            }
+        }
+    }
 }
 
 namespace oat\taoMediaManager\model\sharedStimulus\css\service {
     use oat\taoMediaManager\model\sharedStimulus\css\dto\ListStylesheets;
+    use oat\taoMediaManager\model\sharedStimulus\css\dto\LoadStylesheet;
 
     if (!class_exists(ListStylesheetsService::class)) {
         class ListStylesheetsService
@@ -116,25 +136,61 @@ namespace oat\taoMediaManager\model\sharedStimulus\css\service {
             }
         }
     }
+
+    if (!class_exists(LoadStylesheetService::class)) {
+        class LoadStylesheetService
+        {
+            public function load(LoadStylesheet $query)
+            {
+            }
+        }
+    }
+}
+
+namespace oat\taoMediaManager\model\sharedStimulus\specification {
+    if (!class_exists(SharedStimulusResourceSpecification::class)) {
+        class SharedStimulusResourceSpecification
+        {
+            public function isSatisfiedBy($item): bool
+            {
+                return false;
+            }
+        }
+    }
 }
 
 namespace oat\taoQtiTestPreviewer\test\unit\controller {
+    use common_exception_Error;
     use core_kernel_classes_Resource;
+    use GuzzleHttp\Psr7\ServerRequest;
+    use GuzzleHttp\Psr7\Utils;
     use oat\generis\test\TestCase;
+    use oat\oatbox\service\ServiceManager;
+    use oat\tao\model\http\ContentDetector;
+    use oat\tao\model\media\MediaBrowser;
+    use oat\tao\model\media\MediaService;
+    use oat\taoMediaManager\model\sharedStimulus\css\dto\LoadStylesheet;
     use oat\taoMediaManager\model\sharedStimulus\css\service\ListStylesheetsService;
+    use oat\taoMediaManager\model\sharedStimulus\css\service\LoadStylesheetService;
     use oat\taoMediaManager\model\sharedStimulus\parser\JsonQtiAttributeParser;
     use oat\taoMediaManager\model\sharedStimulus\repository\SharedStimulusRepository;
     use oat\taoMediaManager\model\sharedStimulus\SharedStimulus;
+    use oat\taoMediaManager\model\sharedStimulus\specification\SharedStimulusResourceSpecification;
     use oat\taoQtiTestPreviewer\controller\Previewer;
+    use PHPUnit\Framework\MockObject\MockObject;
     use ReflectionClass;
     use ReflectionMethod;
+    use RuntimeException;
     use stdClass;
+    use taoItems_models_classes_ItemsService;
 
     class PreviewerTest extends TestCase
     {
         private const ITEM_URI = 'https://example.com/tao.rdf#i123';
 
-        private Previewer $subject;
+        private PreviewerProxy $subject;
+
+        private ?ServiceManager $serviceManagerBackup = null;
 
         private ?object $contextInstanceBackup = null;
 
@@ -146,6 +202,10 @@ namespace oat\taoQtiTestPreviewer\test\unit\controller {
 
         private ListStylesheetsService $listStylesheetsService;
 
+        private LoadStylesheetService $loadStylesheetService;
+
+        private SharedStimulusResourceSpecification $sharedStimulusResourceSpecification;
+
         protected function setUp(): void
         {
             parent::setUp();
@@ -153,17 +213,15 @@ namespace oat\taoQtiTestPreviewer\test\unit\controller {
             $this->serverBackup = $_SERVER;
             $_SERVER['REQUEST_METHOD'] ??= 'GET';
             $this->contextInstanceBackup = $this->setFakeContext();
+            $this->serviceManagerBackup = ServiceManager::getServiceManager();
 
             $this->sharedStimulusRepository = $this->createMock(SharedStimulusRepository::class);
             $this->sharedStimulusAttributesParser = $this->createMock(JsonQtiAttributeParser::class);
             $this->listStylesheetsService = $this->createMock(ListStylesheetsService::class);
+            $this->loadStylesheetService = $this->createMock(LoadStylesheetService::class);
+            $this->sharedStimulusResourceSpecification = $this->createMock(SharedStimulusResourceSpecification::class);
 
-            $this->subject = (new ReflectionClass(Previewer::class))->newInstanceWithoutConstructor();
-            $this->subject->setServiceLocator($this->getServiceLocatorMock([
-                SharedStimulusRepository::class => $this->sharedStimulusRepository,
-                JsonQtiAttributeParser::class => $this->sharedStimulusAttributesParser,
-                ListStylesheetsService::class => $this->listStylesheetsService,
-            ]));
+            $this->subject = $this->createSubject();
         }
 
         protected function tearDown(): void
@@ -171,80 +229,249 @@ namespace oat\taoQtiTestPreviewer\test\unit\controller {
             $_SERVER = $this->serverBackup;
             $this->setContextInstance($this->contextInstanceBackup);
 
+            if ($this->serviceManagerBackup instanceof ServiceManager) {
+                ServiceManager::setServiceManager($this->serviceManagerBackup);
+            }
+
             parent::tearDown();
         }
 
-        public function testCreateSharedStimulusResponseBuildsPreviewerItemShape(): void
+        public function testGetItemReturnsSharedStimulusPreviewResponseWhenItemHasNoCompiledContent(): void
         {
             $item = $this->mockItem(self::ITEM_URI);
+            $session = $this->createSession('en-US');
+            $itemsService = $this->createMock(taoItems_models_classes_ItemsService::class);
             $sharedStimulus = new SharedStimulus(self::ITEM_URI, 'Shared passage', 'en-US');
 
+            $itemsService
+                ->expects($this->once())
+                ->method('hasItemContent')
+                ->with($item, 'en-US')
+                ->willReturn(false);
+
+            $this->sharedStimulusResourceSpecification
+                ->expects($this->once())
+                ->method('isSatisfiedBy')
+                ->with($item)
+                ->willReturn(true);
+
             $this->sharedStimulusRepository
-            ->expects($this->once())
-            ->method('find')
-            ->willReturn($sharedStimulus);
+                ->expects($this->once())
+                ->method('find')
+                ->willReturn($sharedStimulus);
 
             $this->sharedStimulusAttributesParser
-            ->expects($this->once())
-            ->method('parse')
-            ->with($sharedStimulus)
-            ->willReturn([
-                'serial' => 'body_serial',
-                'attributes' => [
-                    'xml:lang' => 'en-US',
-                    'class' => 'passage',
-                ],
-                'body' => [
+                ->expects($this->once())
+                ->method('parse')
+                ->with($sharedStimulus)
+                ->willReturn([
                     'serial' => 'body_serial',
-                    'body' => '<p>Preview me</p>',
-                    'elements' => [],
-                ],
-            ]);
+                    'attributes' => [
+                        'xml:lang' => 'en-US',
+                        'class' => 'passage',
+                    ],
+                    'body' => [
+                        'serial' => 'body_serial',
+                        'body' => '<p>Preview me</p>',
+                        'elements' => [],
+                    ],
+                ]);
 
             $this->listStylesheetsService
-            ->expects($this->once())
-            ->method('getList')
-            ->willReturn([
-                'children' => [
-                    ['name' => 'tao-user-styles.css'],
-                    ['ignored' => true],
-                ],
+                ->expects($this->once())
+                ->method('getList')
+                ->willReturn([
+                    'children' => [
+                        ['name' => 'tao-user-styles.css'],
+                    ],
+                ]);
+
+            $this->subject->resources = [self::ITEM_URI => $item];
+            $this->subject->session = $session;
+            $this->subject->setRequest((new ServerRequest('GET', '/'))->withQueryParams(['itemUri' => self::ITEM_URI]));
+
+            $this->subject->getItem($itemsService);
+
+            $this->assertCount(1, $this->subject->jsonCalls);
+            $this->assertSame(200, $this->subject->jsonCalls[0]['status']);
+            $this->assertTrue($this->subject->jsonCalls[0]['data']['success']);
+            $this->assertSame('i123', $this->subject->jsonCalls[0]['data']['itemIdentifier']);
+            $this->assertSame('i123', $this->subject->jsonCalls[0]['data']['itemData']['data']['identifier']);
+            $this->assertInstanceOf(stdClass::class, $this->subject->jsonCalls[0]['data']['portableElements']);
+        }
+
+        public function testGetItemReturnsErrorResponseWhenSharedStimulusParsingFails(): void
+        {
+            $item = $this->mockItem(self::ITEM_URI);
+            $session = $this->createSession('en-US');
+            $itemsService = $this->createMock(taoItems_models_classes_ItemsService::class);
+            $sharedStimulus = new SharedStimulus(self::ITEM_URI, 'Shared passage', 'en-US');
+
+            $itemsService
+                ->expects($this->once())
+                ->method('hasItemContent')
+                ->with($item, 'en-US')
+                ->willReturn(false);
+
+            $this->sharedStimulusResourceSpecification
+                ->expects($this->once())
+                ->method('isSatisfiedBy')
+                ->with($item)
+                ->willReturn(true);
+
+            $this->sharedStimulusRepository
+                ->expects($this->once())
+                ->method('find')
+                ->willReturn($sharedStimulus);
+
+            $this->sharedStimulusAttributesParser
+                ->expects($this->once())
+                ->method('parse')
+                ->with($sharedStimulus)
+                ->willThrowException(new RuntimeException('Boom'));
+
+            $this->listStylesheetsService
+                ->expects($this->never())
+                ->method('getList');
+
+            $this->subject->resources = [self::ITEM_URI => $item];
+            $this->subject->session = $session;
+            $this->subject->setRequest((new ServerRequest('GET', '/'))->withQueryParams(['itemUri' => self::ITEM_URI]));
+
+            $this->subject->getItem($itemsService);
+
+            $this->assertCount(1, $this->subject->jsonCalls);
+            $this->assertSame(500, $this->subject->jsonCalls[0]['status']);
+            $this->assertFalse($this->subject->jsonCalls[0]['data']['success']);
+            $this->assertSame('exception', $this->subject->jsonCalls[0]['data']['type']);
+            $this->assertSame('Boom', $this->subject->jsonCalls[0]['data']['message']);
+        }
+
+        /**
+         * @runInSeparateProcess
+         * @preserveGlobalState disabled
+         */
+        public function testAssetStreamsSharedStimulusStylesheet(): void
+        {
+            $item = $this->mockItem(self::ITEM_URI);
+            $subject = $this->createSubject();
+
+            $this->setGlobalServices([
+                ContentDetector::class => $this->createContentDetector(false),
             ]);
 
-            $result = $this->invoke('createSharedStimulusResponse', $item);
+            $this->sharedStimulusResourceSpecification
+                ->expects($this->once())
+                ->method('isSatisfiedBy')
+                ->with($item)
+                ->willReturn(true);
 
-            $this->assertSame('qti', $result['content']['type']);
-            $this->assertSame('i123', $result['content']['data']['identifier']);
-            $this->assertSame('item_i123', $result['content']['data']['serial']);
-            $this->assertSame('assessmentItem', $result['content']['data']['qtiClass']);
-            $this->assertSame('<p>Preview me</p>', $result['content']['data']['body']['body']);
-            $this->assertSame(
-                [
-                'identifier' => 'i123',
-                'title' => 'Shared passage',
-                'xml:lang' => 'en-US',
-                'class' => 'passage',
-                ],
-                $result['content']['data']['attributes']
+            $this->loadStylesheetService
+                ->expects($this->once())
+                ->method('load')
+                ->with($this->callback(function (LoadStylesheet $query): bool {
+                    return $query->getUri() === self::ITEM_URI
+                        && $query->getStylesheetUri() === 'tao-user-styles.css';
+                }))
+                ->willReturn(Utils::streamFor('css-body'));
+
+            $subject->resources = [self::ITEM_URI => $item];
+            $subject->setRequest(
+                (new ServerRequest('GET', '/'))->withQueryParams([
+                    'uri' => self::ITEM_URI,
+                    'path' => 'css/tao-user-styles.css',
+                ])
             );
-            $this->assertInstanceOf(stdClass::class, $result['content']['data']['namespaces']);
-            $this->assertInstanceOf(stdClass::class, $result['content']['data']['response']);
-            $this->assertInstanceOf(stdClass::class, $result['content']['data']['responses']);
-            $this->assertSame([], $result['content']['assets']);
-            $this->assertSame(
-                [
-                'qtiClass' => 'stylesheet',
-                'attributes' => [
-                    'href' => 'css/tao-user-styles.css',
-                    'media' => 'all',
-                    'title' => '',
-                    'type' => 'text/css',
-                ],
-                'serial' => 'preview_0',
-                ],
-                $result['content']['data']['stylesheets']['preview_0']
+
+            ob_start();
+            $subject->asset();
+            $result = ob_get_clean();
+
+            $this->assertSame('css-body', $result);
+        }
+
+        /**
+         * @runInSeparateProcess
+         * @preserveGlobalState disabled
+         */
+        public function testAssetFallsBackToStandardResolutionForNonCssPath(): void
+        {
+            $item = $this->mockItem(self::ITEM_URI);
+            $subject = $this->createSubject();
+            $mediaSource = $this->createMock(MediaBrowser::class);
+            $mediaService = $this->createMock(MediaService::class);
+
+            $mediaService
+                ->expects($this->once())
+                ->method('getMediaSource')
+                ->with('mediamanager')
+                ->willReturn($mediaSource);
+
+            $mediaSource
+                ->expects($this->once())
+                ->method('getFileInfo')
+                ->with('image.png')
+                ->willReturn(['mime' => 'image/png']);
+
+            $mediaSource
+                ->expects($this->once())
+                ->method('getFileStream')
+                ->with('image.png')
+                ->willReturn(Utils::streamFor('image-bytes'));
+
+            $this->setGlobalServices([
+                ContentDetector::class => $this->createContentDetector(false),
+                MediaService::SERVICE_ID => $mediaService,
+            ]);
+
+            $this->sharedStimulusResourceSpecification
+                ->expects($this->once())
+                ->method('isSatisfiedBy')
+                ->with($item)
+                ->willReturn(false);
+
+            $this->loadStylesheetService
+                ->expects($this->never())
+                ->method('load');
+
+            $subject->resources = [self::ITEM_URI => $item];
+            $subject->session = $this->createSession('en-US');
+            $subject->setRequest(
+                (new ServerRequest('GET', '/'))->withQueryParams([
+                    'uri' => self::ITEM_URI,
+                    'path' => 'taomedia://mediamanager/image.png',
+                ])
             );
-            $this->assertSame('response_body_serial', $result['content']['data']['responseProcessing']['serial']);
+
+            ob_start();
+            $subject->asset();
+            $result = ob_get_clean();
+
+            $this->assertSame('image-bytes', $result);
+        }
+
+        public function testAssetRejectsUnsafeSharedStimulusPath(): void
+        {
+            $item = $this->mockItem(self::ITEM_URI);
+
+            $this->sharedStimulusResourceSpecification
+                ->expects($this->once())
+                ->method('isSatisfiedBy')
+                ->with($item)
+                ->willReturn(true);
+
+            $this->subject->resources = [self::ITEM_URI => $item];
+            $this->subject->setRequest(
+                (new ServerRequest('GET', '/'))->withQueryParams([
+                    'uri' => self::ITEM_URI,
+                    'path' => '../unsafe.css',
+                ])
+            );
+
+            $this->expectException(common_exception_Error::class);
+            $this->expectExceptionMessage('Invalid path "../unsafe.css"');
+
+            $this->subject->asset();
         }
 
         public function testCreateSharedStimulusResponseFallsBackWhenParsedBodyShapeIsInvalid(): void
@@ -254,30 +481,30 @@ namespace oat\taoQtiTestPreviewer\test\unit\controller {
             $identifier = md5('https://example.com/without-hash');
 
             $this->sharedStimulusRepository
-            ->expects($this->once())
-            ->method('find')
-            ->willReturn($sharedStimulus);
+                ->expects($this->once())
+                ->method('find')
+                ->willReturn($sharedStimulus);
 
             $this->sharedStimulusAttributesParser
-            ->expects($this->once())
-            ->method('parse')
-            ->with($sharedStimulus)
-            ->willReturn([
-                'body' => '<p>wrong shape</p>',
-            ]);
+                ->expects($this->once())
+                ->method('parse')
+                ->with($sharedStimulus)
+                ->willReturn([
+                    'body' => '<p>wrong shape</p>',
+                ]);
 
             $this->listStylesheetsService
-            ->expects($this->once())
-            ->method('getList')
-            ->willReturn([]);
+                ->expects($this->once())
+                ->method('getList')
+                ->willReturn([]);
 
             $result = $this->invoke('createSharedStimulusResponse', $item);
 
             $this->assertSame(
                 [
-                'serial' => 'container_' . $identifier,
-                'body' => '',
-                'elements' => [],
+                    'serial' => 'container_' . $identifier,
+                    'body' => '',
+                    'elements' => [],
                 ],
                 $result['content']['data']['body']
             );
@@ -290,12 +517,12 @@ namespace oat\taoQtiTestPreviewer\test\unit\controller {
         public function testNormalizeItemResponseCopiesIdentifierAndDefaultsPortableElements(): void
         {
             $response = [
-            'content' => [
-                'type' => 'qti',
-                'data' => [
-                    'identifier' => 'item-1',
+                'content' => [
+                    'type' => 'qti',
+                    'data' => [
+                        'identifier' => 'item-1',
+                    ],
                 ],
-            ],
             ];
 
             $result = $this->invoke('normalizeItemResponse', $response);
@@ -303,6 +530,57 @@ namespace oat\taoQtiTestPreviewer\test\unit\controller {
             $this->assertSame($response['content'], $result['itemData']);
             $this->assertSame('item-1', $result['itemIdentifier']);
             $this->assertInstanceOf(stdClass::class, $result['portableElements']);
+        }
+
+        private function createSubject(): PreviewerProxy
+        {
+            /** @var PreviewerProxy $subject */
+            $subject = (new ReflectionClass(PreviewerProxy::class))->newInstanceWithoutConstructor();
+            $subject->setServiceLocator($this->getServiceLocatorMock([
+                SharedStimulusRepository::class => $this->sharedStimulusRepository,
+                JsonQtiAttributeParser::class => $this->sharedStimulusAttributesParser,
+                ListStylesheetsService::class => $this->listStylesheetsService,
+                LoadStylesheetService::class => $this->loadStylesheetService,
+                SharedStimulusResourceSpecification::class => $this->sharedStimulusResourceSpecification,
+            ]));
+
+            return $subject;
+        }
+
+        private function createSession(string $language): object
+        {
+            return new class ($language) {
+                public function __construct(private string $language)
+                {
+                }
+
+                public function getDataLanguage(): string
+                {
+                    return $this->language;
+                }
+            };
+        }
+
+        private function createContentDetector(bool $isGzipableMime): ContentDetector&MockObject
+        {
+            $contentDetector = $this->createMock(ContentDetector::class);
+            $contentDetector
+                ->method('isGzipableMime')
+                ->willReturn($isGzipableMime);
+
+            return $contentDetector;
+        }
+
+        private function setGlobalServices(array $services): void
+        {
+            $serviceManager = $this->createMock(ServiceManager::class);
+            $serviceManager
+                ->method('get')
+                ->willReturnCallback(
+                    static fn(string $serviceId) => $services[$serviceId] ?? null
+                );
+
+            ServiceManager::setServiceManager($serviceManager);
         }
 
         private function mockItem(string $uri): core_kernel_classes_Resource
@@ -351,6 +629,37 @@ namespace oat\taoQtiTestPreviewer\test\unit\controller {
             $property->setValue(null, $context);
 
             return $previous;
+        }
+    }
+
+    class PreviewerProxy extends Previewer
+    {
+        public array $jsonCalls = [];
+
+        public array $resources = [];
+
+        public ?object $session = null;
+
+        protected function returnJson($data, $httpStatus = 200)
+        {
+            $this->jsonCalls[] = [
+                'data' => $data,
+                'status' => $httpStatus,
+            ];
+        }
+
+        protected function getSession()
+        {
+            return $this->session;
+        }
+
+        public function getResource($uri)
+        {
+            if (!array_key_exists($uri, $this->resources)) {
+                throw new RuntimeException(sprintf('Resource "%s" not configured in test.', $uri));
+            }
+
+            return $this->resources[$uri];
         }
     }
 }
