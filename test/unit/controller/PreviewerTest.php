@@ -159,6 +159,20 @@ namespace oat\taoMediaManager\model\sharedStimulus\specification {
     }
 }
 
+namespace oat\taoMediaManager\model\validation {
+    if (!class_exists(RequestValidator::class)) {
+        class RequestValidator
+        {
+            public static function securityCheckPath(string $path): void
+            {
+                if (str_contains($path, '..')) {
+                    throw new \common_exception_Error(sprintf('Invalid path "%s"', $path));
+                }
+            }
+        }
+    }
+}
+
 namespace oat\taoQtiTestPreviewer\test\unit\controller {
     use common_exception_Error;
     use core_kernel_classes_Resource;
