@@ -54,6 +54,11 @@ define([
             module: 'taoQtiTestPreviewer/previewer/plugins/content/cloneLogoInTestPreview',
             bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
             category: 'content'
+        },
+        {
+            module: 'taoQtiTestPreviewer/previewer/plugins/tools/drawingCanvas/plugin',
+            bundle: 'taoQtiTestPreviewer/loader/qtiPreviewer.min',
+            category: 'tools'
         }
     ];
 
