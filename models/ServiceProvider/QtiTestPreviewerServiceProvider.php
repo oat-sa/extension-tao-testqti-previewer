@@ -1,21 +1,10 @@
 <?php
 
 /**
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; under version 2
- * of the License (non-upgradable).
+ * SPDX-FileCopyrightText: 2022-2026 Open Assessment Technologies S.A.
+ * Copyright (C) 2026 (original work) Open Assessment Technologies S.A.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *
- * Copyright (c) 2022 (original work) Open Assessment Technologies SA;
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-TAO-Commercial-License
  */
 
 declare(strict_types=1);
@@ -25,6 +14,7 @@ namespace oat\taoQtiTestPreviewer\models\ServiceProvider;
 use oat\generis\model\DependencyInjection\ContainerServiceProviderInterface;
 use oat\oatbox\service\ServiceManager;
 use oat\taoQtiTest\models\TestCategoryPresetProvider;
+use oat\taoQtiTestPreviewer\models\SharedStimulusPreviewRegistry;
 use oat\taoQtiTestPreviewer\models\test\factory\TestPreviewRouteFactory;
 use oat\taoQtiTestPreviewer\models\test\factory\TestPreviewRouteFactoryInterface;
 use oat\taoQtiTestPreviewer\models\test\mapper\TestPreviewMapper;
@@ -39,6 +29,7 @@ use oat\taoQtiTestPreviewer\models\TestCategoryPresetMap;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
+use function Symfony\Component\DependencyInjection\Loader\Configurator\tagged_iterator;
 
 class QtiTestPreviewerServiceProvider implements ContainerServiceProviderInterface
 {
@@ -52,6 +43,14 @@ class QtiTestPreviewerServiceProvider implements ContainerServiceProviderInterfa
             ->args(
                 [
                     service(TestCategoryPresetProvider::SERVICE_ID),
+                ]
+            );
+        $services
+            ->set(SharedStimulusPreviewRegistry::class, SharedStimulusPreviewRegistry::class)
+            ->public()
+            ->args(
+                [
+                    tagged_iterator('tao.qti_test_previewer.shared_stimulus_handler'),
                 ]
             );
 

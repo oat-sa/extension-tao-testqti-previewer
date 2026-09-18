@@ -1,21 +1,10 @@
 <?php
 
 /**
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; under version 2
- * of the License (non-upgradable).
+ * SPDX-FileCopyrightText: 2018-2026 Open Assessment Technologies S.A.
+ * Copyright (C) 2026 (original work) Open Assessment Technologies S.A.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 31 Milk St # 960789 Boston, MA 02196 USA.
- *
- * Copyright (c) 2018-2026 (original work) Open Assessment Technologies SA;
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-TAO-Commercial-License
  */
 
 declare(strict_types=1);
@@ -31,15 +20,6 @@ use oat\tao\model\accessControl\Service\AccessTokenService;
 use oat\tao\model\http\HttpJsonResponseTrait;
 use oat\taoItems\model\event\ItemContentViewEvent;
 use oat\taoQtiTestPreviewer\models\User\TaoQtiTestPreviewerRoles;
-use oat\taoMediaManager\model\sharedStimulus\css\dto\ListStylesheets as ListSharedStimulusStylesheets;
-use oat\taoMediaManager\model\sharedStimulus\css\dto\LoadStylesheet as LoadSharedStimulusStylesheet;
-use oat\taoMediaManager\model\sharedStimulus\css\service\LoadStylesheetService;
-use oat\taoMediaManager\model\sharedStimulus\css\service\ListStylesheetsService;
-use oat\taoMediaManager\model\sharedStimulus\FindQuery;
-use oat\taoMediaManager\model\sharedStimulus\parser\JsonQtiAttributeParser;
-use oat\taoMediaManager\model\sharedStimulus\repository\SharedStimulusRepository;
-use oat\taoMediaManager\model\sharedStimulus\specification\SharedStimulusResourceSpecification;
-use oat\taoMediaManager\model\validation\RequestValidator;
 use RuntimeException;
 use stdClass;
 use tao_helpers_Http as HttpHelper;
@@ -55,6 +35,7 @@ use oat\tao\model\routing\AnnotationReader\security;
 use common_exception_BadRequest as BadRequestException;
 use taoQtiTest_helpers_TestRunnerUtils as TestRunnerUtils;
 use oat\taoQtiTestPreviewer\models\PreviewLanguageService;
+use oat\taoQtiTestPreviewer\models\SharedStimulusPreviewRegistry;
 use common_exception_Unauthorized as UnauthorizedException;
 use common_exception_NotImplemented as NotImplementedException;
 use common_exception_MissingParameter as MissingParameterException;
@@ -160,17 +141,26 @@ class Previewer extends ServiceModule
             } elseif ($itemUri) {
                 $item = $this->getResource($itemUri);
                 $lang = $this->getSession()->getDataLanguage();
+                $sharedStimulusPreviewRegistry = $this->getSharedStimulusPreviewRegistry();
 
                 if (!$itemsService->hasItemContent($item, $lang)) {
-                    if ($this->isSharedStimulus($item)) {
-                        $response = $this->createSharedStimulusResponse($item);
-                    } else {
-                        $this->returnJson($response, $code);
-                        return;
+                    $sharedStimulusResponse = $sharedStimulusPreviewRegistry->buildResponse(
+                        $item,
+                        _url('asset', null, null, $this->createBaseUriParameters($item))
+                    );
+
+                    if ($sharedStimulusResponse === null) {
+                        throw new common_exception_Error(
+                            sprintf('No shared stimulus preview handler registered for item "%s".', $item->getUri())
+                        );
                     }
+
+                    $response = $sharedStimulusResponse;
                 } else {
                     $response = $this->createItemResponse($item, $lang);
                 }
+
+                $response = $this->prepareItemResponse($item, $lang, $response);
             } else {
                 throw new BadRequestException('Either itemUri or resultId needs to be provided.');
             }
@@ -198,18 +188,12 @@ class Previewer extends ServiceModule
 
         $item = $this->getResource($requestParams['uri']);
         $path = $requestParams['path'] ?? '';
+        $sharedStimulusPreviewRegistry = $this->getSharedStimulusPreviewRegistry();
+        $sharedStimulusAssetStream = $sharedStimulusPreviewRegistry->loadAssetStream($item, $path);
 
-        if ($path !== '' && $this->isSharedStimulus($item)) {
-            RequestValidator::securityCheckPath($path);
-
-            if (str_starts_with($path, 'css/')) {
-                $stream = $this->getSharedStimulusStylesheetService()->load(
-                    new LoadSharedStimulusStylesheet($item->getUri(), basename($path))
-                );
-
-                HttpHelper::returnStream($stream, 'text/css');
-                return;
-            }
+        if ($sharedStimulusAssetStream !== null) {
+            HttpHelper::returnStream($sharedStimulusAssetStream, 'text/css');
+            return;
         }
 
         $lang = $this->getSession()->getDataLanguage();
@@ -286,60 +270,20 @@ class Previewer extends ServiceModule
         ];
     }
 
-    private function createSharedStimulusResponse(core_kernel_classes_Resource $item): array
-    {
-        $sharedStimulus = $this->getSharedStimulusRepository()->find(new FindQuery($item->getUri()));
-        $parsedBody = $this->getSharedStimulusAttributesParser()->parse($sharedStimulus);
-        $sharedStimulusData = $sharedStimulus->jsonSerialize();
-        $identifier = $this->extractIdentifier($item->getUri());
-        $body = is_array($parsedBody['body'] ?? null)
-            ? $parsedBody['body']
-            : [
-                'serial' => 'container_' . $identifier,
-                'body' => '',
-                'elements' => [],
-            ];
-        $bodySerial = $parsedBody['serial'] ?? ('container_' . $identifier);
-
-        return [
-            'baseUrl' => _url('asset', null, null, $this->createBaseUriParameters($item)),
-            'content' => [
-                'type' => 'qti',
-                'data' => [
-                    'identifier' => $identifier,
-                    'serial' => 'item_' . $identifier,
-                    'qtiClass' => 'assessmentItem',
-                    'attributes' => array_filter([
-                        'identifier' => $identifier,
-                        'title' => $sharedStimulusData['name'] ?? '',
-                        'xml:lang' => $parsedBody['attributes']['xml:lang'] ?? null,
-                        'class' => $parsedBody['attributes']['class'] ?? null,
-                    ], static fn($value): bool => $value !== null),
-                    'body' => $body,
-                    'namespaces' => new stdClass(),
-                    'stylesheets' => $this->getSharedStimulusStylesheets($item->getUri()),
-                    'outcomes' => [],
-                    'response' => new stdClass(),
-                    'responses' => new stdClass(),
-                    'feedbacks' => [],
-                    'responseProcessing' => [
-                        'attributes' => new stdClass(),
-                        'qtiClass' => 'responseProcessing',
-                        'responseRules' => [],
-                        'serial' => 'response_' . $bodySerial,
-                    ],
-                ],
-                'assets' => [],
-            ],
-        ];
-    }
-
     protected function createBaseUriParameters(core_kernel_classes_Resource $item): array
     {
         return [
             'uri' => $item->getUri(),
             'path' => '',
         ];
+    }
+
+    protected function prepareItemResponse(
+        core_kernel_classes_Resource $item,
+        string $lang,
+        array $response
+    ): array {
+        return $response;
     }
 
     /**
@@ -424,61 +368,9 @@ class Previewer extends ServiceModule
         return $this->getPsrContainer()->get(EventManager::class);
     }
 
-    private function isSharedStimulus(core_kernel_classes_Resource $item): bool
+    private function getSharedStimulusPreviewRegistry(): SharedStimulusPreviewRegistry
     {
-        return $this->getSharedStimulusResourceSpecification()->isSatisfiedBy($item);
-    }
-
-    private function getSharedStimulusRepository(): SharedStimulusRepository
-    {
-        return $this->getServiceLocator()->get(SharedStimulusRepository::class);
-    }
-
-    private function getSharedStimulusAttributesParser(): JsonQtiAttributeParser
-    {
-        return $this->getServiceLocator()->get(JsonQtiAttributeParser::class);
-    }
-
-    private function getSharedStimulusResourceSpecification(): SharedStimulusResourceSpecification
-    {
-        return $this->getServiceLocator()->get(SharedStimulusResourceSpecification::class);
-    }
-
-    private function getSharedStimulusStylesheetsService(): ListStylesheetsService
-    {
-        return $this->getServiceLocator()->get(ListStylesheetsService::class);
-    }
-
-    private function getSharedStimulusStylesheetService(): LoadStylesheetService
-    {
-        return $this->getServiceLocator()->get(LoadStylesheetService::class);
-    }
-
-    private function getSharedStimulusStylesheets(string $itemUri): array
-    {
-        $stylesheets = $this->getSharedStimulusStylesheetsService()
-            ->getList(new ListSharedStimulusStylesheets($itemUri));
-
-        $result = [];
-        foreach ($stylesheets['children'] ?? [] as $index => $stylesheet) {
-            if (!isset($stylesheet['name'])) {
-                continue;
-            }
-
-            $serial = sprintf('preview_%s', $index);
-            $result[$serial] = [
-                'qtiClass' => 'stylesheet',
-                'attributes' => [
-                    'href' => 'css/' . $stylesheet['name'],
-                    'media' => 'all',
-                    'title' => '',
-                    'type' => 'text/css',
-                ],
-                'serial' => $serial,
-            ];
-        }
-
-        return $result;
+        return $this->getPsrContainer()->get(SharedStimulusPreviewRegistry::class);
     }
 
     private function normalizeItemResponse(array $response): array
@@ -498,13 +390,6 @@ class Previewer extends ServiceModule
         $response['portableElements'] = $response['portableElements'] ?? new stdClass();
 
         return $response;
-    }
-
-    private function extractIdentifier(string $uri): string
-    {
-        $position = strrpos($uri, '#');
-
-        return $position === false ? md5($uri) : substr($uri, $position + 1);
     }
 
     /**
