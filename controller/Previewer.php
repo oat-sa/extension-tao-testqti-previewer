@@ -1,21 +1,10 @@
 <?php
 
 /**
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; under version 2
- * of the License (non-upgradable).
+ * SPDX-FileCopyrightText: 2018-2026 Open Assessment Technologies S.A.
+ * Copyright (C) 2026 (original work) Open Assessment Technologies S.A.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 31 Milk St # 960789 Boston, MA 02196 USA.
- *
- * Copyright (c) 2018-2026 (original work) Open Assessment Technologies SA;
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-TAO-Commercial-License
  */
 
 declare(strict_types=1);
@@ -32,6 +21,7 @@ use oat\tao\model\http\HttpJsonResponseTrait;
 use oat\taoItems\model\event\ItemContentViewEvent;
 use oat\taoQtiTestPreviewer\models\User\TaoQtiTestPreviewerRoles;
 use RuntimeException;
+use stdClass;
 use tao_helpers_Http as HttpHelper;
 use oat\taoItems\model\pack\Packer;
 use common_Exception as CommonException;
@@ -45,6 +35,7 @@ use oat\tao\model\routing\AnnotationReader\security;
 use common_exception_BadRequest as BadRequestException;
 use taoQtiTest_helpers_TestRunnerUtils as TestRunnerUtils;
 use oat\taoQtiTestPreviewer\models\PreviewLanguageService;
+use oat\taoQtiTestPreviewer\models\SharedStimulusPreviewRegistry;
 use common_exception_Unauthorized as UnauthorizedException;
 use common_exception_NotImplemented as NotImplementedException;
 use common_exception_MissingParameter as MissingParameterException;
@@ -150,17 +141,31 @@ class Previewer extends ServiceModule
             } elseif ($itemUri) {
                 $item = $this->getResource($itemUri);
                 $lang = $this->getSession()->getDataLanguage();
+                $sharedStimulusPreviewRegistry = $this->getSharedStimulusPreviewRegistry();
 
                 if (!$itemsService->hasItemContent($item, $lang)) {
-                    $this->returnJson($response, $code);
-                    return;
+                    $sharedStimulusResponse = $sharedStimulusPreviewRegistry->buildResponse(
+                        $item,
+                        _url('asset', null, null, $this->createBaseUriParameters($item))
+                    );
+
+                    if ($sharedStimulusResponse === null) {
+                        throw new common_exception_Error(
+                            sprintf('No shared stimulus preview handler registered for item "%s".', $item->getUri())
+                        );
+                    }
+
+                    $response = $sharedStimulusResponse;
+                } else {
+                    $response = $this->createItemResponse($item, $lang);
                 }
 
-                $response = $this->createItemResponse($item, $lang);
+                $response = $this->prepareItemResponse($item, $lang, $response);
             } else {
                 throw new BadRequestException('Either itemUri or resultId needs to be provided.');
             }
 
+            $response = $this->normalizeItemResponse($response);
             $response['success'] = true;
         } catch (Exception $e) {
             $response = $this->getErrorResponse($e);
@@ -182,10 +187,19 @@ class Previewer extends ServiceModule
         $requestParams = $this->getPsrRequest()->getQueryParams();
 
         $item = $this->getResource($requestParams['uri']);
+        $path = $requestParams['path'] ?? '';
+        $sharedStimulusPreviewRegistry = $this->getSharedStimulusPreviewRegistry();
+        $sharedStimulusAssetStream = $sharedStimulusPreviewRegistry->loadAssetStream($item, $path);
+
+        if ($sharedStimulusAssetStream !== null) {
+            HttpHelper::returnStream($sharedStimulusAssetStream, 'text/css');
+            return;
+        }
+
         $lang = $this->getSession()->getDataLanguage();
         $resolver = new ItemMediaResolver($item, $lang);
 
-        $asset = $resolver->resolve($requestParams['path']);
+        $asset = $resolver->resolve($path);
         $mediaSource = $asset->getMediaSource();
         $mediaIdentifier = $asset->getMediaIdentifier();
 
@@ -262,6 +276,14 @@ class Previewer extends ServiceModule
             'uri' => $item->getUri(),
             'path' => '',
         ];
+    }
+
+    protected function prepareItemResponse(
+        core_kernel_classes_Resource $item,
+        string $lang,
+        array $response
+    ): array {
+        return $response;
     }
 
     /**
@@ -344,6 +366,30 @@ class Previewer extends ServiceModule
     private function getEventManager(): EventManager
     {
         return $this->getPsrContainer()->get(EventManager::class);
+    }
+
+    private function getSharedStimulusPreviewRegistry(): SharedStimulusPreviewRegistry
+    {
+        return $this->getPsrContainer()->get(SharedStimulusPreviewRegistry::class);
+    }
+
+    private function normalizeItemResponse(array $response): array
+    {
+        if (isset($response['content']) && !isset($response['itemData'])) {
+            $response['itemData'] = $response['content'];
+        }
+
+        if (
+            !isset($response['itemIdentifier'])
+            && isset($response['itemData']['data']['identifier'])
+            && is_string($response['itemData']['data']['identifier'])
+        ) {
+            $response['itemIdentifier'] = $response['itemData']['data']['identifier'];
+        }
+
+        $response['portableElements'] = $response['portableElements'] ?? new stdClass();
+
+        return $response;
     }
 
     /**
