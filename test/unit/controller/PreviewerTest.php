@@ -16,13 +16,13 @@ use common_Exception;
 use core_kernel_classes_Resource;
 use GuzzleHttp\Psr7\ServerRequest;
 use GuzzleHttp\Psr7\Utils;
-use oat\generis\test\TestCase;
 use oat\oatbox\service\ServiceManager;
 use oat\tao\model\http\ContentDetector;
 use oat\tao\model\media\MediaBrowser;
 use oat\tao\model\media\MediaService;
 use oat\taoQtiTestPreviewer\models\SharedStimulusPreviewRegistry;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
@@ -46,8 +46,6 @@ class PreviewerTest extends TestCase
 
     protected function setUp(): void
     {
-        parent::setUp();
-
         $this->serverBackup = $_SERVER;
         $_SERVER['REQUEST_METHOD'] ??= 'GET';
         $this->contextInstanceBackup = $this->setFakeContext();
@@ -65,8 +63,6 @@ class PreviewerTest extends TestCase
         if ($this->serviceManagerBackup instanceof ServiceManager) {
             ServiceManager::setServiceManager($this->serviceManagerBackup);
         }
-
-        parent::tearDown();
     }
 
     public function testGetItemReturnsSharedStimulusPreviewResponseWhenItemHasNoCompiledContent(): void
@@ -395,7 +391,7 @@ class PreviewerTest extends TestCase
 
     private function createSubject(): PreviewerProxy
     {
-        $serviceLocator = $this->getServiceLocatorMock([
+        $serviceLocator = $this->createServiceLocator([
             SharedStimulusPreviewRegistry::class => $this->sharedStimulusPreviewRegistry,
         ]);
 
@@ -404,6 +400,26 @@ class PreviewerTest extends TestCase
         $subject->setServiceLocator($serviceLocator);
 
         return $subject;
+    }
+
+    private function createServiceLocator(array $services): ServiceManager&MockObject
+    {
+        $serviceLocator = $this->createMock(ServiceManager::class);
+        $serviceLocator
+            ->method('getContainer')
+            ->willReturn($serviceLocator);
+        $serviceLocator
+            ->method('get')
+            ->willReturnCallback(
+                static fn (string $serviceId) => $services[$serviceId] ?? null
+            );
+        $serviceLocator
+            ->method('has')
+            ->willReturnCallback(
+                static fn (string $serviceId): bool => array_key_exists($serviceId, $services)
+            );
+
+        return $serviceLocator;
     }
 
     private function createSession(string $language): object
