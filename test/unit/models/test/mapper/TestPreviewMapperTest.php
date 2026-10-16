@@ -266,7 +266,10 @@ class TestPreviewMapperTest extends TestCase
             ->onlyMethods(['getModalFeedbacks', 'getAttributeValue'])
             ->getMock();
         $item->method('getModalFeedbacks')->willReturn($hasModalFeedbacks ? ['feedback1'] : []);
-        $item->method('getAttributeValue')->with('title')->willReturn('testLabel');
+        $item->method('getAttributeValue')->willReturnMap([
+            ['title', 'testLabel'],
+            ['identifier', null],
+        ]);
         $serviceOverride = $this->createMock(Service::class);
         $serviceOverride
             ->method('getDataItemByRdfItem')
@@ -299,6 +302,37 @@ class TestPreviewMapperTest extends TestCase
         ];
     }
 
+    public function testReviewMetadataPreservesResourceLabelAndOriginalItemIdentifier(): void
+    {
+        $this->expectsItemResource('itemUri', 'Content Bank label');
+        $item = $this->createMock(Item::class);
+        $item->method('getAttributeValue')->willReturnMap([
+            ['title', 'QTI item title'],
+            ['identifier', 'original-item-identifier'],
+        ]);
+        $service = $this->createMock(Service::class);
+        $service->method('getDataItemByRdfItem')->willReturn($item);
+        (new ReflectionProperty(TestPreviewMapper::class, 'service'))->setValue($this->subject, $service);
+
+        $itemRef = $this->expectsItemRef('itemUri', 'navigation-reference', []);
+        $routeItem = $this->expectRouteItem(
+            $itemRef,
+            $this->expectsTestPart('partId'),
+            $this->expectSection('sectionId', 'Section title')
+        );
+        $map = $this->subject->map(
+            $this->expectsTest(),
+            $this->expectsRoute([$routeItem]),
+            new TestPreviewConfig()
+        )->getMap();
+        $metadata = $map['parts']['partId']['sections']['sectionId']['items']['navigation-reference'];
+
+        self::assertSame('navigation-reference', $metadata['id']);
+        self::assertSame('QTI item title', $metadata['label']);
+        self::assertSame('Content Bank label', $metadata['itemLabel']);
+        self::assertSame('original-item-identifier', $metadata['qtiIdentifier']);
+    }
+
     private function getFullMapData(
         string $itemId,
         string $sectionTitle,
@@ -328,6 +362,8 @@ class TestPreviewMapperTest extends TestCase
                                     'id' => $itemId,
                                     'uri' => 'itemUri',
                                     'label' => 'testLabel',
+                                    'itemLabel' => 'testLabel',
+                                    'qtiIdentifier' => null,
                                     'position' => 0,
                                     'occurrence' => null,
                                     'remainingAttempts' => $remainingAttempts,

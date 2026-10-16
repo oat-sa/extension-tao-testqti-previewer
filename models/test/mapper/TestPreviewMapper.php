@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2020 (original work) Open Assessment Technologies SA ;
+ * Copyright (c) 2020-2026 (original work) Open Assessment Technologies SA ;
  */
 
 declare(strict_types=1);
@@ -104,7 +104,7 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
                 $itemInfos = [
                     'id' => $itemId,
                     'uri' => $itemUri,
-                    'label' => $this->getItemLabel($itemUri),
+                    ...$this->getItemMetadata($itemUri),
                     'position' => $offset,
                     'occurrence' => $occurrence,
                     'remainingAttempts' => $remainingAttempts,
@@ -220,16 +220,20 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
     /**
      * @param string $itemUri
      *
-     * @return string
+     * @return array{label: string, itemLabel: string, qtiIdentifier: string|null}
      */
-    private function getItemLabel(string $itemUri): string
+    private function getItemMetadata(string $itemUri): array
     {
         $resource = $this->getResource($itemUri);
         $item = $this->getService()->getDataItemByRdfItem($resource);
 
-        return $item !== null
-            ? $item->getAttributeValue('title')
-            : $resource->getLabel();
+        $resourceLabel = $resource->getLabel();
+
+        return [
+            'label' => $item !== null ? $item->getAttributeValue('title') : $resourceLabel,
+            'itemLabel' => $resourceLabel,
+            'qtiIdentifier' => $item !== null ? ($item->getAttributeValue('identifier') ?: null) : null,
+        ];
     }
 
     /**

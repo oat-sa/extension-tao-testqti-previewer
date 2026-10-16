@@ -148,6 +148,9 @@ components:
         title:
           type: string
           example: My awsame MathTest
+        label:
+          type: string
+          description: Content Bank test resource label, distinct from the QTI test title.
         identifier:
           type: string
         className:
@@ -168,6 +171,13 @@ components:
         - $ref: '#/components/schemas/EntryBaseElement'
         - type: object
           properties:
+            itemLabel:
+              type: string
+              description: Content Bank item resource label, distinct from the existing display label.
+            qtiIdentifier:
+              type: string
+              nullable: true
+              description: Original assessmentItem identifier, distinct from the assessmentItemRef navigation id.
             occurrence:
               type: integer
               example: 0
