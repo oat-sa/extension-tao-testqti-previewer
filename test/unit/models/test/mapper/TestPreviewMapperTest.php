@@ -38,6 +38,10 @@ use qtism\data\AssessmentTest;
 use qtism\data\ExtendedAssessmentItemRef;
 use qtism\data\ItemSessionControl;
 use qtism\data\TestPart;
+use qtism\data\TestPartCollection;
+use qtism\data\SectionPartCollection;
+use qtism\data\rules\Selection;
+use qtism\data\rules\Ordering;
 use qtism\runtime\tests\Route;
 use qtism\runtime\tests\RouteItem;
 use ReflectionMethod;
@@ -297,6 +301,49 @@ class TestPreviewMapperTest extends TestCase
                 'expectedHasFeedbacks' => false,
             ],
         ];
+    }
+
+    /**
+     * @dataProvider reviewIdentifierProvider
+     */
+    public function testAssessmentInfoIncludesAllAuthoredReferences(?string $identifier): void
+    {
+        $this->expectsItemResource('itemUri', 'Content Bank item label');
+        $item = $this->createMock(Item::class);
+        $item->method('getAttributeValue')->with('identifier')->willReturn($identifier);
+        $service = $this->createMock(Service::class);
+        $service->method('getDataItemByRdfItem')->willReturn($item);
+        (new ReflectionProperty(TestPreviewMapper::class, 'service'))->setValue($this->subject, $service);
+
+        $nested = new AssessmentSection('nested', 'Nested section', true);
+        $nested->setSectionParts(new SectionPartCollection([new AssessmentItemRef('ref-2', 'itemUri')]));
+        $section = new AssessmentSection('section', 'Section title', true);
+        $section->setSelection(new Selection(1));
+        $section->setOrdering(new Ordering(true));
+        $section->setSectionParts(new SectionPartCollection([new AssessmentItemRef('ref-1', 'itemUri'), $nested]));
+        $other = new AssessmentSection('other', 'Other section', true);
+        $other->setSectionParts(new SectionPartCollection([new AssessmentItemRef('ref-3', 'itemUri')]));
+        $test = new AssessmentTest('test', 'QTI test title', new TestPartCollection([
+            new TestPart('part-1', new SectionPartCollection([$section])),
+            new TestPart('part-2', new SectionPartCollection([$other])),
+        ]));
+
+        $info = $this->subject->mapAssessmentInfo($test);
+        self::assertSame('QTI test title', $info['testTitle']);
+        self::assertSame(['ref-1', 'ref-2', 'ref-3'], array_keys($info['items']));
+        self::assertSame([
+            'itemLabel' => 'Content Bank item label',
+            'qtiIdentifier' => $identifier,
+            'sectionTitle' => 'Nested section',
+            'testPartIdentifier' => 'part-1',
+        ], $info['items']['ref-2']);
+        self::assertSame('Section title', $info['items']['ref-1']['sectionTitle']);
+        self::assertSame('part-2', $info['items']['ref-3']['testPartIdentifier']);
+    }
+
+    public function reviewIdentifierProvider(): array
+    {
+        return [['original-qti-id'], [null]];
     }
 
     private function getFullMapData(

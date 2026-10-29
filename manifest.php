@@ -53,6 +53,11 @@ return [
         [
             AccessRule::GRANT,
             TaoTestsRoles::TEST_AUTHOR,
+            ['ext' => 'taoQtiTestPreviewer', 'mod' => 'TestPreviewer', 'act' => 'assessmentInfo'],
+        ],
+        [
+            AccessRule::GRANT,
+            TaoTestsRoles::TEST_AUTHOR,
             ['ext' => 'taoQtiTestPreviewer', 'mod' => 'Previewer', 'act' => 'getItem'],
         ],
         [

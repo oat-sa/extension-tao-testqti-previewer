@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2020 (original work) Open Assessment Technologies SA ;
+ * Copyright (c) 2020-2026 (original work) Open Assessment Technologies SA ;
  */
 
 declare(strict_types=1);
@@ -29,6 +29,7 @@ use oat\taoQtiItem\model\qti\Service;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewConfig;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewMap;
 use qtism\data\AssessmentItemRef;
+use qtism\data\AssessmentSection;
 use qtism\data\AssessmentTest;
 use qtism\data\ExtendedAssessmentItemRef;
 use qtism\data\NavigationMode;
@@ -41,6 +42,42 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
 
     /** @var Service */
     private $service;
+
+    /**
+     * Read all authored references, independently of preview selection and ordering.
+     */
+    public function mapAssessmentInfo(AssessmentTest $test): array
+    {
+        $items = [];
+        foreach ($test->getTestParts() as $part) {
+            foreach ($part->getAssessmentSections() as $section) {
+                $items += $this->mapSectionAssessmentInfo($section, $part->getIdentifier());
+            }
+        }
+
+        return ['testTitle' => $test->getTitle(), 'items' => $items];
+    }
+
+    private function mapSectionAssessmentInfo(AssessmentSection $section, string $partId): array
+    {
+        $items = [];
+        foreach ($section->getSectionParts() as $component) {
+            if ($component instanceof AssessmentSection) {
+                $items += $this->mapSectionAssessmentInfo($component, $partId);
+            } elseif ($component instanceof AssessmentItemRef) {
+                $resource = $this->getResource($component->getHref());
+                $item = $this->getService()->getDataItemByRdfItem($resource);
+                $items[$component->getIdentifier()] = [
+                    'itemLabel' => $resource->getLabel(),
+                    'qtiIdentifier' => $item !== null ? ($item->getAttributeValue('identifier') ?: null) : null,
+                    'sectionTitle' => $section->getTitle(),
+                    'testPartIdentifier' => $partId,
+                ];
+            }
+        }
+
+        return $items;
+    }
 
     public function map(AssessmentTest $test, Route $route, TestPreviewConfig $config): TestPreviewMap
     {
