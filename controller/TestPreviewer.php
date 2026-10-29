@@ -73,10 +73,7 @@ class TestPreviewer extends tao_actions_ServiceModule
                     'success' => true,
                     'testData' => [],
                     'testContext' => [],
-                    'testMap' => array_merge(
-                        $response->getMap()->getMap(),
-                        ['label' => $this->getResource($testUri)->getLabel()]
-                    ),
+                    'testMap' => $response->getMap()->getMap(),
                     'timer' => $response->getTimer(),
                     'presetMap' => $this->getTestPreviewerPresetsMapService()->getMap()
                 ]
@@ -101,6 +98,29 @@ class TestPreviewer extends tao_actions_ServiceModule
                     $exception->getMessage()
                 )
             );
+        }
+    }
+
+    public function assessmentInfo(): void
+    {
+        try {
+            $testUri = $this->getPsrRequest()->getQueryParams()['testUri'] ?? null;
+            if (empty($testUri)) {
+                throw new InvalidArgumentException('Required `testUri` param is missing');
+            }
+            if (!$this->getPermissionChecker()->hasReadAccess($testUri)) {
+                throw new ResourceAccessDeniedException($testUri);
+            }
+
+            $info = $this->getTestPreviewerService()->getAssessmentInfo(new TestPreviewRequest($testUri));
+            $info['testLabel'] = $this->getResource($testUri)->getLabel();
+            $this->setNoCacheHeaders();
+            $this->setSuccessJsonResponse($info);
+        } catch (Throwable $exception) {
+            $message = $exception instanceof common_exception_UserReadableException
+                ? $exception->getUserMessage()
+                : $exception->getMessage();
+            $this->setErrorJsonResponse($message);
         }
     }
 

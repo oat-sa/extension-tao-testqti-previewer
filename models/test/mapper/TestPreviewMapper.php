@@ -29,6 +29,7 @@ use oat\taoQtiItem\model\qti\Service;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewConfig;
 use oat\taoQtiTestPreviewer\models\test\TestPreviewMap;
 use qtism\data\AssessmentItemRef;
+use qtism\data\AssessmentSection;
 use qtism\data\AssessmentTest;
 use qtism\data\ExtendedAssessmentItemRef;
 use qtism\data\NavigationMode;
@@ -41,6 +42,42 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
 
     /** @var Service */
     private $service;
+
+    /**
+     * Read all authored references, independently of preview selection and ordering.
+     */
+    public function mapAssessmentInfo(AssessmentTest $test): array
+    {
+        $items = [];
+        foreach ($test->getTestParts() as $part) {
+            foreach ($part->getAssessmentSections() as $section) {
+                $items += $this->mapSectionAssessmentInfo($section, $part->getIdentifier());
+            }
+        }
+
+        return ['testTitle' => $test->getTitle(), 'items' => $items];
+    }
+
+    private function mapSectionAssessmentInfo(AssessmentSection $section, string $partId): array
+    {
+        $items = [];
+        foreach ($section->getSectionParts() as $component) {
+            if ($component instanceof AssessmentSection) {
+                $items += $this->mapSectionAssessmentInfo($component, $partId);
+            } elseif ($component instanceof AssessmentItemRef) {
+                $resource = $this->getResource($component->getHref());
+                $item = $this->getService()->getDataItemByRdfItem($resource);
+                $items[$component->getIdentifier()] = [
+                    'itemLabel' => $resource->getLabel(),
+                    'qtiIdentifier' => $item !== null ? ($item->getAttributeValue('identifier') ?: null) : null,
+                    'sectionTitle' => $section->getTitle(),
+                    'testPartIdentifier' => $partId,
+                ];
+            }
+        }
+
+        return $items;
+    }
 
     public function map(AssessmentTest $test, Route $route, TestPreviewConfig $config): TestPreviewMap
     {
@@ -104,7 +141,7 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
                 $itemInfos = [
                     'id' => $itemId,
                     'uri' => $itemUri,
-                    ...$this->getItemMetadata($itemUri),
+                    'label' => $this->getItemLabel($itemUri),
                     'position' => $offset,
                     'occurrence' => $occurrence,
                     'remainingAttempts' => $remainingAttempts,
@@ -220,20 +257,16 @@ class TestPreviewMapper extends ConfigurableService implements TestPreviewMapper
     /**
      * @param string $itemUri
      *
-     * @return array{label: string, itemLabel: string, qtiIdentifier: string|null}
+     * @return string
      */
-    private function getItemMetadata(string $itemUri): array
+    private function getItemLabel(string $itemUri): string
     {
         $resource = $this->getResource($itemUri);
         $item = $this->getService()->getDataItemByRdfItem($resource);
 
-        $resourceLabel = $resource->getLabel();
-
-        return [
-            'label' => $item !== null ? $item->getAttributeValue('title') : $resourceLabel,
-            'itemLabel' => $resourceLabel,
-            'qtiIdentifier' => $item !== null ? ($item->getAttributeValue('identifier') ?: null) : null,
-        ];
+        return $item !== null
+            ? $item->getAttributeValue('title')
+            : $resource->getLabel();
     }
 
     /**
