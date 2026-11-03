@@ -38,6 +38,54 @@ paths:
         '400':
           $ref: '#/components/responses/BadResponse'
 
+  /taoQtiTestPreviewer/TestPreviewer/assessmentInfo:
+    get:
+      summary: Returns Authoring review metadata for every authored item reference
+      description: Requires read access to the test. Does not apply item selection or shuffling.
+      parameters:
+        - in: query
+          name: testUri
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Assessment information, served without caching
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      testLabel:
+                        type: string
+                        description: Resource label displayed in the Content Bank Tests list.
+                      testTitle:
+                        type: string
+                      items:
+                        type: object
+                        description: Keyed by assessmentItemRef identifier, including nested sections and repeated resources.
+                        additionalProperties:
+                          type: object
+                          properties:
+                            itemLabel:
+                              type: string
+                              description: Resource label displayed in the Content Bank Items list.
+                            qtiIdentifier:
+                              type: string
+                              nullable: true
+                              description: Original assessmentItem identifier, never the navigation reference identifier.
+                            sectionTitle:
+                              type: string
+                            testPartIdentifier:
+                              type: string
+        '400':
+          $ref: '#/components/responses/BadResponse'
+
   /taoQtiTestPreviewer/TestPreviewer/configuration:
     get:
       responses:
