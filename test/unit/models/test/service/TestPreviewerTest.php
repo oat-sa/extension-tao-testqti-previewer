@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2020 (original work) Open Assessment Technologies SA;
+ * Copyright (c) 2020-2026 (original work) Open Assessment Technologies SA;
  */
 
 declare(strict_types=1);
@@ -65,6 +65,19 @@ class TestPreviewerTest extends TestCase
             $this->mapper,
             $this->timerBuilder
         );
+    }
+
+    public function testAssessmentInfoDoesNotGenerateAnotherPreviewRoute(): void
+    {
+        $request = new TestPreviewRequest('testUri');
+        $test = $this->createMock(AssessmentTest::class);
+        $info = ['testTitle' => 'Test title', 'items' => []];
+        $this->generator->expects($this->once())->method('generate')->with($request)->willReturn($test);
+        $this->mapper->expects($this->once())->method('mapAssessmentInfo')->with($test)->willReturn($info);
+        $this->factory->expects($this->never())->method('create');
+        $this->timerBuilder->expects($this->never())->method('build');
+
+        self::assertSame($info, $this->subject->getAssessmentInfo($request));
     }
 
     public function testPreview(): void
