@@ -36,7 +36,7 @@
     "oat-sa/extension-tao-test": ">=16.5.0",
     "oat-sa/extension-tao-delivery": ">=15.0.0",
     "oat-sa/extension-tao-outcome": ">=13.0.0",
-    "qtism/qtism": "~0"
+    "qtism/qtism": "dev-fix/INF-592/response-variable-default-values-completion-status-calculation as 0.31.1"
   },
   "autoload": {
     "psr-4": {
